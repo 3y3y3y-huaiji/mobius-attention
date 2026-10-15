@@ -22,6 +22,11 @@ kaggle_output/
 .system_generated/
 scratch/
 
+# Swarm & Agent scratch logs
+.agents/
+.lake/
+formal_verification/.lake/
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -185,7 +185,8 @@ for s_name, text in scenarios:
             twist_1d = torch.cos(math.pi * t / cycle_len)
             view_shape = [1] * cos.dim()
             view_shape[-2] = seq_len_curr
-            return cos * twist_1d.view(*view_shape), sin
+            twist = twist_1d.view(*view_shape)
+            return cos * twist, sin * twist
         return forward
 
     for name, module in model.named_modules():
@@ -214,7 +215,8 @@ for s_name, text in scenarios:
             twist_1d = torch.cos(current_phi[:seq_len_curr]).to(dtype=cos.dtype, device=cos.device)
             view_shape = [1] * cos.dim()
             view_shape[-2] = seq_len_curr
-            return cos * twist_1d.view(*view_shape), sin
+            twist = twist_1d.view(*view_shape)
+            return cos * twist, sin * twist
         return forward
 
     for name, module in model.named_modules():

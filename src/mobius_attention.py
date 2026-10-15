@@ -57,10 +57,19 @@ class SemanticGaugeMobiusRoPE(nn.Module):
             return cos, sin
             
         seq_len_curr = cos.shape[-2]
-        twist_1d = torch.cos(self._current_phi[:seq_len_curr]).to(dtype=cos.dtype, device=cos.device)
+        if position_ids is not None:
+            pos = position_ids.view(-1)
+            phi_flat = self._current_phi.view(-1)
+            if pos.numel() == seq_len_curr and pos.max() < phi_flat.numel():
+                twist_1d = torch.cos(phi_flat[pos]).to(dtype=cos.dtype, device=cos.device)
+            else:
+                twist_1d = torch.cos(phi_flat[:seq_len_curr]).to(dtype=cos.dtype, device=cos.device)
+        else:
+            twist_1d = torch.cos(self._current_phi.view(-1)[:seq_len_curr]).to(dtype=cos.dtype, device=cos.device)
         view_shape = [1] * cos.dim()
         view_shape[-2] = seq_len_curr
-        return cos * twist_1d.view(*view_shape), sin
+        twist = twist_1d.view(*view_shape)
+        return cos * twist, sin * twist
 
 def inject_mobius_attention(model: nn.Module) -> int:
     r"""

@@ -45,7 +45,7 @@ class MobiusRoPE(nn.Module):
         
         freqs = torch.outer(t, self.inv_freq)
         cos_part = torch.cat((freqs.cos(), freqs.cos()), dim=-1) * twist_factor
-        sin_part = torch.cat((freqs.sin(), freqs.sin()), dim=-1)
+        sin_part = torch.cat((freqs.sin(), freqs.sin()), dim=-1) * twist_factor
         
         return cos_part, sin_part
 
