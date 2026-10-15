@@ -98,22 +98,10 @@ Under standard Rotary Position Embeddings (RoPE), the query at step $t=297$ comp
 
 To resolve this limitation without architectural redesign or loss of standard KV-cache reuse, we lift sequence representations from trivial Euclidean space to a **non-orientable $\mathbb{Z}_2$ fiber bundle** over the causal sequence lattice.
 
-```
-                      MÖBIUS TOPOLOGICAL FIBER BUNDLE
-                  
-    Positive Sheet (s = +1) ──────────────────────┐  (Smooth Narrative: Delta Phi = 0)
-                                                  │
-                                                  ▼
-                        [Contrastive Pivot: Delta Phi = pi]
-                                                  │
-                                                  ▼
-    Negative Sheet (s = -1) ──────────────────────┘  (Antipodal Inversion: Destructive Cancellation)
-                                                  │
-                                                  ▼
-                        [Second Contrast: Delta Phi = 2 pi]
-                                                  │
-                                                  ▼
-    Positive Sheet (s = +1) ──────────────────────┘  (Double-Covering Parity Return: ~ ~ P <=> P)
+```mermaid
+flowchart LR
+    P1["Positive Sheet (s = +1)<br>Continuous Context"] -->|"Contrastive Shift (ΔΦ = π)"| N["Negative Sheet (s = -1)<br>Destructive Cancellation"]
+    N -->|"Second Inversion (ΔΦ = 2π)"| P2["Positive Sheet (s = +1)<br>Parity Return (¬¬P ⇔ P)"]
 ```
 
 ### Discrete Causal Lattice & Structure Group Extension
@@ -181,8 +169,8 @@ $$
 \frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij}) \quad ■
 $$
 
-- For a moderately attended premise ($A_{ij} = 2.0$): odds attenuate by $\exp(-4.0) \approx 0.0183$ ($\mathbf{55\times}$ suppression).
-- For a strongly attended premise ($A_{ij} = 4.0$): odds attenuate by $\exp(-8.0) \approx 3.35 \times 10^{-4}$ ($\mathbf{2,980\times}$ suppression).
+- For a moderately attended premise ($A_{ij} = 2.0$): odds attenuate by $\exp(-4.0) \approx 0.0183$ (**55×** suppression).
+- For a strongly attended premise ($A_{ij} = 4.0$): odds attenuate by $\exp(-8.0) \approx 3.35 \times 10^{-4}$ (**2,980×** suppression).
 
 ### Exact O(1) KV-Cache Invariance
 
@@ -195,61 +183,27 @@ A major engineering barrier in non-standard attentions is KV-cache incompatibili
 
 ## 🏗️ System Architecture & Dataflow
 
-```
-Input Tokens: [ x_1, x_2, ..., x_t, ..., x_N ]
-                     │
-                     ▼
-    ┌─────────────────────────────────┐
-    │  Transformer Hidden States x_t  │
-    └────────────────┬────────────────┘
-                     │
-         ┌───────────┴───────────┐
-         │                       │
-         ▼                       ▼
-┌──────────────────┐   ┌─────────────────────────────┐
-│  Standard Query  │   │  Semantic Gauge Connection  │
-│  & Key Projections│   │      (Curvature 1-form)     │
-│    q_t, k_t      │   │  omega_t = pi * sigma(...)  │
-└────────┬─────────┘   └──────────────┬──────────────┘
-         │                            │
-         │                            ▼
-         │             ┌─────────────────────────────┐
-         │             │  Causal Holonomy Accumulator │
-         │             │      Phi_t = sum omega_tau  │
-         │             └──────────────┬──────────────┘
-         │                            │
-         │                            ▼
-         │             ┌─────────────────────────────┐
-         │             │     Spinor Parity Factor    │
-         │             │      s_t = cos(Phi_t)       │
-         │             └──────────────┬──────────────┘
-         │                            │
-         └─────────────┬──────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │   Symmetric Rotary Dual RoPE  │
-       │   q~_i = s_i * R_i * q_i      │
-       │   k~_j = s_j * R_j * k_j      │
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │  Antipodal Attention Kernel   │
-       │   <q~_i, k~_j> = cos(DeltaPhi)│
-       │        * <q_i, k_j>_RoPE      │
-       │                               │
-       │  * DeltaPhi = 0   -> + Logit  │
-       │  * DeltaPhi = pi  -> - Logit  │
-       │  * DeltaPhi = 2pi -> + Logit  │
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │   Softmax Output Distribution │
-       │  (Active Destructive Inversion│
-       │   & Exact O(1) KV Invariance) │
-       └───────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Frontend["1. Sequence Ingestion"]
+        X["Token Input x_t"] --> H["Hidden Representations"]
+    end
+
+    subgraph Projections["2. Dual Attention Pathways"]
+        H --> QK["Standard RoPE Projections (q_t, k_t)"]
+        H --> SGC["Semantic Gauge Connection: ω(t)"]
+    end
+
+    subgraph Holonomy["3. Path Holonomy & Parity"]
+        SGC --> HOL["Holonomy Accumulator: Φ(t) = Σ ω(τ)"]
+        HOL --> PAR["Spinor Parity Factor: s_t = cos(Φ(t))"]
+    end
+
+    subgraph Modulation["4. Rotary Modulation & Kernel"]
+        QK & PAR --> DUAL["Symmetric Rotary Dual RoPE<br>q̃_i = s_i R_i q_i,  k̃_j = s_j R_j k_j"]
+        DUAL --> KERNEL["Antipodal Kernel: ⟨q̃_i, k̃_j⟩ = cos(ΔΦ) ⟨q_i, k_j⟩"]
+        KERNEL --> SM["Softmax Attention<br>(Destructive Inversion & O(1) KV-Cache)"]
+    end
 ```
 
 ---
@@ -381,7 +335,7 @@ Evaluated under adversarial premise invalidation at 16,384 sequence context leng
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Qwen3.5-9B** | Standard RoPE Baseline | $0.412 \pm 0.03$ | $0.448 \pm 0.04$ | 1.09 | 6.42 |
 | **Qwen3.5-9B** | Fixed-Period Möbius ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |
-| **Qwen3.5-9B** | **SG-Möbius-RoPE (Ours)** | $\mathbf{0.061 \pm 0.01}$ | $\mathbf{0.824 \pm 0.03}$ | $\mathbf{13.51}$ ($\mathbf{\times 12.4}$) | $\mathbf{6.42}$ ($\mathbf{0.0\%}$ PPL degradation) |
+| **Qwen3.5-9B** | **SG-Möbius-RoPE (Ours)** | **$0.061 \pm 0.01$** | **$0.824 \pm 0.03$** | **13.51** (**×12.4**) | **6.42** (**0.0%** PPL degradation) |
 
 ---
 
@@ -414,11 +368,11 @@ python formal_verification/verify_properties.py
 
 - **Universal Z3 SMT Proofs**: Formally proves that the negations of the Cocycle Condition, Gauge Translation Invariance, and $\mathbb{Z}_2$ Parity Factorization are strictly `UNSAT` across all real domains.
 - **Dual-Modulation Translation Invariance**: Evaluates 1,000 randomized 64-dimensional query-key pairs across positional offsets up to 32,768:
-  - Symmetric Dual Modulation: Max deviation error = $\mathbf{0.00 \times 10^0}$ (exact machine precision).
-  - Asymmetric Modulation (cos only): Max deviation error = $\mathbf{37.17}$ (catastrophic failure).
+  - Symmetric Dual Modulation: Max deviation error = **$0.00 \times 10^0$** (exact machine precision).
+  - Asymmetric Modulation (cos only): Max deviation error = **37.17** (loss of translation invariance).
 - **2,000-Trial Extreme Fuzzing**: Sequences sampled across $[10, 32768]$ tokens with up to 50 nested reversals:
-  - Max cumulative holonomy numerical drift: $\mathbf{1.14 \times 10^{-13}}$ ($< 10^{-12}$ threshold).
-  - Max parity factor numerical drift: $\mathbf{0.00 \times 10^0}$.
+  - Max cumulative holonomy numerical drift: **$1.14 \times 10^{-13}$** ($< 10^{-12}$ threshold).
+  - Max parity factor numerical drift: **$0.00 \times 10^0$**.
   - Pass rate: **2,000 / 2,000 trials (100% success rate)**.
 
 ### Four-Tier End-to-End Pytest Suite

@@ -365,15 +365,15 @@ We evaluate model robustness using an adversarial Inverted Needle In A Haystack 
 \multicolumn{5}{l}{\textit{Single Reversal (Midpoint Inversion, 16k context)}} \\
 \quad Qwen3.5-9B (Standard RoPE Baseline) & $0.412 \pm 0.03$ & $0.448 \pm 0.04$ & $1.09$ & $6.42$ \\
 \quad Qwen3.5-9B + Fixed-Period M\"obius ($T=256$) & $0.395 \pm 0.04$ & $0.461 \pm 0.04$ & $1.17$ & $6.42$ \\
-\quad Qwen3.5-9B + SG-M\"obius (Ours)      & $\mathbf{0.061 \pm 0.01}$ & $\mathbf{0.824 \pm 0.03}$ & $\mathbf{13.51}$ & $\mathbf{6.42}$ \\
+\quad Qwen3.5-9B + SG-M\"obius (Ours)      & $\mathbf{0.061} \pm \mathbf{0.01}$ & $\mathbf{0.824} \pm \mathbf{0.03}$ & $\mathbf{13.51}$ & $\mathbf{6.42}$ \\
 \midrule
 \multicolumn{5}{l}{\textit{Early Adversarial Inversion (Pivot at $L/4$, 16k context)}} \\
 \quad Qwen3.5-9B (Standard RoPE Baseline) & $0.384 \pm 0.02$ & $0.462 \pm 0.03$ & $1.20$ & $6.42$ \\
-\quad Qwen3.5-9B + SG-M\"obius (Ours)      & $\mathbf{0.052 \pm 0.01}$ & $\mathbf{0.851 \pm 0.02}$ & $\mathbf{16.37}$ & $\mathbf{6.42}$ \\
+\quad Qwen3.5-9B + SG-M\"obius (Ours)      & $\mathbf{0.052} \pm \mathbf{0.01}$ & $\mathbf{0.851} \pm \mathbf{0.02}$ & $\mathbf{16.37}$ & $\mathbf{6.42}$ \\
 \midrule
 \multicolumn{5}{l}{\textit{Double Negation (Restoration of Premise, 16k context)}} \\
 \quad Qwen3.5-9B (Standard RoPE Baseline) & $0.405 \pm 0.03$ & $0.439 \pm 0.04$ & $1.08$ & $6.42$ \\
-\quad Qwen3.5-9B + SG-M\"obius (Ours)      & $0.418 \pm 0.02$ & $\mathbf{0.812 \pm 0.03}$ & $\mathbf{1.94}$ & $\mathbf{6.42}$ \\
+\quad Qwen3.5-9B + SG-M\"obius (Ours)      & $0.418 \pm 0.02$ & $\mathbf{0.812} \pm \mathbf{0.03}$ & $\mathbf{1.94}$ & $\mathbf{6.42}$ \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{Inverted Needle In A Haystack (I-NIAH) evaluation on Qwen3.5-9B (native FP16, dual Nvidia T4 GPUs).} Attention Contrast Ratio (ACR) improves by up to $13.6\times$ on single reversals while neutral text perplexity is strictly conserved ($6.42$).}
@@ -395,19 +395,19 @@ To assess asymptotic scalability across increasing sequence lengths, we benchmar
 \textbf{Context Length ($L$)} & \textbf{Pivot ($t$)} & \textbf{Method} & \textbf{Decoy Attn ($\downarrow$)} & \textbf{Target Attn ($\uparrow$)} & \textbf{ACR ($\uparrow$)} & \textbf{Entropy ($H$)} & \textbf{Decoding Latency} \\
 \midrule
 512 & 256 & RoPE Baseline    & $2.09 \times 10^{-3}$ & $2.37 \times 10^{-3}$ & $1.13$ & $6.238$ & $0.0023\,\text{ms}$ \\
-    &     & \textbf{SG-M\"obius (Ours)} & $\mathbf{1.82 \times 10^{-3}}$ & $\mathbf{2.37 \times 10^{-3}}$ & $\mathbf{1.30}$ & $\mathbf{6.238}$ & $\mathbf{0.0023\,\text{ms}}$ \\
+    &     & \textbf{SG-M\"obius (Ours)} & $\mathbf{1.82} \times \mathbf{10^{-3}}$ & $\mathbf{2.37} \times \mathbf{10^{-3}}$ & $\mathbf{1.30}$ & $\mathbf{6.238}$ & $\mathbf{0.0023\,\text{ms}}$ \\
 \midrule
 1,024 & 512 & RoPE Baseline    & $1.00 \times 10^{-3}$ & $1.04 \times 10^{-3}$ & $1.04$ & $6.931$ & $0.0049\,\text{ms}$ \\
-      &     & \textbf{SG-M\"obius (Ours)} & $\mathbf{0.95 \times 10^{-3}}$ & $\mathbf{1.04 \times 10^{-3}}$ & $\mathbf{1.10}$ & $\mathbf{6.931}$ & $\mathbf{0.0049\,\text{ms}}$ \\
+      &     & \textbf{SG-M\"obius (Ours)} & $\mathbf{0.95} \times \mathbf{10^{-3}}$ & $\mathbf{1.04} \times \mathbf{10^{-3}}$ & $\mathbf{1.10}$ & $\mathbf{6.931}$ & $\mathbf{0.0049\,\text{ms}}$ \\
 \midrule
 2,048 & 1,024 & RoPE Baseline    & $4.80 \times 10^{-4}$ & $6.01 \times 10^{-4}$ & $1.25$ & $7.624$ & $0.0098\,\text{ms}$ \\
-      &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{4.97 \times 10^{-4}}$ & $\mathbf{6.01 \times 10^{-4}}$ & $\mathbf{1.21}$ & $\mathbf{7.624}$ & $\mathbf{0.0098\,\text{ms}}$ \\
+      &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{4.97} \times \mathbf{10^{-4}}$ & $\mathbf{6.01} \times \mathbf{10^{-4}}$ & $\mathbf{1.21}$ & $\mathbf{7.624}$ & $\mathbf{0.0098\,\text{ms}}$ \\
 \midrule
 4,096 & 2,048 & RoPE Baseline    & $2.43 \times 10^{-4}$ & $3.02 \times 10^{-4}$ & $1.24$ & $8.318$ & $0.0206\,\text{ms}$ \\
-      &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{2.45 \times 10^{-4}}$ & $\mathbf{3.02 \times 10^{-4}}$ & $\mathbf{1.23}$ & $\mathbf{8.318}$ & $\mathbf{0.0206\,\text{ms}}$ \\
+      &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{2.45} \times \mathbf{10^{-4}}$ & $\mathbf{3.02} \times \mathbf{10^{-4}}$ & $\mathbf{1.23}$ & $\mathbf{8.318}$ & $\mathbf{0.0206\,\text{ms}}$ \\
 \midrule
 8,192 & 4,096 & RoPE Baseline    & $1.26 \times 10^{-4}$ & $1.37 \times 10^{-4}$ & $1.08$ & $9.011$ & $0.0749\,\text{ms}$ \\
-      &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{1.18 \times 10^{-4}}$ & $\mathbf{1.37 \times 10^{-4}}$ & $\mathbf{1.16}$ & $\mathbf{9.011}$ & $\mathbf{0.0749\,\text{ms}}$ \\
+      &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{1.18} \times \mathbf{10^{-4}}$ & $\mathbf{1.37} \times \mathbf{10^{-4}}$ & $\mathbf{1.16}$ & $\mathbf{9.011}$ & $\mathbf{0.0749\,\text{ms}}$ \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{Systematic multi-length benchmark ($L \in [512, 8192]$) on Qwen3.5-9B.} Decoy attention is consistently attenuated, while single-step autoregressive decoding latency exhibits exact $0.00\%$ overhead across all context scales.}
@@ -431,7 +431,7 @@ H(A_i) = - \sum_{j=0}^i A_{ij} \ln A_{ij}
 \midrule
 Control Narrative (Smooth) & 337 & None ($\emptyset$) & $3.4462$ & $\mathbf{3.4462}$ & $0.00\%$ (Exact Invariant) \\
 Arbitrary Logical Inversion & 298 & $t = 51$ & $3.4503$ & $\mathbf{3.3966}$ & $-1.56\%$ ($p < 0.01$) \\
-Double Negation Restoration & 234 & $t_1=39, t_2=133$ & $3.3120$ & $\mathbf{3.1626}$ & $\mathbf{-4.51\%}$ ($p < 0.001$) \\
+Double Negation Restoration & 234 & $t_1=39, t_2=133$ & $3.3120$ & $\mathbf{3.1626}$ & $\mathbf{-4.51}\%$ ($p < 0.001$) \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{Empirical attention entropy on Qwen3.5-9B Layer 7.} Zero entropy variation on smooth contexts verifies zero false suppression; significant entropy reduction on contrastive sequences confirms active focal concentration.}
