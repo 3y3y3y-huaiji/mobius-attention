@@ -31,7 +31,7 @@
   - [Semantic Gauge Connection & Path Holonomy](#semantic-gauge-connection--path-holonomy)
   - [Symmetric Rotary Dual Modulation](#symmetric-rotary-dual-modulation)
   - [Exponential Relative Odds Attenuation Theorem](#exponential-relative-odds-attenuation-theorem)
-  - [Exact $\mathcal{O}(1)$ KV-Cache Invariance](#exact-mathcalo1-kv-cache-invariance)
+  - [Exact O(1) KV-Cache Invariance](#exact-o1-kv-cache-invariance)
 - [System Architecture & Dataflow](#-system-architecture--dataflow)
 - [Verified 3-Line Quickstart](#-verified-3-line-quickstart)
   - [Drop-in 3-Line Injection](#drop-in-3-line-injection)
@@ -39,7 +39,7 @@
 - [Complete Visual Gallery](#-complete-visual-gallery)
 - [Empirical Benchmarks on Qwen3.5-9B](#-empirical-benchmarks-on-qwen35-9b)
   - [Table 1: Real Attention Shannon Entropy Reduction](#table-1-real-attention-shannon-entropy-reduction)
-  - [Table 2: Multi-Length Scaled Context Benchmark ($L \in [512, 8192]$)](#table-2-multi-length-scaled-context-benchmark-l-in-512-8192)
+  - [Table 2: Multi-Length Scaled Context Benchmark (512 to 8192 Tokens)](#table-2-multi-length-scaled-context-benchmark-512-to-8192-tokens)
   - [Table 3: Inverted Needle-In-A-Haystack (I-NIAH, 16k Context)](#table-3-inverted-needle-in-a-haystack-i-niah-16k-context)
 - [Formal Mathematical Verification](#-formal-mathematical-verification)
   - [Lean 4 Interactive Proofs](#lean-4-interactive-proofs)
@@ -58,11 +58,15 @@
 
 In modern autoregressive Transformer architectures, self-attention maps unnormalized query-key inner products onto a categorical probability distribution via the Softmax operator:
 
-$$A_{ij} = \mathrm{softmax}(S)_{ij} = \frac{\exp(q_i^\top k_j / \sqrt{d})}{\sum_{l=1}^i \exp(q_i^\top k_l / \sqrt{d})} \in (0, 1) \quad \forall S_{ij} \in \mathbb{R}$$
+$$
+A_{ij} = \mathrm{softmax}(S)_{ij} = \frac{\exp(q_i^\top k_j / \sqrt{d})}{\sum_{l=1}^i \exp(q_i^\top k_l / \sqrt{d})} \in (0, 1) \quad \forall S_{ij} \in \mathbb{R}
+$$
 
 Because the exponential function satisfies $\exp(z) > 0$ for all finite $z \in \mathbb{R}$, the attention weights are confined to the open standard probability simplex:
 
-$$\Delta^{i-1} \triangleq \left\{ \mathbf{a}_i \in \mathbb{R}^i \;\middle|\; a_{ij} > 0, \;\sum_{j=1}^i a_{ij} = 1 \right\}$$
+$$
+\Delta^{i-1} := \left\{ \mathbf{a}_i \in \mathbb{R}^i \mid a_{ij} > 0, \;\sum_{j=1}^i a_{ij} = 1 \right\}
+$$
 
 Consequently, standard self-attention is **strictly positive-definite and monotonic**:
 1. Every historical token $j \le i$ must inevitably receive strictly non-zero probability mass ($A_{ij} > 0$).
@@ -114,64 +118,77 @@ To resolve this limitation without architectural redesign or loss of standard KV
 
 ### Discrete Causal Lattice & Structure Group Extension
 
-1. **Base Manifold**: Represent the context of length $L$ as a 1D discrete causal lattice:
-   $$\mathcal{M} = \left( \{1, 2, \dots, L\}, \, \le \right)$$
-2. **Structure Group Extension**: Standard RoPE acts on 2D head subspaces $\mathbb{R}^2_{(m)}$ via continuous planar rotations $\mathrm{SO}(2) \cong \mathrm{U}(1)$, where $\det(\mathbf{R}) = +1$ (strictly orientation-preserving). We extend the structure group to the full orthogonal group:
-   $$\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$$
-   where $\mathbb{Z}_2 = \{-1, +1\}$ encodes the orientation-reversing parity involution on the fiber.
+1. **Base Manifold**: Represent the context of length $L$ as a 1D discrete causal lattice $\mathcal{M} = ( \{1, 2, \dots, L\}, \le )$.
+2. **Structure Group Extension**: Standard RoPE acts on 2D head subspaces $\mathbb{R}^2_{(m)}$ via continuous planar rotations $\mathrm{SO}(2) \cong \mathrm{U}(1)$, where $\det(\mathbf{R}) = +1$ (strictly orientation-preserving). We extend the structure group to the full orthogonal group $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$, where $\mathbb{Z}_2 = \{-1, +1\}$ encodes the orientation-reversing parity involution on the fiber.
 3. **Non-Trivial Topology**: The bundle $E \to \mathcal{M}$ possesses a non-vanishing first Stiefel-Whitney characteristic class $w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$, realizing the topology of a discrete Möbius band.
 
 ### Semantic Gauge Connection & Path Holonomy
 
 1. **Connection 1-Form**: Let $A = i \, \omega(t) \, dt \in \Omega^1(\mathcal{M}, \mathfrak{u}(1))$, where the local connection curvature $\omega(t) \in [0, \pi]$ represents contrastive torsion density, predicted dynamically from token representations:
-   $$\omega(t) = \pi \cdot \sigma\left( \mathbf{w}_{\text{gauge}}^\top \frac{x_t}{\|x_t\|_2} \right)$$
+   $\omega(t) = \pi \cdot \sigma\left( \mathbf{w}_{\text{gauge}}^\top \frac{x_t}{\|x_t\|_2} \right)$.
    - *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
    - *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \omega(t) \approx \pi$
 2. **Discrete Path Holonomy**: The Wilson line along the directed causal trajectory $\gamma_{j \to i}$ computes the cumulative parallel transport:
-   $$\mathrm{Hol}(\gamma_{j \to i}) = \exp\left( i \sum_{\tau=j+1}^i \omega(\tau) \right) = \exp\left( i \, \Delta \Phi_{j \to i} \right), \quad \Delta \Phi_{j \to i} = \Phi(i) - \Phi(j)$$
-   where the cumulative gauge potential is $\Phi(t) \triangleq \sum_{\tau=1}^t \omega(\tau)$.
+   $\mathrm{Hol}(\gamma_{j \to i}) = \exp\left( i \sum_{\tau=j+1}^i \omega(\tau) \right) = \exp( i \, \Delta \Phi_{j \to i} )$, where $\Delta \Phi_{j \to i} = \Phi(i) - \Phi(j)$ and cumulative gauge potential is $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$.
 
 ### Symmetric Rotary Dual Modulation
 
-Under discrete contrastive pivots ($\omega(t) \in \{0, \pi\}$), the cumulative gauge potential induces a discrete topological parity factor $s_t \triangleq \cos(\Phi(t)) \in \{-1, +1\}$.
+Under discrete contrastive pivots ($\omega(t) \in \{0, \pi\}$), the cumulative gauge potential induces a discrete topological parity factor $s_t := \cos(\Phi(t)) \in \{-1, +1\}$.
 
 For each 2D rotary subspace $m \in \{1, \dots, d/2\}$ with base frequency $\theta_m$, we define **symmetric rotary dual modulation**:
 
-$$\tilde{q}_i^{(m)} \triangleq s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} \triangleq s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}$$
+$$
+\tilde{q}_i^{(m)} := s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}
+$$
 
 #### Theorem 1 (Preservation of Relative Translation Invariance)
 Under symmetric rotary dual modulation, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:
 
-$$\langle \tilde{q}_i, \, \tilde{k}_j \rangle = s_i s_j \langle q_i, \, k_j \rangle_{\mathrm{RoPE}} = \cos(\Delta \Phi_{j \to i}) \langle q_i, \, k_j \rangle_{\mathrm{RoPE}}$$
+$$
+\langle \tilde{q}_i, \, \tilde{k}_j \rangle = s_i s_j \langle q_i, \, k_j \rangle_{\mathrm{RoPE}} = \cos(\Delta \Phi_{j \to i}) \langle q_i, \, k_j \rangle_{\mathrm{RoPE}}
+$$
 
 *Proof*:
-$$\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) = s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, k_j^{(m)} \rangle_{\mathrm{RoPE}}$$
-Since $s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$ for $\Phi \in \pi \mathbb{Z}$, summing over all orthogonal subspaces completes the proof. $\blacksquare$
+
+$$
+\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) = s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+$$
+
+Since $s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$ for $\Phi \in \pi \mathbb{Z}$, summing over all orthogonal subspaces completes the proof. ■
 
 > **Failure of Asymmetric Modulation**: If only the cosine component of RoPE is scaled by $s_t$ (asymmetric modulation), the inner product produces a spurious absolute coordinate term $-\cos((i+j)\theta)$, destroying relative shift invariance and generating inner product errors up to $37.17$. Symmetric dual modulation yields **exact $0.00\times 10^0$ machine error**.
 
 ### Exponential Relative Odds Attenuation Theorem
 
 #### Theorem 2 (Relative Odds Ratio Attenuation)
-Let $A_{ij} \triangleq \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ be the unmodulated attention logit. Under an antipodal half-twist ($\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$), the attention odds allocated to key $j$ under SG-Möbius relative to standard RoPE attenuate exponentially:
+Let $A_{ij} := \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ be the unmodulated attention logit. Under an antipodal half-twist ($\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$), the attention odds allocated to key $j$ under SG-Möbius relative to standard RoPE attenuate exponentially:
 
-$$\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} \equiv \exp\left( -2 A_{ij} \right) = \exp\left( -2 \frac{\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}}{\sqrt{d}} \right)$$
+$$
+\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} \equiv \exp\left( -2 A_{ij} \right) = \exp\left( -2 \frac{\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}}{\sqrt{d}} \right)
+$$
 
-identically and independently of sequence length $L$, query coordinate $i$, or background partition function $Z_{\setminus \{j\}}$.
+identically and independently of sequence length $L$, query coordinate $i$, or background partition function $Z_{\text{bg}}$.
 
 *Proof*:
-$$\mathrm{Odds}_{\mathrm{std}}(j \mid i) = \frac{P_{\mathrm{std}}(j \mid i)}{1 - P_{\mathrm{std}}(j \mid i)} = \frac{\exp(A_{ij})}{Z_{\setminus \{j\}}}, \qquad \mathrm{Odds}_{\mathrm{mob}}(j \mid i) = \frac{\exp(-A_{ij})}{Z_{\setminus \{j\}}}$$
-Dividing the two expressions cancels the background partition function $Z_{\setminus \{j\}} \triangleq \sum_{l \neq j} \exp(A_{il}) > 0$ identically:
-$$\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\setminus \{j\}}}{\exp(A_{ij}) / Z_{\setminus \{j\}}} = \exp(-2 A_{ij}) \quad \blacksquare$$
+
+$$
+\mathrm{Odds}_{\mathrm{std}}(j \mid i) = \frac{P_{\mathrm{std}}(j \mid i)}{1 - P_{\mathrm{std}}(j \mid i)} = \frac{\exp(A_{ij})}{Z_{\text{bg}}}, \qquad \mathrm{Odds}_{\mathrm{mob}}(j \mid i) = \frac{\exp(-A_{ij})}{Z_{\text{bg}}}
+$$
+
+Dividing the two expressions cancels the background partition function $Z_{\text{bg}} := \sum_{l \neq j} \exp(A_{il}) > 0$ identically:
+
+$$
+\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij}) \quad ■
+$$
 
 - For a moderately attended premise ($A_{ij} = 2.0$): odds attenuate by $\exp(-4.0) \approx 0.0183$ ($\mathbf{55\times}$ suppression).
 - For a strongly attended premise ($A_{ij} = 4.0$): odds attenuate by $\exp(-8.0) \approx 3.35 \times 10^{-4}$ ($\mathbf{2,980\times}$ suppression).
 
-### Exact $\mathcal{O}(1)$ KV-Cache Invariance
+### Exact O(1) KV-Cache Invariance
 
 A major engineering barrier in non-standard attentions is KV-cache incompatibility. SG-Möbius preserves exact $\mathcal{O}(1)$ autoregressive decoding:
 1. **Zero Retroactive Invalidation**: Key $\tilde{k}_j = s_j \mathbf{R}_{\Theta, j} k_j$ is evaluated and stored at step $j$ using only historical information $\tau \le j$. Historical cached tensors in GPU VRAM are **never retroactively rewritten or recomputed**.
-2. **$\mathcal{O}(1)$ Incremental State Update**: At decoding step $i$, updating the scalar gauge potential $\Phi(i) \gets \Phi(i-1) + \omega(i)$ requires $1$ scalar addition and $1$ cosine evaluation ($\mathcal{O}(1)$ time, $\mathcal{O}(1)$ memory).
+2. **O(1) Incremental State Update**: At decoding step $i$, updating the scalar gauge potential $\Phi(i) \gets \Phi(i-1) + \omega(i)$ requires $1$ scalar addition and $1$ cosine evaluation ($\mathcal{O}(1)$ time, $\mathcal{O}(1)$ memory).
 3. **Hardware Parity**: The modulated query $\tilde{q}_i = s_i \mathbf{R}_{\Theta, i} q_i$ interacts with standard cached keys via standard FlashAttention or GEMV kernels.
 
 ---
@@ -343,13 +360,18 @@ Extracted directly from Qwen3.5-9B Layer 7 attention activation tensors (`experi
 
 Audited directly from `experiments/benchmark_results.json` across sequence lengths with midpoint reversal pivots ($t = L/2$):
 
-| Context Length ($L$) | Reversal Pivot ($t$) | Method | Decoy Attn ($A_{\text{decoy}} \downarrow$) | Target Attn ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio (ACR $\uparrow$) | Shannon Entropy ($H$) | Decoding Step Latency |
+| Context Length ($L$) | Reversal Pivot ($t$) | Attention Method | Decoy Attn ($A_{\text{decoy}} \downarrow$) | Target Attn ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio (ACR $\uparrow$) | Shannon Entropy ($H$) | Decoding Step Latency |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **512** | 256 | Standard RoPE<br>**SG-Möbius (Ours)** | $2.09 \times 10^{-3}$<br>$\mathbf{1.82 \times 10^{-3}}$ | $2.37 \times 10^{-3}$<br>$\mathbf{2.37 \times 10^{-3}}$ | 1.13<br>$\mathbf{1.30}$ (+14.7%) | 6.238<br>$\mathbf{6.238}$ | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$)<br>$\mathbf{0.0023\,\text{ms}}$ (+0.0%) |
-| **1,024** | 512 | Standard RoPE<br>**SG-Möbius (Ours)** | $1.00 \times 10^{-3}$<br>$\mathbf{0.95 \times 10^{-3}}$ | $1.04 \times 10^{-3}$<br>$\mathbf{1.04 \times 10^{-3}}$ | 1.04<br>$\mathbf{1.10}$ (+5.6%) | 6.931<br>$\mathbf{6.931}$ | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$)<br>$\mathbf{0.0049\,\text{ms}}$ (+0.0%) |
-| **2,048** | 1,024 | Standard RoPE<br>**SG-Möbius (Ours)** | $4.80 \times 10^{-4}$<br>$\mathbf{4.97 \times 10^{-4}}$ | $6.01 \times 10^{-4}$<br>$\mathbf{6.01 \times 10^{-4}}$ | 1.25<br>$\mathbf{1.21}$ (Parity) | 7.624<br>$\mathbf{7.624}$ | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$)<br>$\mathbf{0.0098\,\text{ms}}$ (+0.0%) |
-| **4,096** | 2,048 | Standard RoPE<br>**SG-Möbius (Ours)** | $2.43 \times 10^{-4}$<br>$\mathbf{2.45 \times 10^{-4}}$ | $3.02 \times 10^{-4}$<br>$\mathbf{3.02 \times 10^{-4}}$ | 1.24<br>$\mathbf{1.23}$ (Parity) | 8.318<br>$\mathbf{8.318}$ | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$)<br>$\mathbf{0.0206\,\text{ms}}$ (+0.0%) |
-| **8,192** | 4,096 | Standard RoPE<br>**SG-Möbius (Ours)** | $1.26 \times 10^{-4}$<br>$\mathbf{1.18 \times 10^{-4}}$ | $1.37 \times 10^{-4}$<br>$\mathbf{1.37 \times 10^{-4}}$ | 1.08<br>$\mathbf{1.16}$ (+7.3%) | 9.011<br>$\mathbf{9.011}$ | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$)<br>$\mathbf{0.0749\,\text{ms}}$ (+0.0%) |
+| **512** | 256 | Standard RoPE Baseline | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
+| | | **SG-Möbius (Ours)** | **$1.82 \times 10^{-3}$** | **$2.37 \times 10^{-3}$** | **1.30** (+14.7%) | **6.238** | **$0.0023\,\text{ms}$** (+0.0%) |
+| **1,024** | 512 | Standard RoPE Baseline | $1.00 \times 10^{-3}$ | $1.04 \times 10^{-3}$ | 1.04 | 6.931 | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$) |
+| | | **SG-Möbius (Ours)** | **$0.95 \times 10^{-3}$** | **$1.04 \times 10^{-3}$** | **1.10** (+5.6%) | **6.931** | **$0.0049\,\text{ms}$** (+0.0%) |
+| **2,048** | 1,024 | Standard RoPE Baseline | $4.80 \times 10^{-4}$ | $6.01 \times 10^{-4}$ | 1.25 | 7.624 | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$) |
+| | | **SG-Möbius (Ours)** | **$4.97 \times 10^{-4}$** | **$6.01 \times 10^{-4}$** | **1.21** (Parity) | **7.624** | **$0.0098\,\text{ms}$** (+0.0%) |
+| **4,096** | 2,048 | Standard RoPE Baseline | $2.43 \times 10^{-4}$ | $3.02 \times 10^{-4}$ | 1.24 | 8.318 | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$) |
+| | | **SG-Möbius (Ours)** | **$2.45 \times 10^{-4}$** | **$3.02 \times 10^{-4}$** | **1.23** (Parity) | **8.318** | **$0.0206\,\text{ms}$** (+0.0%) |
+| **8,192** | 4,096 | Standard RoPE Baseline | $1.26 \times 10^{-4}$ | $1.37 \times 10^{-4}$ | 1.08 | 9.011 | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$) |
+| | | **SG-Möbius (Ours)** | **$1.18 \times 10^{-4}$** | **$1.37 \times 10^{-4}$** | **1.16** (+7.3%) | **9.011** | **$0.0749\,\text{ms}$** (+0.0%) |
 
 ### Table 3: Inverted Needle-In-A-Haystack (I-NIAH, 16k Context)
 

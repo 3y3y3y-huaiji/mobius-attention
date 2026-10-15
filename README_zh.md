@@ -31,7 +31,7 @@
   - [语义规范联络与因果路径和乐](#语义规范联络与因果路径和乐)
   - [对称旋转对偶调制](#对称旋转对偶调制)
   - [相对优势比指数衰减定理](#相对优势比指数衰减定理)
-  - [严格的 $\mathcal{O}(1)$ KV-Cache 缓存不变性](#严格的-mathcalo1-kv-cache-缓存不变性)
+  - [严格的 O(1) KV-Cache 缓存不变性](#严格的-o1-kv-cache-缓存不变性)
 - [系统架构与数据流图](#-系统架构与数据流图)
 - [经过验证的三行极简上手 (Quickstart)](#-经过验证的三行极简上手-quickstart)
   - [3 行无缝热插拔注入](#3-行无缝热插拔注入)
@@ -39,7 +39,7 @@
 - [全套科研图表与真实实测证据](#-全套科研图表与真实实测证据)
 - [Qwen3.5-9B 双路 T4 GPU 实测基准](#-qwen35-9b-双路-t4-gpu-实测基准)
   - [表 1：真实注意力香农熵收敛实测](#表-1真实注意力香农熵收敛实测)
-  - [表 2：跨长度上下文缩放与解码延迟评测 ($L \in [512, 8192]$)](#表-2跨长度上下文缩放与解码延迟评测-l-in-512-8192)
+  - [表 2：跨长度上下文缩放与解码延迟评测 (512 至 8192 Token)](#表-2跨长度上下文缩放与解码延迟评测-512-至-8192-token)
   - [表 3：倒置大海捞针测试 (I-NIAH, 16k 上下文)](#表-3倒置大海捞针测试-i-niah-16k-上下文)
 - [形式化数学证明与性质测试](#-形式化数学证明与性质测试)
   - [Lean 4 交互式定理证明](#lean-4-交互式定理证明)
@@ -58,11 +58,15 @@
 
 在当今主流的自回归 Transformer 架构中，自注意力机制（Self-Attention）通过 Softmax 归一化算子将未归一化的查询-键点积（Query-Key Dot Products）映射为分类概率分布：
 
-$$A_{ij} = \mathrm{softmax}(S)_{ij} = \frac{\exp(q_i^\top k_j / \sqrt{d})}{\sum_{l=1}^i \exp(q_i^\top k_l / \sqrt{d})} \in (0, 1) \quad \forall S_{ij} \in \mathbb{R}$$
+$$
+A_{ij} = \mathrm{softmax}(S)_{ij} = \frac{\exp(q_i^\top k_j / \sqrt{d})}{\sum_{l=1}^i \exp(q_i^\top k_l / \sqrt{d})} \in (0, 1) \quad \forall S_{ij} \in \mathbb{R}
+$$
 
 由于指数函数对于任意有限实数输入均严格满足 $\exp(z) > 0$，注意力权重被永久约束在开标准概率单纯形（Open Probability Simplex）上：
 
-$$\Delta^{i-1} \triangleq \left\{ \mathbf{a}_i \in \mathbb{R}^i \;\middle|\; a_{ij} > 0, \;\sum_{j=1}^i a_{ij} = 1 \right\}$$
+$$
+\Delta^{i-1} := \left\{ \mathbf{a}_i \in \mathbb{R}^i \mid a_{ij} > 0, \;\sum_{j=1}^i a_{ij} = 1 \right\}
+$$
 
 该数学特性给大模型带来了根本性的**正定性与单调累加约束**：
 1. 历史上出现过的任何 Token $j \le i$ 都必然分配到严格大于 0 的概率质量（$A_{ij} > 0$）。
@@ -114,67 +118,75 @@ $$\Delta^{i-1} \triangleq \left\{ \mathbf{a}_i \in \mathbb{R}^i \;\middle|\; a_{
 
 ### 离散因果格点与结构群扩张
 
-1. **底流形**：将长度为 $L$ 的自回归输入序列定义为一维离散因果偏序集：
-   $$\mathcal{M} = \left( \{1, 2, \dots, L\}, \, \le \right)$$
-2. **结构群扩张**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用，其行列式严格满足 $\det(\mathbf{R}) = +1$（严格保定向）。我们将结构群扩张为包含反演操作的完全正交群：
-   $$\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$$
-   其中离散对偶群 $\mathbb{Z}_2 = \{-1, +1\}$ 充当纤维上的反向宇称对合映射。
-3. **不可定向拓扑特征**：在转折点处施加对极扭转赋予伴随丛 $E \to \mathcal{M}$ 非零的第一 Stiefel-Whitney 特征类：
-   $$w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$$
-   在几何上严格实现了离散莫比乌斯带拓扑。
+1. **底流形**：将长度为 $L$ 的自回归输入序列定义为一维离散因果偏序集 $\mathcal{M} = ( \{1, 2, \dots, L\}, \le )$。
+2. **结构群扩张**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用，其行列式严格满足 $\det(\mathbf{R}) = +1$（严格保定向）。我们将结构群扩张为包含反演操作的完全正交群 $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$，其中离散对偶群 $\mathbb{Z}_2 = \{-1, +1\}$ 充当纤维上的反向宇称对合映射。
+3. **不可定向拓扑特征**：在转折点处施加对极扭转赋予伴随丛 $E \to \mathcal{M}$ 非零的第一 Stiefel-Whitney 特征类 $w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$，在几何上严格实现了离散莫比乌斯带拓扑。
 
 ### 语义规范联络与因果路径和乐
 
-1. **规范联络 1-形式**：定义联络形式 $A = i \, \omega(t) \, dt \in \Omega^1(\mathcal{M}, \mathfrak{u}(1))$，其中局域转折曲率标量 $\omega(t) \in [0, \pi]$ 由 Token 隐藏状态动态预测：
-   $$\omega(t) = \pi \cdot \sigma\left( \mathbf{w}_{\text{gauge}}^\top \frac{x_t}{\|x_t\|_2} \right)$$
+1. **规范联络 1-形式**：定义联络形式 $A = i \, \omega(t) \, dt \in \Omega^1(\mathcal{M}, \mathfrak{u}(1))$，其中局域转折曲率标量 $\omega(t) \in [0, \pi]$ 由 Token 隐藏状态动态预测：$\omega(t) = \pi \cdot \sigma\left( \mathbf{w}_{\text{gauge}}^\top \frac{x_t}{\|x_t\|_2} \right)$。
    - *顺承连接语境*（如“并且”、“因而”、“持续”） $\implies \omega(t) \approx 0$
    - *逻辑转折语境*（如“但是”、“相反”、“作废”） $\implies \omega(t) \approx \pi$
-2. **因果路径和乐（Wilson 线）**：从键值位置 $j$ 到查询位置 $i$（$j \le i$）的平行移动由路径和乐算子积分给出：
-   $$\mathrm{Hol}(\gamma_{j \to i}) = \exp\left( i \sum_{\tau=j+1}^i \omega(\tau) \right) = \exp\left( i \, \Delta \Phi_{j \to i} \right), \quad \Delta \Phi_{j \to i} = \Phi(i) - \Phi(j)$$
-   其中全局因果规范势定义为 $\Phi(t) \triangleq \sum_{\tau=1}^t \omega(\tau)$。
+2. **因果路径和乐（Wilson 线）**：从键值位置 $j$ 到查询位置 $i$（$j \le i$）的平行移动由路径和乐算子积分给出：$\mathrm{Hol}(\gamma_{j \to i}) = \exp\left( i \sum_{\tau=j+1}^i \omega(\tau) \right) = \exp( i \, \Delta \Phi_{j \to i} )$，其中全局因果规范势定义为 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$，累积规范差为 $\Delta \Phi_{j \to i} = \Phi(i) - \Phi(j)$。
 
 ### 对称旋转对偶调制
 
-在离散逻辑转折假设下（$\omega(t) \in \{0, \pi\}$），累积规范势诱导出离散拓扑宇称因子：
-$$s_t \triangleq \cos(\Phi(t)) = (-1)^{N_{\text{inv}}(1 \to t)} \in \{-1, +1\}$$
+在离散逻辑转折假设下（$\omega(t) \in \{0, \pi\}$），累积规范势诱导出离散拓扑宇称因子 $s_t := \cos(\Phi(t)) \in \{-1, +1\}$。
 
 在每个二维头子空间 $m \in \{1, \dots, d/2\}$ 上，我们施加**对称旋转对偶调制（Symmetric Rotary Dual Modulation）**：
 
-$$\tilde{q}_i^{(m)} \triangleq s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} \triangleq s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}$$
+$$
+\tilde{q}_i^{(m)} := s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}
+$$
 
 #### 定理 1（相对平移不变性守恒定理）
 在对称旋转对偶调制下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性，并满足：
 
-$$\langle \tilde{q}_i, \, \tilde{k}_j \rangle = s_i s_j \langle q_i, \, k_j \rangle_{\mathrm{RoPE}} = \cos(\Delta \Phi_{j \to i}) \langle q_i, \, k_j \rangle_{\mathrm{RoPE}}$$
+$$
+\langle \tilde{q}_i, \, \tilde{k}_j \rangle = s_i s_j \langle q_i, \, k_j \rangle_{\mathrm{RoPE}} = \cos(\Delta \Phi_{j \to i}) \langle q_i, \, k_j \rangle_{\mathrm{RoPE}}
+$$
 
 *证明*：
-$$\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) = s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, k_j^{(m)} \rangle_{\mathrm{RoPE}}$$
-由于 $\Phi \in \pi \mathbb{Z}$ 时，$s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$，在所有 $d/2$ 个正交子空间上求和即完成证明。 $\blacksquare$
+
+$$
+\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) = s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+$$
+
+由于 $\Phi \in \pi \mathbb{Z}$ 时，$s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$，在所有 $d/2$ 个正交子空间上求和即完成证明。 ■
 
 > **非对称调制的灾难性破缺**：若仅对 RoPE 中的余弦分量进行缩放（非对称调制），内积将产生依赖于绝对坐标和的伪项 $-\cos((i+j)\theta)$，彻底破坏相对平移不变性并引发高达 $37.17$ 的内积偏差。对称对偶调制在数值实测中取得**严格机器精度零偏差（$0.00\times 10^0$）**。
 
 ### 相对优势比指数衰减定理
 
 #### 定理 2（相对优势比衰减定理）
-令 $A_{ij} \triangleq \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ 为未调制时的注意力 Logit。在经历一次对极半扭转后（$\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$），SG-Möbius 相较于标准 RoPE 对作废键值 $j$ 的注意力优势比（Odds）满足如下普适不变性衰减关系：
+令 $A_{ij} := \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ 为未调制时的注意力 Logit。在经历一次对极半扭转后（$\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$），SG-Möbius 相较于标准 RoPE 对作废键值 $j$ 的注意力优势比（Odds）满足如下普适不变性衰减关系：
 
-$$\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} \equiv \exp\left( -2 A_{ij} \right) = \exp\left( -2 \frac{\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}}{\sqrt{d}} \right)$$
+$$
+\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} \equiv \exp\left( -2 A_{ij} \right) = \exp\left( -2 \frac{\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}}{\sqrt{d}} \right)
+$$
 
-该衰减因子在代数上完全独立于序列上下文长度 $L$、查询绝对坐标 $i$ 以及背景配分函数 $Z_{\setminus \{j\}}$。
+该衰减因子在代数上完全独立于序列上下文长度 $L$、查询绝对坐标 $i$ 以及背景配分函数 $Z_{\text{bg}}$。
 
 *证明*：
-$$\mathrm{Odds}_{\mathrm{std}}(j \mid i) = \frac{P_{\mathrm{std}}(j \mid i)}{1 - P_{\mathrm{std}}(j \mid i)} = \frac{\exp(A_{ij})}{Z_{\setminus \{j\}}}, \qquad \mathrm{Odds}_{\mathrm{mob}}(j \mid i) = \frac{\exp(-A_{ij})}{Z_{\setminus \{j\}}}$$
-二者相除，背景配分函数 $Z_{\setminus \{j\}} \triangleq \sum_{l \neq j} \exp(A_{il}) > 0$ 严格对消：
-$$\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\setminus \{j\}}}{\exp(A_{ij}) / Z_{\setminus \{j\}}} = \exp(-2 A_{ij}) \quad \blacksquare$$
+
+$$
+\mathrm{Odds}_{\mathrm{std}}(j \mid i) = \frac{P_{\mathrm{std}}(j \mid i)}{1 - P_{\mathrm{std}}(j \mid i)} = \frac{\exp(A_{ij})}{Z_{\text{bg}}}, \qquad \mathrm{Odds}_{\mathrm{mob}}(j \mid i) = \frac{\exp(-A_{ij})}{Z_{\text{bg}}}
+$$
+
+二者相除，背景配分函数 $Z_{\text{bg}} := \sum_{l \neq j} \exp(A_{il}) > 0$ 严格对消：
+
+$$
+\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij}) \quad ■
+$$
 
 - 对于中等关联度前置命题（$A_{ij} = 2.0$）：优势比衰减为 $\exp(-4.0) \approx 0.0183$（实现约 **$55$ 倍强抑制**）。
 - 对于高关联度强干扰前置命题（$A_{ij} = 4.0$）：优势比衰减为 $\exp(-8.0) \approx 3.35 \times 10^{-4}$（实现约 **$2,980$ 倍强抑制**）。
 
-### 严格的 $\mathcal{O}(1)$ KV-Cache 缓存不变性
+### 严格的 O(1) KV-Cache 缓存不变性
 
 在自回归工程落地上，非标准注意力往往由于无法兼容 KV-Cache 而被迫退化。SG-Möbius 从数学本质上保障了严格的 $\mathcal{O}(1)$ 解码性能：
 1. **零历史追溯重算（Zero Retroactive Invalidation）**：在解码生成第 $j$ 步，键向量 $\tilde{k}_j = s_j \mathbf{R}_{\Theta, j} k_j$ 仅基于当前及前置历史信息完成编码并写入显存。后续任意步发生的新转折**绝不需要重算或修改已缓存的历史键值**。
-2. **$\mathcal{O}(1)$ 增量状态更新**：在生成第 $i$ 步，更新标量规范势 $\Phi(i) \gets \Phi(i-1) + \omega(i)$ 仅需 $1$ 次加法与 $1$ 次余弦评估（时间复杂度 $\mathcal{O}(1)$，显存占用 $\mathcal{O}(1)$）。
+2. **O(1) 增量状态更新**：在生成第 $i$ 步，更新标量规范势 $\Phi(i) \gets \Phi(i-1) + \omega(i)$ 仅需 $1$ 次加法与 $1$ 次余弦评估（时间复杂度 $\mathcal{O}(1)$，显存占用 $\mathcal{O}(1)$）。
 3. **硬件级算子兼容**：调制后的查询向量 $\tilde{q}_i = s_i \mathbf{R}_{\Theta, i} q_i$ 可直接传入标准 FlashAttention 或常规 GEMV 矩阵运算单元，实现无缝加速。
 
 ---
@@ -342,17 +354,22 @@ with torch.no_grad():
 | **任意单点转折** | 298 | `Token 51` | 3.4503 | **3.3966** | **-1.56%** | 作废前置命题被精准抑制，注意力分布显著收敛。 |
 | **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑双重覆盖闭环回归（$\cos 2\pi = +1$）；注意力高度重聚。 |
 
-### 表 2：跨长度上下文缩放与解码延迟评测 ($L \in [512, 8192]$)
+### 表 2：跨长度上下文缩放与解码延迟评测 (512 至 8192 Token)
 
 完整提取自 `experiments/benchmark_results.json`，在序列中央位置构造因果反转（$t = L/2$）：
 
 | 上下文长度 ($L$) | 转折锚点 ($t$) | 注意力机制方案 | 废弃键注意力 ($A_{\text{decoy}} \downarrow$) | 目标键注意力 ($A_{\text{target}} \uparrow$) | 注意力对比度 (ACR $\uparrow$) | 香农注意力熵 ($H$) | 单步 KV 解码延迟 |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **512** | 256 | 标准 RoPE 基线<br>**SG-Möbius (本文)** | $2.09 \times 10^{-3}$<br>$\mathbf{1.82 \times 10^{-3}}$ | $2.37 \times 10^{-3}$<br>$\mathbf{2.37 \times 10^{-3}}$ | 1.13<br>$\mathbf{1.30}$ (+14.7%) | 6.238<br>$\mathbf{6.238}$ | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$)<br>$\mathbf{0.0023\,\text{ms}}$ (+0.0%) |
-| **1,024** | 512 | 标准 RoPE 基线<br>**SG-Möbius (本文)** | $1.00 \times 10^{-3}$<br>$\mathbf{0.95 \times 10^{-3}}$ | $1.04 \times 10^{-3}$<br>$\mathbf{1.04 \times 10^{-3}}$ | 1.04<br>$\mathbf{1.10}$ (+5.6%) | 6.931<br>$\mathbf{6.931}$ | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$)<br>$\mathbf{0.0049\,\text{ms}}$ (+0.0%) |
-| **2,048** | 1,024 | 标准 RoPE 基线<br>**SG-Möbius (本文)** | $4.80 \times 10^{-4}$<br>$\mathbf{4.97 \times 10^{-4}}$ | $6.01 \times 10^{-4}$<br>$\mathbf{6.01 \times 10^{-4}}$ | 1.25<br>$\mathbf{1.21}$ (平齐) | 7.624<br>$\mathbf{7.624}$ | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$)<br>$\mathbf{0.0098\,\text{ms}}$ (+0.0%) |
-| **4,096** | 2,048 | 标准 RoPE 基线<br>**SG-Möbius (本文)** | $2.43 \times 10^{-4}$<br>$\mathbf{2.45 \times 10^{-4}}$ | $3.02 \times 10^{-4}$<br>$\mathbf{3.02 \times 10^{-4}}$ | 1.24<br>$\mathbf{1.23}$ (平齐) | 8.318<br>$\mathbf{8.318}$ | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$)<br>$\mathbf{0.0206\,\text{ms}}$ (+0.0%) |
-| **8,192** | 4,096 | 标准 RoPE 基线<br>**SG-Möbius (本文)** | $1.26 \times 10^{-4}$<br>$\mathbf{1.18 \times 10^{-4}}$ | $1.37 \times 10^{-4}$<br>$\mathbf{1.37 \times 10^{-4}}$ | 1.08<br>$\mathbf{1.16}$ (+7.3%) | 9.011<br>$\mathbf{9.011}$ | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$)<br>$\mathbf{0.0749\,\text{ms}}$ (+0.0%) |
+| **512** | 256 | 标准 RoPE 基线 | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
+| | | **SG-Möbius (本文)** | **$1.82 \times 10^{-3}$** | **$2.37 \times 10^{-3}$** | **1.30** (+14.7%) | **6.238** | **$0.0023\,\text{ms}$** (+0.0%) |
+| **1,024** | 512 | 标准 RoPE 基线 | $1.00 \times 10^{-3}$ | $1.04 \times 10^{-3}$ | 1.04 | 6.931 | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$) |
+| | | **SG-Möbius (本文)** | **$0.95 \times 10^{-3}$** | **$1.04 \times 10^{-3}$** | **1.10** (+5.6%) | **6.931** | **$0.0049\,\text{ms}$** (+0.0%) |
+| **2,048** | 1,024 | 标准 RoPE 基线 | $4.80 \times 10^{-4}$ | $6.01 \times 10^{-4}$ | 1.25 | 7.624 | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$) |
+| | | **SG-Möbius (本文)** | **$4.97 \times 10^{-4}$** | **$6.01 \times 10^{-4}$** | **1.21** (平齐) | **7.624** | **$0.0098\,\text{ms}$** (+0.0%) |
+| **4,096** | 2,048 | 标准 RoPE 基线 | $2.43 \times 10^{-4}$ | $3.02 \times 10^{-4}$ | 1.24 | 8.318 | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$) |
+| | | **SG-Möbius (本文)** | **$2.45 \times 10^{-4}$** | **$3.02 \times 10^{-4}$** | **1.23** (平齐) | **8.318** | **$0.0206\,\text{ms}$** (+0.0%) |
+| **8,192** | 4,096 | 标准 RoPE 基线 | $1.26 \times 10^{-4}$ | $1.37 \times 10^{-4}$ | 1.08 | 9.011 | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$) |
+| | | **SG-Möbius (本文)** | **$1.18 \times 10^{-4}$** | **$1.37 \times 10^{-4}$** | **1.16** (+7.3%) | **9.011** | **$0.0749\,\text{ms}$** (+0.0%) |
 
 ### 表 3：倒置大海捞针测试 (I-NIAH, 16k 上下文)
 
