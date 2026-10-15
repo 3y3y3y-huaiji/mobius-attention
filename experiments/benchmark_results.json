@@ -1,0 +1,93 @@
+{
+  "L_512": {
+    "seq_len": 512,
+    "reversal_pivot": 256,
+    "standard_rope": {
+      "decoy_attention": 0.002090747041555794,
+      "target_attention": 0.002370094110504991,
+      "attention_contrast_ratio": 1.1336111272176312,
+      "shannon_entropy": 6.2381072641860875
+    },
+    "mobius_rope": {
+      "decoy_attention": 0.0018240325394283197,
+      "target_attention": 0.0023714384475585224,
+      "attention_contrast_ratio": 1.300107534431249,
+      "shannon_entropy": 6.238107048390098
+    },
+    "acr_improvement_factor": 1.1468725943280669
+  },
+  "L_1024": {
+    "seq_len": 1024,
+    "reversal_pivot": 512,
+    "standard_rope": {
+      "decoy_attention": 0.0010029033118224605,
+      "target_attention": 0.0010428475044862945,
+      "attention_contrast_ratio": 1.0398285579406932,
+      "shannon_entropy": 6.931293491060245
+    },
+    "mobius_rope": {
+      "decoy_attention": 0.0009502959580021885,
+      "target_attention": 0.0010437431731071135,
+      "attention_contrast_ratio": 1.0983348548607734,
+      "shannon_entropy": 6.931293320971594
+    },
+    "acr_improvement_factor": 1.0562653299654972
+  },
+  "L_2048": {
+    "seq_len": 2048,
+    "reversal_pivot": 1024,
+    "standard_rope": {
+      "decoy_attention": 0.00048020417956753833,
+      "target_attention": 0.0006010650967440716,
+      "attention_contrast_ratio": 1.251686516525904,
+      "shannon_entropy": 7.624428244719872
+    },
+    "mobius_rope": {
+      "decoy_attention": 0.0004966584280938819,
+      "target_attention": 0.0006009534175230008,
+      "attention_contrast_ratio": 1.2099933949160815,
+      "shannon_entropy": 7.624427999684938
+    },
+    "acr_improvement_factor": 0.9666904444049274
+  },
+  "L_4096": {
+    "seq_len": 4096,
+    "reversal_pivot": 2048,
+    "standard_rope": {
+      "decoy_attention": 0.0002429642030332865,
+      "target_attention": 0.0003016794197865946,
+      "attention_contrast_ratio": 1.2416620062555637,
+      "shannon_entropy": 8.317582752183842
+    },
+    "mobius_rope": {
+      "decoy_attention": 0.00024498812742054896,
+      "target_attention": 0.000301738756960088,
+      "attention_contrast_ratio": 1.231646448083259,
+      "shannon_entropy": 8.317582582835445
+    },
+    "acr_improvement_factor": 0.991933748377702
+  },
+  "L_8192": {
+    "seq_len": 8192,
+    "reversal_pivot": 4096,
+    "standard_rope": {
+      "decoy_attention": 0.00012641979606249108,
+      "target_attention": 0.00013714034313783965,
+      "attention_contrast_ratio": 1.084801173623546,
+      "shannon_entropy": 9.010737842378926
+    },
+    "mobius_rope": {
+      "decoy_attention": 0.00011780439018286136,
+      "target_attention": 0.0001371841790856125,
+      "attention_contrast_ratio": 1.1645082061260106,
+      "shannon_entropy": 9.010737840062875
+    },
+    "acr_improvement_factor": 1.0734761672834667
+  },
+  "kv_cache_latencies_ms": {
+    "256": 0.0023099999361875234,
+    "1024": 0.004891000025963876,
+    "4096": 0.02060699998310156,
+    "8192": 0.0749359999963417
+  }
+}

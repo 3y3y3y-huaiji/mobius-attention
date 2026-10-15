@@ -89,8 +89,19 @@ def run_symbolic_proofs():
     phi_self = 0.0
     factor_self = math.cos(phi_self)
     assert factor_self == 1.0, "Theorem 6 Failed: Self-attention must produce parity factor 1.0"
-    print("  [✓] Theorem 6 (Self-Attention Flatness): PASSED")
-    print("      ∀ i, Holonomy(i, i) = 0 ⟹ ParityFactor(i, i) = 1.0000 (Self-attention is never self-cancelled)")
+    # Theorem 7: Exponential Relative Odds Attenuation Theorem
+    # Under antipodal inversion a -> -a, relative odds ratio is exactly exp(-2a)
+    for a in [0.5, 1.0, 2.0, 3.5, 5.0]:
+        z_bg = 10.0
+        p_std = math.exp(a) / (math.exp(a) + z_bg)
+        p_mob = math.exp(-a) / (math.exp(-a) + z_bg)
+        odds_std = p_std / (1.0 - p_std)
+        odds_mob = p_mob / (1.0 - p_mob)
+        odds_ratio = odds_mob / odds_std
+        expected_odds_ratio = math.exp(-2.0 * a)
+        assert math.isclose(odds_ratio, expected_odds_ratio, rel_tol=1e-9), "Theorem 7 Failed"
+    print("  [✓] Theorem 7 (Exponential Relative Odds Attenuation): PASSED")
+    print("      Relative Odds Ratio Odds_mob(j)/Odds_std(j) ≡ exp(-2·Logit), exact to machine precision.")
     print()
 
 
