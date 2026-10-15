@@ -103,8 +103,8 @@ flowchart LR
 
 ### Discrete Causal Lattice & Structure Group Extension
 
-1. **Base Manifold**: Represent the context of length $L$ as a 1D discrete causal lattice $\mathcal{M} = ( \{1, 2, \dots, L\}, \le )$.
-2. **Structure Group Extension**: Standard RoPE acts on 2D head subspaces $\mathbb{R}^2_{(m)}$ via continuous planar rotations $\mathrm{SO}(2) \cong \mathrm{U}(1)$, where $\det(\mathbf{R}) = +1$ (strictly orientation-preserving). We extend the structure group to the full orthogonal group $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$, where $\mathbb{Z}_2 = \{-1, +1\}$ encodes the orientation-reversing parity involution on the fiber.
+1. **Base Manifold**: Represent the context of length $L$ as a 1D discrete causal lattice $\mathcal{M} = ( \lbrace 0, 1, \dots, L-1 \rbrace, \, \le )$.
+2. **Structure Group Extension**: Standard RoPE acts on 2D head subspaces $\mathbb{R}^2_{(m)}$ via continuous planar rotations $\mathrm{SO}(2) \cong \mathrm{U}(1)$, where $\det(\mathbf{R}) = +1$ (strictly orientation-preserving). We extend the structure group to the full orthogonal group $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$, where $\mathbb{Z}_2 = \lbrace -1, +1 \rbrace$ encodes the orientation-reversing parity involution on the fiber.
 3. **Non-Trivial Topology**: The bundle $E \to \mathcal{M}$ possesses a non-vanishing first Stiefel-Whitney characteristic class $w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$, realizing the topology of a discrete Möbius band.
 
 ### Semantic Gauge Connection & Path Holonomy
@@ -118,9 +118,9 @@ flowchart LR
 
 ### Symmetric Rotary Dual Modulation
 
-Under discrete contrastive pivots ($\omega(t) \in \{0, \pi\}$), the cumulative gauge potential induces a discrete topological parity factor $s_t := \cos(\Phi(t)) \in \{-1, +1\}$.
+Under discrete contrastive pivots ($\omega(t) \in \lbrace 0, \pi \rbrace$), the cumulative gauge potential induces a discrete topological parity factor $s_t := \cos(\Phi(t)) \in \lbrace -1, +1 \rbrace$.
 
-For each 2D rotary subspace $m \in \{1, \dots, d/2\}$ with base frequency $\theta_m$, we define **symmetric rotary dual modulation**:
+For each 2D rotary subspace $m \in \lbrace 1, \dots, d/2 \rbrace$ with base frequency $\theta_m$, we define **symmetric rotary dual modulation**:
 
 $$
 \tilde{q}_i^{(m)} := s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}
@@ -136,7 +136,11 @@ $$
 *Proof*:
 
 $$
-\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) = s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+\begin{aligned}
+\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle &= (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) \\
+&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, i}^\top \mathbf{R}_{\theta_m, j} k_j^{(m)} \\
+&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+\end{aligned}
 $$
 
 Since $s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$ for $\Phi \in \pi \mathbb{Z}$, summing over all orthogonal subspaces completes the proof. ■
@@ -163,7 +167,7 @@ $$
 Dividing the two expressions cancels the background partition function $Z_{\text{bg}} := \sum_{l \neq j} \exp(A_{il}) > 0$ identically:
 
 $$
-\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij}) \quad ■
+\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij})
 $$
 
 - For a moderately attended premise ($A_{ij} = 2.0$): odds attenuate by $\exp(-4.0) \approx 0.0183$ (**55×** suppression).
@@ -289,7 +293,7 @@ All 6 high-resolution publication figures generated from real `Qwen/Qwen3.5-9B` 
 | **Figure 3**<br>`assets/fig3_differential_heatmap.png` | [![Figure 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **Differential Contrast Map ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**: Diverging colormap centered at zero. Deep blue demonstrates active destructive cancellation ($\Delta A \le -0.148$) over the negated premise subspace; vibrant red reveals focal reinforcement ($\Delta A \ge +0.500$) diverting attention mass to operative tokens. |
 | **Figure 4**<br>`assets/fig4_gauge_curvature.png` | [![Figure 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **Dynamic Semantic Gauge Curvature $\omega(t)$ & Holonomy $\Phi(t)$**: *Top*: Curvature 1-form evaluates to strictly $0$ on neutral narrative and emits an impulsive $\pi$-pulse at contrastive tokens ($t=51$). *Bottom*: Cumulative path holonomy $\Phi(t) = \sum \omega(\tau)$ exhibits a discrete step jump across the $\Phi=\pi$ half-twist boundary. |
 | **Figure 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![Figure 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Arbitrary-Position Inversion Comparison on Qwen3.5-9B**: *(a) Standard RoPE*: Uniform non-selective decay. *(b) Fixed-Period Möbius ($T=256$)*: Rigid sinusoidal period fails when reversal occurs at an arbitrary token ($t=51$). *(c) Adaptive SG-Möbius*: Pin-point vertical causal barrier precisely at $t=51$ with complete suppression of preceding context. |
-| **Figure 6**<br>`assets/fig6_double_negation_restoration.png` | [![Figure 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **Spinor Double-Covering Parity Restoration ($\neg\neg P \iff P$)**: Under two successive contrastive turns ($t_1 \approx 39, t_2 \approx 133$), the first twist induces cancellation ($\Delta\Phi=\pi$), while the second twist advances the phase to $\Delta\Phi=2\pi$, returning to the positive sheet ($\cos 2\pi = +1$) and recovering strong resonance (gains up to $+0.333$). |
+| **Figure 6**<br>`assets/fig6_double_negation_restoration.png` | [![Figure 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **Spinor Double-Covering Parity Restoration ($\neg\neg P \iff P$)**: Under two successive contrastive turns ($t_1 \approx 39, t_2 \approx 133$), the first twist induces cancellation ($\Delta\Phi=\pi$), while the second twist advances the phase to $\Delta\Phi=2\pi$, returning to the positive sheet ($\cos(2\pi) = +1$) and recovering strong resonance (gains up to $+0.333$). |
 
 ---
 
@@ -305,13 +309,13 @@ Extracted directly from Qwen3.5-9B Layer 7 attention activation tensors (`experi
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Control Smooth (No Inversion)** | 337 | None (`[]`) | 3.4462 | **3.4462** | **0.00%** | Exact identity with standard RoPE; zero false alarm, zero baseline drift. |
 | **Arbitrary Single Inversion** | 298 | `Token 51` | 3.4503 | **3.3966** | **-1.56%** | Selective suppression of obsolete premise; sharp vertical causal barrier. |
-| **Double Negation Recovery** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | Topological loop parity return ($\cos 2\pi = +1$); high focal concentration. |
+| **Double Negation Recovery** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | Topological loop parity return ($\cos(2\pi) = +1$); high focal concentration. |
 
 ### Table 2: Multi-Length Scaled Context Benchmark ($L \in [512, 8192]$)
 
 Audited directly from `experiments/benchmark_results.json` across sequence lengths with midpoint reversal pivots ($t = L/2$):
 
-| Context Length ($L$) | Reversal Pivot ($t$) | Attention Method | Decoy Attn ($A_{\text{decoy}} \downarrow$) | Target Attn ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio (ACR $\uparrow$) | Shannon Entropy ($H$) | Decoding Step Latency |
+| Context Length ($L$) | Reversal Pivot ($t$) | Attention Method | Decoy Attn ($A_{\text{decoy}} \downarrow$) | Target Attn ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio ($\text{ACR} \uparrow$) | Shannon Entropy ($H$) | Decoding Step Latency |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
 | **512** | 256 | Standard RoPE Baseline | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
 | | | **SG-Möbius (Ours)** | **$1.82 \times 10^{-3}$** | **$2.37 \times 10^{-3}$** | **1.30** (+14.7%) | **6.238** | **$0.0023\,\text{ms}$** (+0.0%) |
@@ -328,7 +332,7 @@ Audited directly from `experiments/benchmark_results.json` across sequence lengt
 
 Evaluated under adversarial premise invalidation at 16,384 sequence context length on `Qwen/Qwen3.5-9B`:
 
-| Model Architecture | Attention Method | Decoy Attention ($A_{\text{decoy}} \downarrow$) | Target Attention ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio (ACR $\uparrow$) | Neutral Text Perplexity |
+| Model Architecture | Attention Method | Decoy Attention ($A_{\text{decoy}} \downarrow$) | Target Attention ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio ($\text{ACR} \uparrow$) | Neutral Text Perplexity |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Qwen3.5-9B** | Standard RoPE Baseline | $0.412 \pm 0.03$ | $0.448 \pm 0.04$ | 1.09 | 6.42 |
 | **Qwen3.5-9B** | Fixed-Period Möbius ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |

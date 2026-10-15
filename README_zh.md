@@ -17,7 +17,7 @@
 </p>
 
 > **基于不可定向微分几何与规范场论的大语言模型正定性 Softmax 瓶颈严谨解决方案。**  
-> 将旋转位置编码（RoPE）提升至离散因果格点上的不可定向 $\mathbb{Z}_2$ 纤维丛，诱发**主动相消干涉（Destructive Phase Interference）**与**任意位置前置命题的精准相消截断**。在长程对抗检索基准中实现**超一个数量级的注意力对比度提升（ACR 达 $13.51$）**，同时在数学上严格保证**标准 $\mathcal{O}(1)$ KV-Cache 解码吞吐**与顺承中性文本**$0.0\%$ 困惑度（PPL）零损耗**。
+> 将旋转位置编码（RoPE）提升至离散因果格点上的不可定向 $\mathbb{Z}_2$ 纤维丛，诱发**主动相消干涉（Destructive Phase Interference）**与**任意位置前置命题的精准相消截断**。在长程对抗检索基准中实现**超一个数量级的注意力对比度提升（ACR 达 13.51）**，同时在数学上严格保证**标准 $\mathcal{O}(1)$ KV-Cache 解码吞吐**与顺承中性文本 **0.0% 困惑度（PPL）零损耗**。
 
 ---
 
@@ -103,8 +103,8 @@ flowchart LR
 
 ### 离散因果格点与结构群扩张
 
-1. **底流形**：将长度为 $L$ 的自回归输入序列定义为一维离散因果偏序集 $\mathcal{M} = ( \{1, 2, \dots, L\}, \le )$。
-2. **结构群扩张**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用，其行列式严格满足 $\det(\mathbf{R}) = +1$（严格保定向）。我们将结构群扩张为包含反演操作的完全正交群 $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$，其中离散对偶群 $\mathbb{Z}_2 = \{-1, +1\}$ 充当纤维上的反向宇称对合映射。
+1. **底流形**：将长度为 $L$ 的自回归输入序列定义为一维离散因果偏序集 $\mathcal{M} = ( \lbrace 0, 1, \dots, L-1 \rbrace, \, \le )$。
+2. **结构群扩张**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用，其行列式严格满足 $\det(\mathbf{R}) = +1$（严格保定向）。我们将结构群扩张为包含反演操作的完全正交群 $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$，其中离散对偶群 $\mathbb{Z}_2 = \lbrace -1, +1 \rbrace$ 充当纤维上的反向宇称对合映射。
 3. **不可定向拓扑特征**：在转折点处施加对极扭转赋予伴随丛 $E \to \mathcal{M}$ 非零的第一 Stiefel-Whitney 特征类 $w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$，在几何上严格实现了离散莫比乌斯带拓扑。
 
 ### 语义规范联络与因果路径和乐
@@ -116,9 +116,9 @@ flowchart LR
 
 ### 对称旋转对偶调制
 
-在离散逻辑转折假设下（$\omega(t) \in \{0, \pi\}$），累积规范势诱导出离散拓扑宇称因子 $s_t := \cos(\Phi(t)) \in \{-1, +1\}$。
+在离散逻辑转折假设下（$\omega(t) \in \lbrace 0, \pi \rbrace$），累积规范势诱导出离散拓扑宇称因子 $s_t := \cos(\Phi(t)) \in \lbrace -1, +1 \rbrace$。
 
-在每个二维头子空间 $m \in \{1, \dots, d/2\}$ 上，我们施加**对称旋转对偶调制（Symmetric Rotary Dual Modulation）**：
+在每个二维头子空间 $m \in \lbrace 1, \dots, d/2 \rbrace$ 上，我们施加**对称旋转对偶调制（Symmetric Rotary Dual Modulation）**：
 
 $$
 \tilde{q}_i^{(m)} := s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}
@@ -134,12 +134,16 @@ $$
 *证明*：
 
 $$
-\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) = s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+\begin{aligned}
+\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle &= (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) \\
+&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, i}^\top \mathbf{R}_{\theta_m, j} k_j^{(m)} \\
+&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+\end{aligned}
 $$
 
-由于 $\Phi \in \pi \mathbb{Z}$ 时，$s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$，在所有 $d/2$ 个正交子空间上求和即完成证明。 ■
+当规范势满足 $\Phi(t) \in \pi \mathbb{Z}$ 时，因 $s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$，在所有 $d/2$ 个正交子空间上求和即完成证明。 ■
 
-> **非对称调制的灾难性破缺**：若仅对 RoPE 中的余弦分量进行缩放（非对称调制），内积将产生依赖于绝对坐标和的伪项 $-\cos((i+j)\theta)$，彻底破坏相对平移不变性并引发高达 $37.17$ 的内积偏差。对称对偶调制在数值实测中取得**严格机器精度零偏差（$0.00\times 10^0$）**。
+> **非对称调制的灾难性破缺**：若仅对 RoPE 中的余弦分量进行缩放（非对称调制），内积将产生依赖于绝对坐标和的伪项 $-\cos((i+j)\theta)$，破坏相对平移不变性并引发高达 $37.17$ 的内积偏差。对称对偶调制在数值实测中取得严格机器精度零偏差（$0.00 \times 10^0$）。
 
 ### 相对优势比指数衰减定理
 
@@ -161,7 +165,7 @@ $$
 二者相除，背景配分函数 $Z_{\text{bg}} := \sum_{l \neq j} \exp(A_{il}) > 0$ 严格对消：
 
 $$
-\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij}) \quad ■
+\frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij})
 $$
 
 - 对于中等关联度前置命题（$A_{ij} = 2.0$）：优势比衰减为 $\exp(-4.0) \approx 0.0183$（实现约 **55 倍**强抑制）。
@@ -287,7 +291,7 @@ with torch.no_grad():
 | **图 3**<br>`assets/fig3_differential_heatmap.png` | [![图 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **主动相消差值对比热力图 ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**：双极发散色彩映射。深蓝色区域展示强烈的代数相消（$\Delta A \le -0.148$），精准覆盖被推翻的前置命题空间；鲜艳红色区域（$\Delta A \ge +0.500$）展现概率质量守恒重聚至有效目标事实。 |
 | **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义规范场曲率 $\omega(t)$ 与路径和乐 $\Phi(t)$**：*上图*：联络曲率 1-形式在平坦叙述中恒为严格的 $0$，在识别到转折词时（$t=51$）自发激发出瞬态 $\pi$ 脉冲。*下图*：因果累积规范势展现出严格的阶梯式跃迁，精准跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
 | **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：*(a) 标准 RoPE*：无区分均匀衰减；*(b) 固定 256 周期莫比乌斯基线*：当转折发生在非 256 位置（$t=51$）时完全相位错位失效；*(c) 自适应 SG-Möbius*：在 $t=51$ 处构建极度精准的垂直因果截断壁。 |
-| **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **旋量双重覆盖宇称回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下（$t_1 \approx 39, t_2 \approx 133$），首次转折产生相消（$\Delta\Phi=\pi$），二次转折推动相位达到 $\Delta\Phi=2\pi$，拓扑旋量自然重回正向分支（$\cos 2\pi = +1$），以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$）。 |
+| **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **旋量双重覆盖宇称回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下（$t_1 \approx 39, t_2 \approx 133$），首次转折产生相消（$\Delta\Phi=\pi$），二次转折推动相位达到 $\Delta\Phi=2\pi$，拓扑旋量自然重回正向分支（$\cos(2\pi) = +1$），以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$）。 |
 
 ---
 
@@ -303,13 +307,13 @@ with torch.no_grad():
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **顺承控制组 (无转折)** | 337 | 无 (`[]`) | 3.4462 | **3.4462** | **0.00%** | 与标准 RoPE 完全逐位恒等；零误报、零语法干扰。 |
 | **任意单点转折** | 298 | `Token 51` | 3.4503 | **3.3966** | **-1.56%** | 作废前置命题被精准抑制，注意力分布显著收敛。 |
-| **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑双重覆盖闭环回归（$\cos 2\pi = +1$）；注意力高度重聚。 |
+| **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑双重覆盖闭环回归（$\cos(2\pi) = +1$）；注意力高度重聚。 |
 
 ### 表 2：跨长度上下文缩放与解码延迟评测 (512 至 8192 Token)
 
 完整提取自 `experiments/benchmark_results.json`，在序列中央位置构造因果反转（$t = L/2$）：
 
-| 上下文长度 ($L$) | 转折锚点 ($t$) | 注意力机制方案 | 废弃键注意力 ($A_{\text{decoy}} \downarrow$) | 目标键注意力 ($A_{\text{target}} \uparrow$) | 注意力对比度 (ACR $\uparrow$) | 香农注意力熵 ($H$) | 单步 KV 解码延迟 |
+| 上下文长度 ($L$) | 转折锚点 ($t$) | 注意力机制方案 | 废弃键注意力 ($A_{\text{decoy}} \downarrow$) | 目标键注意力 ($A_{\text{target}} \uparrow$) | 注意力对比度 ($\text{ACR} \uparrow$) | 香农注意力熵 ($H$) | 单步 KV 解码延迟 |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
 | **512** | 256 | 标准 RoPE 基线 | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
 | | | **SG-Möbius (本文)** | **$1.82 \times 10^{-3}$** | **$2.37 \times 10^{-3}$** | **1.30** (+14.7%) | **6.238** | **$0.0023\,\text{ms}$** (+0.0%) |
@@ -326,7 +330,7 @@ with torch.no_grad():
 
 在 16,384 极限长程上下文下设置对抗性命题颠覆，并在 `Qwen/Qwen3.5-9B` 上执行全面测评：
 
-| 评测模型主体 | 采用的自注意力机制 | 作废诱饵注意力 ($A_{\text{decoy}} \downarrow$) | 真实目标注意力 ($A_{\text{target}} \uparrow$) | 注意力对比度 (ACR $\uparrow$) | 中性文本困惑度 (PPL) |
+| 评测模型主体 | 采用的自注意力机制 | 作废诱饵注意力 ($A_{\text{decoy}} \downarrow$) | 真实目标注意力 ($A_{\text{target}} \uparrow$) | 注意力对比度 ($\text{ACR} \uparrow$) | 中性文本困惑度 (PPL) |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Qwen3.5-9B** | 标准 RoPE 基线 | $0.412 \pm 0.03$ | $0.448 \pm 0.04$ | 1.09 | 6.42 |
 | **Qwen3.5-9B** | 固定周期莫比乌斯 ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |
