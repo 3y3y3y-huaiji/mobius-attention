@@ -426,8 +426,8 @@ The test suite covers:
 │   ├── plot_adaptive_chinese_figures.py
 │   ├── plot_chinese_figures.py
 │   ├── plot_english_figures.py
-│   ├── test_connect.py
-│   └── test_math_gauge.py
+│   ├── check_colab_ssh.py
+│   └── sim_math_gauge.py
 ├── src/                                # Production library
 │   ├── __init__.py                     # Public package exports
 │   └── mobius_attention.py             # Core implementation: Connection, RoPE, Injection

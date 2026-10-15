@@ -424,8 +424,8 @@ pytest -q
 │   ├── plot_adaptive_chinese_figures.py
 │   ├── plot_chinese_figures.py
 │   ├── plot_english_figures.py
-│   ├── test_connect.py
-│   └── test_math_gauge.py
+│   ├── check_colab_ssh.py
+│   └── sim_math_gauge.py
 ├── src/                                # 生产级算子核心库
 │   ├── __init__.py                     # 公共包导出
 │   └── mobius_attention.py             # 核心实现：规范联络器、莫比乌斯 RoPE 与自动注入算子
