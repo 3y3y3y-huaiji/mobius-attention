@@ -116,8 +116,8 @@ import torch
 from transformers import AutoModelForCausalLM
 from src.mobius_attention import inject_mobius_attention, SemanticGaugeConnection
 
-# 1. 加载 HuggingFace 模型
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-7B-Instruct", torch_dtype=torch.float16, device_map="auto")
+# 1. 加载原生 HuggingFace 模型 (例如 Qwen3.5-9B)
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3.5-9B", torch_dtype=torch.float16, device_map="auto")
 
 # 2. 一行代码注入莫比乌斯注意力算子 (零显存增加，线性复杂度)
 patched_layers = inject_mobius_attention(model)

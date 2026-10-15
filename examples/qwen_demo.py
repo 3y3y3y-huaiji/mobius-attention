@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from src.mobius_attention import SemanticGaugeConnection, inject_mobius_attention
 
 def main():
-    model_id = "Qwen/Qwen2.5-7B-Instruct" # Or Qwen3.5-9B
+    model_id = "Qwen/Qwen3.5-9B"
     print(f"Loading {model_id}...")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(

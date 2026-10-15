@@ -113,8 +113,8 @@ import torch
 from transformers import AutoModelForCausalLM
 from src.mobius_attention import inject_mobius_attention, SemanticGaugeConnection
 
-# 1. Load any standard HuggingFace model
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-7B-Instruct", torch_dtype=torch.float16, device_map="auto")
+# 1. Load any standard HuggingFace model (e.g., Qwen3.5-9B)
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3.5-9B", torch_dtype=torch.float16, device_map="auto")
 
 # 2. Hot-swap rotary embedding modules (zero extra VRAM, linear complexity)
 patched_count = inject_mobius_attention(model)
