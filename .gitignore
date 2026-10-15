@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch checkpoints / model weights
+*.pt
+*.bin
+*.safetensors
+*.pth
+
+# Environments & virtualenvs
+.venv/
+venv/
+ENV/
+env/
+
+# Kaggle run artifacts & raw logs
+kaggle_*_output/
+kaggle_output/
+*.log
+.system_generated/
+scratch/
+
+# OS files
+.DS_Store
+Thumbs.db
