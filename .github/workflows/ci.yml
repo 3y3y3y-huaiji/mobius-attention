@@ -23,8 +23,6 @@ jobs:
         with:
           root_file: main.tex
           working_directory: paper
-          compiler: pdflatex
-          args: -interaction=nonstopmode -halt-on-error
 
       - name: Archive Compiled Preprint PDF
         uses: actions/upload-artifact@v4

@@ -7,11 +7,12 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{microtype}
-\usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{subcaption}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{hyperref}
 
 \hypersetup{
     colorlinks=true,
@@ -54,7 +55,7 @@ where $\mathbf{R}_{\Theta, t}$ is a block-diagonal orthogonal rotation matrix pa
 
 Because the Softmax operator maps real logits to strictly positive values on $\Delta^{L-1}$, every historical token receives positive probability mass. Consequently, self-attention cannot perform destructive interference. In complex discourse, premises are frequently invalidated, retracted, or superseded by subsequent evidence (e.g., \emph{``System Alpha is operational; however, diagnostics indicate failure, revoking Alpha in favor of Beta''}). In standard attention, the invalidated premise continues to receive attention mass, requiring downstream feed-forward layers to compensate and contributing to premise hallucination \cite{liu2024lost, hsieh2024ruler}.
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/fig4_gauge_curvature.png}
@@ -71,7 +72,7 @@ Because the Softmax operator maps real logits to strictly positive values on $\D
     (a) The connection curvature $\omega(t)$ evaluates to zero on continuative text and emits an impulsive pulse at contrastive tokens ($t = 51$), advancing the causal path holonomy $\Phi(t) = \sum_{\tau \le t} \omega(\tau)$ across the $\pi$ threshold. 
     (b) Attention matrices on Qwen3.5-9B under arbitrary-position inversion: standard RoPE (\emph{left}) exhibits background leakage; a fixed-period M\"obius baseline ($T=256$, \emph{middle}) fails when the reversal coordinate ($t=51$) is out of phase; SG-M\"obius (\emph{right}) aligns the phase flip with the semantic trigger, attenuating obsolete keys.}
     \label{fig:intro_teaser}
-\end{figure*}
+\end{figure}
 
 To address this structural constraint without retraining pretrained foundation weights or degrading inference latency, we introduce \textbf{Semantic Gauge M\"obius Attention (SG-M\"obius-RoPE)}. We treat token sequences as causal paths on a discrete 1D manifold equipped with a non-orientable fiber bundle. Semantic contrastive transitions define an impulsive connection 1-form $A = i \omega(t) dt \in \Omega^1(\mathcal{M}, \mathfrak{u}(1))$, whose path integral yields the causal holonomy $\Phi(t)$. When an odd number of contrastive turns occurs, an antipodal half-twist ($\Delta \Phi = \pi$) inverts the rotary fiber orientation. Because $\cos(\pi) = -1$, the modulated inner product becomes negative, attenuating the Softmax probability allocated to the invalidated premise.
 
@@ -95,17 +96,6 @@ Geometric deep learning \cite{bronstein2021geometric} provides a unified framewo
 Recent empirical studies have identified context distraction and the inability to forget invalidated premises as critical bottlenecks in long-context language models \cite{liu2024lost, hsieh2024ruler, kamradt2023needle}. When an adversarial or conflicting premise is presented, models frequently suffer from premise hallucination because positive-definite Softmax attention cannot actively nullify historical tokens. Previous attempts to address this issue rely on prompt-based instruction tuning or auxiliary suppression losses, which do not address the architectural inability of positive-definite attention kernels to perform destructive cancellation.
 
 \section{Methodology}
-
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/fig6_double_negation_restoration.png}
-    \caption{\textbf{Double-covering parity restoration under negation-of-negation on Qwen3.5-9B.} 
-    (a) Standard RoPE is indifferent to logical restoration, displaying uniform causal dispersion. 
-    (b) SG-M\"obius attention matrices under two successive contrastive turns ($t_1 \approx 39$, $t_2 \approx 133$). The first invalidation shifts the phase to $\pi$ (destructive cancellation), while the second invalidation advances the total phase to $2\pi$, returning the rotary spinor to the positive sheet ($\cos(2\pi) = +1$) and restoring attention resonance to the original premise. 
-    (c) Differential attention map $\Delta A$ verifying that active nullification is confined strictly to the temporary invalidation interval $[t_1, t_2]$, followed by robust positive recovery downstream of $t_2$ (up to $+0.333$).}
-    \label{fig:double_covering}
-\end{figure*}
-
 \subsection{Non-Orientable Fiber Bundles and Causal Holonomy}
 Let the input sequence of length $L \in \mathbb{N}$ be defined over a 1D discrete causal lattice:
 \begin{equation}
@@ -146,6 +136,16 @@ where $\Phi(t) \triangleq \sum_{\tau=1}^t \omega(\tau)$ is the cumulative causal
 \end{definition}
 
 As demonstrated in Figure~\ref{fig:double_covering}, the double-covering topology naturally accounts for nested logical reversals: a single contrastive statement induces destructive interference ($\Delta \Phi = \pi$), while a subsequent negation-of-negation advances the holonomy to $2\pi$, fully restoring attention resonance without requiring cache invalidation.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/fig6_double_negation_restoration.png}
+    \caption{\textbf{Double-covering parity restoration under negation-of-negation on Qwen3.5-9B.} 
+    (a) Standard RoPE is indifferent to logical restoration, displaying uniform causal dispersion. 
+    (b) SG-M\"obius attention matrices under two successive contrastive turns ($t_1 \approx 39$, $t_2 \approx 133$). The first invalidation shifts the phase to $\pi$ (destructive cancellation), while the second invalidation advances the total phase to $2\pi$, returning the rotary spinor to the positive sheet ($\cos(2\pi) = +1$) and restoring attention resonance to the original premise. 
+    (c) Differential attention map $\Delta A$ verifying that active nullification is confined strictly to the temporary invalidation interval $[t_1, t_2]$, followed by robust positive recovery downstream of $t_2$ (up to $+0.333$).}
+    \label{fig:double_covering}
+\end{figure}
 
 \subsection{Symmetric Rotary Dual Modulation}
 In SG-M\"obius-RoPE, under discrete contrastive turns ($\omega(t) \in \{0, \pi\}$), the cumulative gauge potential yields a discrete parity sign:
@@ -249,15 +249,15 @@ Dividing the modulated odds by the baseline odds:
 Because the background partition function $Z_{\setminus \{j\}} > 0$ cancels identically from numerator and denominator, the attenuation factor depends purely on the unmodulated dot product $A_{ij} = \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$.
 \end{proof}
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
     \centering
-    \begin{subfigure}[b]{0.60\textwidth}
+    \begin{subfigure}[b]{0.58\textwidth}
         \includegraphics[width=\textwidth]{figures/fig2_2d_heatmap.png}
         \caption{Full $N \times N$ Causal Attention Matrices ($N=298$ tokens).}
         \label{fig:heatmap2d}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.37\textwidth}
+    \begin{subfigure}[b]{0.38\textwidth}
         \includegraphics[width=\textwidth]{figures/fig3_differential_heatmap.png}
         \caption{Differential Contrast Map ($\Delta A$).}
         \label{fig:diff_heatmap}
@@ -266,7 +266,7 @@ Because the background partition function $Z_{\setminus \{j\}} > 0$ cancels iden
     (a) Standard RoPE (\emph{left}) retains background attention into outdated context. SG-M\"obius-RoPE (\emph{right}) establishes a causal boundary at $t = 51$, suppressing query access to historical keys for $i > 51$. 
     (b) The differential attention matrix $\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$ shows localized reduction ($\Delta A \le -0.148$) over the negated premise interval, accompanied by attention redistribution ($\Delta A \ge +0.500$) to operative tokens.}
     \label{fig:heatmaps}
-\end{figure*}
+\end{figure}
 
 Figure~\ref{fig:heatmaps} illustrates the attention matrices under symmetric dual modulation. In standard RoPE (Figure~\ref{fig:heatmap2d}, left), attention mass spreads into superseded context. Under SG-M\"obius (Figure~\ref{fig:heatmap2d}, right), the antipodal half-twist projects the invalidated token interval into negative logits. The differential contrast map $\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$ in Figure~\ref{fig:diff_heatmap} verifies this localized reduction.
 
@@ -291,7 +291,7 @@ The query vector at step $i$ is modulated as $\tilde{q}_i \triangleq s_i \mathbf
 \end{equation}
 \end{proposition}
 
-\begin{algorithm}[t]
+\begin{algorithm}[htbp]
 \caption{Autoregressive Generation with SG-M\"obius KV-Cache}
 \label{alg:kv_decoding}
 \begin{algorithmic}[1]
@@ -334,15 +334,6 @@ In \texttt{formal\_verification/verify\_properties.py}, we deploy Z3 SMT solvers
 
 \section{Experiments}
 
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/fig1_inversion_scatter.png}
-    \caption{\textbf{Token attention logit distribution and topological phase flow under successive causal inversions.} 
-    \emph{Top panel}: Log-scale attention logit energy $\ln A_{i,j}$ across sequence token positions $j \in [0, 546]$. Standard RoPE (blue circles) exhibits a broad, diffuse noise floor ($\sim -6.5$) that continuously leaks attention to outdated tokens. In contrast, SG-M\"obius attention (red circles) dynamically suppresses filler tokens while producing concentrated logit peaks at causal reversal boundaries ($t = 256$, $\Delta\Phi = \pi$) and restorative directives ($t = 512$, $\Delta\Phi = 2\pi$). 
-    \emph{Bottom panel}: Smoothed phase flow trends ($\sigma = 8$ Gaussian filter) demonstrating how SG-M\"obius structures causal coherence into discrete topological sectors while standard RoPE drifts monotonically.}
-    \label{fig:scatter}
-\end{figure*}
-
 \paragraph{Experimental Setup.}
 All empirical evaluations are conducted strictly on \textbf{Qwen3.5-9B} (\texttt{Qwen/Qwen3.5-9B}) \cite{bai2023qwen} on a dedicated multi-GPU node equipped with dual Nvidia Tesla T4 GPUs (16\,GB VRAM each). The model is executed in native 16-bit floating point (\texttt{torch.float16}) with eager attention, allocating 7.19\,GB on GPU 0 and 10.34\,GB on GPU 1 (total 17.53\,GB VRAM).
 
@@ -355,9 +346,10 @@ We evaluate model robustness using an adversarial Inverted Needle In A Haystack 
     \item \textbf{Neutral Perplexity (PPL)}: Perplexity evaluated on smooth WikiText-103 text without inversions.
 \end{itemize}
 
-\begin{table}[t]
+\begin{table}[htbp]
 \centering
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Configuration / Condition} & \textbf{Decoy Attn ($\downarrow$)} & \textbf{Target Attn ($\uparrow$)} & \textbf{ACR ($\uparrow$)} & \textbf{Neutral PPL} \\
@@ -375,7 +367,8 @@ We evaluate model robustness using an adversarial Inverted Needle In A Haystack 
 \quad Qwen3.5-9B (Standard RoPE Baseline) & $0.405 \pm 0.03$ & $0.439 \pm 0.04$ & $1.08$ & $6.42$ \\
 \quad Qwen3.5-9B + SG-M\"obius (Ours)      & $0.418 \pm 0.02$ & $\mathbf{0.812} \pm \mathbf{0.03}$ & $\mathbf{1.94}$ & $\mathbf{6.42}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{\textbf{Inverted Needle In A Haystack (I-NIAH) evaluation on Qwen3.5-9B (native FP16, dual Nvidia T4 GPUs).} Attention Contrast Ratio (ACR) improves by up to $13.6\times$ on single reversals while neutral text perplexity is strictly conserved ($6.42$).}
 \label{tab:benchmark}
 \end{table}
@@ -384,12 +377,22 @@ As documented in Table~\ref{tab:benchmark}, standard RoPE suffers severe attenti
 
 Figure~\ref{fig:scatter} illustrates the underlying log-scale attention scatter distribution extracted from deep layers of Qwen3.5-9B. Under standard RoPE, attention weights to the invalidated premise remain heavily scattered across the background noise floor. Under SG-M\"obius, the distribution bifurcates: active target tokens maintain high attention affinity, while invalidated decoy tokens are driven down by two to three orders of magnitude, matching the theoretical prediction of Theorem~\ref{thm:odds_ratio}.
 
-\subsection{Multi-Length Scaled Context Benchmark ($L \in [512, 8192]$)}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/fig1_inversion_scatter.png}
+    \caption{\textbf{Token attention logit distribution and topological phase flow under successive causal inversions.} 
+    \emph{Top panel}: Log-scale attention logit energy $\ln A_{i,j}$ across sequence token positions $j \in [0, 546]$. Standard RoPE (blue circles) exhibits a broad, diffuse noise floor ($\sim -6.5$) that continuously leaks attention to outdated tokens. In contrast, SG-M\"obius attention (red circles) dynamically suppresses filler tokens while producing concentrated logit peaks at causal reversal boundaries ($t = 256$, $\Delta\Phi = \pi$) and restorative directives ($t = 512$, $\Delta\Phi = 2\pi$). 
+    \emph{Bottom panel}: Smoothed phase flow trends ($\sigma = 8$ Gaussian filter) demonstrating how SG-M\"obius structures causal coherence into discrete topological sectors while standard RoPE drifts monotonically.}
+    \label{fig:scatter}
+\end{figure}
+
+\subsection{\texorpdfstring{Multi-Length Scaled Context Benchmark ($L \in [512, 8192]$)}{Multi-Length Scaled Context Benchmark (L in [512, 8192])}}
 To assess asymptotic scalability across increasing sequence lengths, we benchmark sequence lengths from $512$ up to $8,192$ tokens with adversarial premise invalidation at the midpoint ($L/2$). Table~\ref{tab:scaling} documents comparative attention metrics and microsecond single-step KV-cache decoding latencies.
 
-\begin{table*}[t]
+\begin{table}[htbp]
 \centering
 \small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{rccccccc}
 \toprule
 \textbf{Context Length ($L$)} & \textbf{Pivot ($t$)} & \textbf{Method} & \textbf{Decoy Attn ($\downarrow$)} & \textbf{Target Attn ($\uparrow$)} & \textbf{ACR ($\uparrow$)} & \textbf{Entropy ($H$)} & \textbf{Decoding Latency} \\
@@ -409,10 +412,11 @@ To assess asymptotic scalability across increasing sequence lengths, we benchmar
 8,192 & 4,096 & RoPE Baseline    & $1.26 \times 10^{-4}$ & $1.37 \times 10^{-4}$ & $1.08$ & $9.011$ & $0.0749\,\text{ms}$ \\
       &       & \textbf{SG-M\"obius (Ours)} & $\mathbf{1.18} \times \mathbf{10^{-4}}$ & $\mathbf{1.37} \times \mathbf{10^{-4}}$ & $\mathbf{1.16}$ & $\mathbf{9.011}$ & $\mathbf{0.0749\,\text{ms}}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{\textbf{Systematic multi-length benchmark ($L \in [512, 8192]$) on Qwen3.5-9B.} Decoy attention is consistently attenuated, while single-step autoregressive decoding latency exhibits exact $0.00\%$ overhead across all context scales.}
 \label{tab:scaling}
-\end{table*}
+\end{table}
 
 The latency benchmarks in Table~\ref{tab:scaling} confirm that single-token KV decoding latency scales from $0.0023\,\text{ms}$ at $L=512$ up to $0.0749\,\text{ms}$ at $L=8,192$, maintaining exact parity ($+0.00\%$ overhead) with standard RoPE. This confirms the $O(1)$ scaling guarantee established in Proposition~\ref{prop:kv_cache}.
 
@@ -422,9 +426,10 @@ To evaluate internal representation concentration, we extract Layer 7 attention 
 H(A_i) = - \sum_{j=0}^i A_{ij} \ln A_{ij}
 \end{equation}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Scenario} & \textbf{Length ($L$)} & \textbf{Twist Points} & \textbf{RoPE Entropy} & \textbf{SG-M\"obius Entropy} & \textbf{Entropy Gain} \\
@@ -433,7 +438,8 @@ Control Narrative (Smooth) & 337 & None ($\emptyset$) & $3.4462$ & $\mathbf{3.44
 Arbitrary Logical Inversion & 298 & $t = 51$ & $3.4503$ & $\mathbf{3.3966}$ & $-1.56\%$ ($p < 0.01$) \\
 Double Negation Restoration & 234 & $t_1=39, t_2=133$ & $3.3120$ & $\mathbf{3.1626}$ & $\mathbf{-4.51}\%$ ($p < 0.001$) \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{\textbf{Empirical attention entropy on Qwen3.5-9B Layer 7.} Zero entropy variation on smooth contexts verifies zero false suppression; significant entropy reduction on contrastive sequences confirms active focal concentration.}
 \label{tab:entropy}
 \end{table}
@@ -446,7 +452,7 @@ We presented Semantic Gauge M\"obius Attention (SG-M\"obius-RoPE), an attention 
 \paragraph{Limitations and Future Work.}
 The current realization relies on a discrete curvature detector $\omega(t) \in \{0, \pi\}$ keyed to contrastive lexical syntax. In highly ambiguous or domain-specialized texts, false-positive or false-negative trigger detections may occur. Promising future research includes end-to-end differentiable gauge connection learning during foundation pre-training, where $\omega(t) \in [0, \pi]$ is continuously predicted by attention heads, as well as extending non-orientable fiber bundle dynamics to multidimensional vision (2D ViTs) and video architectures.
 
-\bibliographystyle{plain}
+\bibliographystyle{unsrtnat}
 \bibliography{references}
 
 \end{document}
