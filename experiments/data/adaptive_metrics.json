@@ -1,0 +1,46 @@
+{
+  "Control_Smooth": {
+    "seq_len": 337,
+    "twist_tokens": [],
+    "entropy_standard": 3.446173906326294,
+    "entropy_adaptive": 3.446173906326294,
+    "entropy_reduction_ratio": 0.0
+  },
+  "Arbitrary_Inversion": {
+    "seq_len": 298,
+    "twist_tokens": [
+      51,
+      53,
+      63,
+      85,
+      103,
+      121,
+      139,
+      157,
+      175,
+      193,
+      211,
+      229,
+      247,
+      265,
+      283,
+      295
+    ],
+    "entropy_standard": 3.450317859649658,
+    "entropy_adaptive": 3.396618366241455,
+    "entropy_reduction_ratio": 0.015563637018203735
+  },
+  "Double_Negation": {
+    "seq_len": 234,
+    "twist_tokens": [
+      39,
+      41,
+      49,
+      133,
+      137
+    ],
+    "entropy_standard": 3.3119871616363525,
+    "entropy_adaptive": 3.162637710571289,
+    "entropy_reduction_ratio": 0.045093607157468796
+  }
+}

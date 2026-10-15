@@ -90,7 +90,9 @@ plt.close()
 # -----------------------------------------------------------------------------
 # Load real Qwen experimental data for Figures 2, 3, 4, 5, 6
 # -----------------------------------------------------------------------------
-data_path = "kaggle_adaptive_output/adaptive_attention_results.npz"
+data_path = "experiments/data/adaptive_attention_results.npz"
+if not os.path.exists(data_path):
+    data_path = "kaggle_adaptive_output/adaptive_attention_results.npz"
 data = np.load(data_path, allow_pickle=True)
 
 # -----------------------------------------------------------------------------
