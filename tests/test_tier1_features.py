@@ -988,7 +988,9 @@ class TestFeature11VectorFigures:
 
     def test_f11_04_figure_script_data_pipeline_integrity(self):
         """Verifies source NPZ experimental data file exists and contains all 10 arrays."""
-        npz_path = os.path.join(PROJECT_ROOT, "kaggle_adaptive_output", "adaptive_attention_results.npz")
+        npz_path = os.path.join(PROJECT_ROOT, "experiments", "data", "adaptive_attention_results.npz")
+        if not os.path.exists(npz_path):
+            npz_path = os.path.join(PROJECT_ROOT, "kaggle_adaptive_output", "adaptive_attention_results.npz")
         assert os.path.exists(npz_path), f"NPZ results not found at {npz_path}"
         data = np.load(npz_path)
         required_keys = [

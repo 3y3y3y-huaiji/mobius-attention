@@ -65,20 +65,17 @@ $$
 Because the exponential function satisfies $\exp(z) > 0$ for all finite $z \in \mathbb{R}$, the attention weights are confined to the open standard probability simplex:
 
 $$
-\Delta^{i-1} := \left\{ \mathbf{a}_i \in \mathbb{R}^i \mid a_{ij} > 0, \;\sum_{j=1}^i a_{ij} = 1 \right\}
+\Delta^{i-1} := \left\lbrace \mathbf{a}_i \in \mathbb{R}^i \mid a_{ij} > 0, \quad \sum_{j=1}^i a_{ij} = 1 \right\rbrace
 $$
 
 Consequently, standard self-attention is **strictly positive-definite and monotonic**:
 1. Every historical token $j \le i$ must inevitably receive strictly non-zero probability mass ($A_{ij} > 0$).
 2. The model possesses no mechanism for **active destructive interference** (negative superposition). It can allocate *more* attention to relevant tokens, but cannot mathematically subtract or cancel superseded historical context.
 
-```
-Standard Softmax Convexity Constraint:
-         [Historical Key j]  ──────────────────────>  + exp(q_i^T k_j) > 0
-                                                           │
-                                                           ▼
-                                            Persistent Background Clutter
-                                            (Cannot be Destructively Cancelled)
+```mermaid
+flowchart LR
+    Key["Historical Key (j)"] -->|"+ exp(q_i^T k_j) > 0"| Noise["Persistent Background Clutter"]
+    Noise -->|"Monotonic Positivity"| Zero["Zero Destructive Cancellation"]
 ```
 
 ### The Premise Hallucination Dilemma

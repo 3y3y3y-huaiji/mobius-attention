@@ -15,8 +15,12 @@ import seaborn as sns
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'SimSun', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
-data_path = "kaggle_adaptive_output/adaptive_attention_results.npz"
-metrics_path = "kaggle_adaptive_output/adaptive_metrics.json"
+data_path = "experiments/data/adaptive_attention_results.npz"
+metrics_path = "experiments/data/adaptive_metrics.json"
+
+if not os.path.exists(data_path):
+    data_path = "kaggle_adaptive_output/adaptive_attention_results.npz"
+    metrics_path = "kaggle_adaptive_output/adaptive_metrics.json"
 
 if not os.path.exists(data_path):
     print(f"Waiting for data: {data_path} not found yet.")

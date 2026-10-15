@@ -65,20 +65,17 @@ $$
 由于指数函数对于任意有限实数输入均严格满足 $\exp(z) > 0$，注意力权重被永久约束在开标准概率单纯形（Open Probability Simplex）上：
 
 $$
-\Delta^{i-1} := \left\{ \mathbf{a}_i \in \mathbb{R}^i \mid a_{ij} > 0, \;\sum_{j=1}^i a_{ij} = 1 \right\}
+\Delta^{i-1} := \left\lbrace \mathbf{a}_i \in \mathbb{R}^i \mid a_{ij} > 0, \quad \sum_{j=1}^i a_{ij} = 1 \right\rbrace
 $$
 
 该数学特性给大模型带来了根本性的**正定性与单调累加约束**：
 1. 历史上出现过的任何 Token $j \le i$ 都必然分配到严格大于 0 的概率质量（$A_{ij} > 0$）。
 2. 模型内部**完全不存在主动相消干涉（Destructive Interference / 负干涉）机制**。自注意力只能被动地为“相关”上下文分配更多权重，而无法从代数层面对已被废弃、推翻的历史前置命题进行**物理抵消或主动消除**。
 
-```
-标准 Softmax 正定性凸组合约束：
-         [历史键值 Key j]  ──────────────────────>  + exp(q_i^T k_j) > 0
-                                                           │
-                                                           ▼
-                                            持续弥散的不可消除背景噪声
-                                            (无法进行代数负干涉与物理相消)
+```mermaid
+flowchart LR
+    Key["历史键值 Key (j)"] -->|"+ exp(q_i^T k_j) > 0"| Noise["持续背景注意力残留"]
+    Noise -->|"正定单调约束"| Zero["无法被主动代数对消"]
 ```
 
 ### 长程上下文中的“作废前置命题幻觉”
