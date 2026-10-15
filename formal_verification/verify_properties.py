@@ -42,13 +42,13 @@ def run_symbolic_proofs():
     print("  [✓] Theorem 3 (Antipodal Inversion Parity): PASSED.")
     print("      Holonomy(j, i) = π ⟹ cos(π) = -1.0000 (Exact Destructive Attention Cancellation)")
     
-    # Theorem 4: Double Negation Closure (4π Spinor Return)
+    # Theorem 4: Cyclic Parity Conservation (2π Periodicity)
     # Holonomy = 2π ⟹ cos(2π) = 1.0
     phi_double = 2.0 * math.pi
     factor_double = math.cos(phi_double)
-    assert math.isclose(factor_double, 1.0), "Theorem 4 Failed: Double negation must be 1.0"
-    print("  [✓] Theorem 4 (Double Negation Closure): PASSED.")
-    print("      Holonomy(j, i) = 2π ⟹ cos(2π) = +1.0000 (Complete Topological Loop Recovery)")
+    assert math.isclose(factor_double, 1.0), "Theorem 4 Failed: 2pi periodicity must be 1.0"
+    print("  [✓] Theorem 4 (Cyclic Parity Conservation): PASSED.")
+    print("      Holonomy(j, i) = 2π ⟹ cos(2π) = +1.0000 (Topological Loop Parity Return)")
     
     # Theorem 5: Gauge Translation Invariance
     # (Φ_i + c) - (Φ_j + c) = Φ_i - Φ_j for any constant c ∈ ℝ

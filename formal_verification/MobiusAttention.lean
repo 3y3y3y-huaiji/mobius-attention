@@ -119,13 +119,13 @@ theorem antipodal_inversion
 
 /- 
   =============================================================================
-  Theorem 4: Double Negation Closure (4π Spinor Return)
+  Theorem 4: Cyclic Parity Conservation (2π Periodicity)
   When two successive inversions occur between j and i such that
   Holonomy(j, i) = 2π, the parity factor returns strictly to +1.0,
   restoring the positive causal attention resonance.
   =============================================================================
 -/
-theorem double_negation_closure
+theorem cyclic_parity_conservation
   (A : Connection) (j i : Position) (h_2pi : Holonomy A j i = 2 * Real.pi) :
   ParityFactor A j i = 1 := by
   unfold ParityFactor
