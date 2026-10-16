@@ -4,14 +4,18 @@
   -----------------------------------------------------------------------------
   Dual-Licensed under Apache-2.0 and MulanPSL-2.0.
   
-  This Lean 4 formalization rigorously proves the topological invariants,
-  gauge translation invariance, and smooth Möbius phase flow properties of
+  This Lean 4 formalization rigorously proves the algebraic invariants,
+  bilinear rotary dual modulation, topological destructive interference,
+  double negation restoration, and relative odds ratio attenuation of
   the Semantic Gauge Möbius Attention (SG-Möbius-RoPE) mechanism.
   =============================================================================
 -/
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Analysis.SpecialFunctions.Exp
+
+noncomputable section
 
 namespace MobiusAttention
 
@@ -47,19 +51,23 @@ def Holonomy (A : Connection) (j i : Position) : ℝ :=
   Under continuous Möbius phase flow on the non-orientable bundle,
   the topological twist acting on the rotary inner product is cos(ΔΦ).
 -/
-noncomputable def ParityFactor (A : Connection) (j i : Position) : ℝ :=
+def ParityFactor (A : Connection) (j i : Position) : ℝ :=
   Real.cos (Holonomy A j i)
 
 /- 
   =============================================================================
-  Theorem 1: Conservation of Flatness (Reduction to Standard RoPE)
-  When the context is smooth (∀ t, ω(t) = 0), the holonomy vanishes everywhere,
-  and the parity factor is identically 1.0, reducing strictly to standard RoPE.
+  Section 1: Topological Path-Integral & Flatness Invariants
   =============================================================================
 -/
+
+/--
+  Theorem: Conservation of Flatness (Reduction to Standard RoPE)
+  When the context is smooth (∀ t, ω(t) = 0), the holonomy vanishes everywhere,
+  and the parity factor is identically 1.0, reducing strictly to standard RoPE.
+-/
 theorem conservation_of_flatness 
-  (A : Connection) (h_flat : ∀ t, A.omega t = 0) (j i : Position) :
-  ParityFactor A j i = 1 := by
+    (A : Connection) (h_flat : ∀ t, A.omega t = 0) (j i : Position) :
+    ParityFactor A j i = 1 := by
   unfold ParityFactor Holonomy
   by_cases h : j < i
   · simp only [h, dif_pos]
@@ -72,16 +80,14 @@ theorem conservation_of_flatness
   · simp only [h]
     exact Real.cos_zero
 
-/- 
-  =============================================================================
-  Theorem 2: Path-Integral Additivity / Prefix-Sum Decomposition
+/--
+  Theorem: Path-Integral Additivity / Prefix-Sum Decomposition
   For any sequence indices j ≤ k ≤ i, the cumulative holonomy along the composite
   path is the sum of partial holonomies: Holonomy(j, i) = Holonomy(j, k) + Holonomy(k, i).
-  =============================================================================
 -/
 theorem holonomy_path_additivity
-  (A : Connection) {j k i : Position} (h1 : j ≤ k) (h2 : k ≤ i) :
-  Holonomy A j i = Holonomy A j k + Holonomy A k i := by
+    (A : Connection) {j k i : Position} (h1 : j ≤ k) (h2 : k ≤ i) :
+    Holonomy A j i = Holonomy A j k + Holonomy A k i := by
   unfold Holonomy
   by_cases h_jk : j < k
   · by_cases h_ki : k < i
@@ -99,51 +105,213 @@ theorem holonomy_path_additivity
 
 /-- Backward-compatibility alias for test harness -/
 theorem holonomy_cocycle
-  (A : Connection) {j k i : Position} (h1 : j ≤ k) (h2 : k ≤ i) :
-  Holonomy A j i = Holonomy A j k + Holonomy A k i :=
+    (A : Connection) {j k i : Position} (h1 : j ≤ k) (h2 : k ≤ i) :
+    Holonomy A j i = Holonomy A j k + Holonomy A k i :=
   holonomy_path_additivity A h1 h2
 
-/- 
-  =============================================================================
-  Theorem 3: Antipodal Inversion (Destructive Phase Nullification)
-  When an odd number of logical inversions occurs between j and i such that
-  Holonomy(j, i) = π, the parity factor is exactly -1.0, achieving complete
-  inversion of the semantic inner product.
-  =============================================================================
+/--
+  Theorem: Scalar Parity Inversion under Holonomy = π
 -/
 theorem antipodal_inversion
-  (A : Connection) (j i : Position) (h_pi : Holonomy A j i = Real.pi) :
-  ParityFactor A j i = -1 := by
+    (A : Connection) (j i : Position) (h_pi : Holonomy A j i = Real.pi) :
+    ParityFactor A j i = -1 := by
   unfold ParityFactor
   rw [h_pi]
   exact Real.cos_pi
 
-/- 
-  =============================================================================
-  Theorem 4: Cyclic Parity Conservation (2π Periodicity)
-  When two successive inversions occur between j and i such that
-  Holonomy(j, i) = 2π, the parity factor returns strictly to +1.0,
-  restoring the positive causal attention resonance.
-  =============================================================================
+/--
+  Theorem: Cyclic Parity Conservation (2π Periodicity)
 -/
 theorem cyclic_parity_conservation
-  (A : Connection) (j i : Position) (h_2pi : Holonomy A j i = 2 * Real.pi) :
-  ParityFactor A j i = 1 := by
+    (A : Connection) (j i : Position) (h_2pi : Holonomy A j i = 2 * Real.pi) :
+    ParityFactor A j i = 1 := by
   unfold ParityFactor
   rw [h_2pi]
   exact Real.cos_two_pi
 
-/- 
-  =============================================================================
-  Theorem 5: Gauge Translation Invariance
-  Let Φ(t) = ∑_{τ ≤ t} ω(τ) be the absolute accumulated gauge potential.
-  Then for any j ≤ i, the relative holonomy is strictly invariant under any
-  constant global gauge shift: (Φ(i) + c) - (Φ(j) + c) = Φ(i) - Φ(j).
-  =============================================================================
+/--
+  Theorem: Gauge Translation Invariance (Backward-Compatibility)
 -/
 theorem gauge_translation_invariance 
-  (phi_i phi_j c : ℝ) :
-  (phi_i + c) - (phi_j + c) = phi_i - phi_j := by
+    (phi_i phi_j c : ℝ) :
+    (phi_i + c) - (phi_j + c) = phi_i - phi_j := by
   ring
+
+/- 
+  =============================================================================
+  Section 2: Planar Rotary Dual Modulation & Bilinear Invariance
+  =============================================================================
+-/
+
+/--
+  Definition 5: Two-Dimensional Rotary Vector
+  Represents query and key coordinate pairs in a 2D RoPE subspace.
+-/
+structure Vec2 where
+  x : ℝ
+  y : ℝ
+
+/--
+  Definition 6: Planar Euclidean Inner Product
+-/
+def dot2 (u v : Vec2) : ℝ :=
+  u.x * v.x + u.y * v.y
+
+/--
+  Definition 7: Two-Dimensional Orthogonal Rotation Operator R(θ) ∈ SO(2)
+-/
+def rotate2 (θ : ℝ) (v : Vec2) : Vec2 :=
+  ⟨Real.cos θ * v.x - Real.sin θ * v.y, Real.sin θ * v.x + Real.cos θ * v.y⟩
+
+/--
+  Lemma: Rotation Orthogonality & Angle Shift Identity
+  ⟨R(α) u, R(β) v⟩ = ⟨u, R(β - α) v⟩
+-/
+theorem dot2_rotate2_eq (α β : ℝ) (u v : Vec2) :
+    dot2 (rotate2 α u) (rotate2 β v) = dot2 u (rotate2 (β - α) v) := by
+  unfold dot2 rotate2
+  rw [Real.cos_sub, Real.sin_sub]
+  ring
+
+/--
+  Theorem: RoPE Relative Rotation Invariance
+  Under continuous rotary dual modulation, the inner product between query at position i
+  (with gauge phase Φ_i) and key at position j (with gauge phase Φ_j) satisfies:
+  ⟨R(iθ + Φ_i) q, R(jθ + Φ_j) k⟩ = ⟨q, R((j - i)θ + (Φ_j - Φ_i)) k⟩.
+-/
+theorem rope_relative_rotation_invariance
+    (θ phi_i phi_j i j : ℝ) (q k : Vec2) :
+    dot2 (rotate2 (i * θ + phi_i) q) (rotate2 (j * θ + phi_j) k) =
+    dot2 q (rotate2 ((j - i) * θ + (phi_j - phi_i)) k) := by
+  rw [dot2_rotate2_eq]
+  have h_ang : (j * θ + phi_j) - (i * θ + phi_i) = (j - i) * θ + (phi_j - phi_i) := by ring
+  rw [h_ang]
+
+/--
+  Lemma: Antipodal Rotation Inversion
+  R(θ - π) = -R(θ)
+-/
+theorem dot2_rotate2_sub_pi (θ : ℝ) (q k : Vec2) :
+    dot2 q (rotate2 (θ - Real.pi) k) = - dot2 q (rotate2 θ k) := by
+  unfold dot2 rotate2
+  rw [Real.cos_sub, Real.sin_sub, Real.cos_pi, Real.sin_pi]
+  ring
+
+/--
+  Lemma: 2π Full Loop Rotation Invariance
+  R(θ - 2π) = R(θ)
+-/
+theorem dot2_rotate2_sub_two_pi (θ : ℝ) (q k : Vec2) :
+    dot2 q (rotate2 (θ - 2 * Real.pi) k) = dot2 q (rotate2 θ k) := by
+  unfold dot2 rotate2
+  rw [Real.cos_sub, Real.sin_sub, Real.cos_two_pi, Real.sin_two_pi]
+  ring
+
+/--
+  Theorem 1: Antipodal Bilinear Cancellation (Destructive Interference)
+  When the accumulated gauge phase reaches an antipodal half-twist (Φ_i - Φ_j = π),
+  the rotary bilinear inner product is strictly negated relative to standard RoPE:
+  ⟨q̃_i, k̃_j⟩ = - ⟨q_i, k_j⟩_RoPE.
+-/
+theorem antipodal_bilinear_cancellation
+    (θ phi_i phi_j i j : ℝ) (q k : Vec2)
+    (h_twist : phi_i - phi_j = Real.pi) :
+    dot2 (rotate2 (i * θ + phi_i) q) (rotate2 (j * θ + phi_j) k) =
+    - dot2 (rotate2 (i * θ) q) (rotate2 (j * θ) k) := by
+  rw [rope_relative_rotation_invariance]
+  have h_rel : (j - i) * θ + (phi_j - phi_i) = (j - i) * θ - Real.pi := by
+    linarith
+  rw [h_rel, dot2_rotate2_sub_pi]
+  have h_std : dot2 (rotate2 (i * θ) q) (rotate2 (j * θ) k) =
+      dot2 q (rotate2 ((j - i) * θ) k) := by
+    have h_inst := rope_relative_rotation_invariance θ 0 0 i j q k
+    simp only [add_zero, sub_self] at h_inst
+    exact h_inst
+  rw [h_std]
+
+/--
+  Theorem 1b: Double Negation Bilinear Restoration (2π Cyclic Parity Return)
+  When two successive inversions accumulate a 2π holonomy loop (Φ_i - Φ_j = 2π),
+  the rotary bilinear inner product strictly returns to standard RoPE attention:
+  ⟨q̃_i, k̃_j⟩ = + ⟨q_i, k_j⟩_RoPE.
+-/
+theorem double_negation_bilinear_restoration
+    (θ phi_i phi_j i j : ℝ) (q k : Vec2)
+    (h_loop : phi_i - phi_j = 2 * Real.pi) :
+    dot2 (rotate2 (i * θ + phi_i) q) (rotate2 (j * θ + phi_j) k) =
+    dot2 (rotate2 (i * θ) q) (rotate2 (j * θ) k) := by
+  rw [rope_relative_rotation_invariance]
+  have h_rel : (j - i) * θ + (phi_j - phi_i) = (j - i) * θ - 2 * Real.pi := by
+    linarith
+  rw [h_rel, dot2_rotate2_sub_two_pi]
+  have h_std : dot2 (rotate2 (i * θ) q) (rotate2 (j * θ) k) =
+      dot2 q (rotate2 ((j - i) * θ) k) := by
+    have h_inst := rope_relative_rotation_invariance θ 0 0 i j q k
+    simp only [add_zero, sub_self] at h_inst
+    exact h_inst
+  rw [h_std]
+
+/- 
+  =============================================================================
+  Section 3: Softmax Odds Ratio Attenuation
+  =============================================================================
+-/
+
+/-- 
+  Theorem 3: Pairwise Target-to-Decoy Odds Ratio Attenuation.
+  For arbitrary background partition sums Z₁ > 0 and Z₂ > 0,
+  the pairwise odds ratio between decoy (logit a inverted to -a) and target (logit b)
+  attenuates by exactly exp(-2 * a), cancelling all partition functions unconditionally.
+-/
+theorem pairwise_odds_ratio_attenuation
+    (a b : ℝ) (Z₁ Z₂ : ℝ) (hZ₁ : 0 < Z₁) (hZ₂ : 0 < Z₂) :
+    let p_decoy₁ := Real.exp a / Z₁
+    let p_target₁ := Real.exp b / Z₁
+    let p_decoy₂ := Real.exp (-a) / Z₂
+    let p_target₂ := Real.exp b / Z₂
+    let odds₁ := p_decoy₁ / p_target₁
+    let odds₂ := p_decoy₂ / p_target₂
+    odds₂ / odds₁ = Real.exp (-2 * a) := by
+  intro p_decoy₁ p_target₁ p_decoy₂ p_target₂ odds₁ odds₂
+  dsimp [odds₁, odds₂, p_decoy₁, p_target₁, p_decoy₂, p_target₂]
+  have h_exp_b : Real.exp b ≠ 0 := Real.exp_ne_zero b
+  have h_exp_a : Real.exp a ≠ 0 := Real.exp_ne_zero a
+  have hZ₁_ne : Z₁ ≠ 0 := ne_of_gt hZ₁
+  have hZ₂_ne : Z₂ ≠ 0 := ne_of_gt hZ₂
+  rw [show (Real.exp (-a) / Z₂ / (Real.exp b / Z₂)) / (Real.exp a / Z₁ / (Real.exp b / Z₁)) =
+      Real.exp (-a) / Real.exp a by field_simp]
+  rw [← Real.exp_sub]
+  exact congr_arg Real.exp (by ring)
+
+/-- 
+  Theorem 3 (Single-token formulation): Relative Odds Ratio Attenuation.
+  For any background partition function Z > 0, the single-token odds ratio
+  under logit inversion a ↦ -a attenuates strictly by exp(-2 * a).
+-/
+theorem odds_ratio_attenuation (a : ℝ) (Z : ℝ) (hZ : 0 < Z) :
+    let p_std := Real.exp a / (Real.exp a + Z)
+    let p_mob := Real.exp (-a) / (Real.exp (-a) + Z)
+    let odds_std := p_std / (1 - p_std)
+    let odds_mob := p_mob / (1 - p_mob)
+    odds_mob / odds_std = Real.exp (-2 * a) := by
+  intro p_std p_mob odds_std odds_mob
+  dsimp [odds_std, odds_mob, p_std, p_mob]
+  have h_exp_a_pos : 0 < Real.exp a := Real.exp_pos a
+  have h_exp_neg_a_pos : 0 < Real.exp (-a) := Real.exp_pos (-a)
+  have h_den1_pos : 0 < Real.exp a + Z := add_pos h_exp_a_pos hZ
+  have h_den2_pos : 0 < Real.exp (-a) + Z := add_pos h_exp_neg_a_pos hZ
+  have h_den1_ne : Real.exp a + Z ≠ 0 := ne_of_gt h_den1_pos
+  have h_den2_ne : Real.exp (-a) + Z ≠ 0 := ne_of_gt h_den2_pos
+  have h_exp_a_ne : Real.exp a ≠ 0 := Real.exp_ne_zero a
+  have hZ_ne : Z ≠ 0 := ne_of_gt hZ
+  rw [show (Real.exp (-a) / (Real.exp (-a) + Z) / (1 - Real.exp (-a) / (Real.exp (-a) + Z))) /
+           (Real.exp a / (Real.exp a + Z) / (1 - Real.exp a / (Real.exp a + Z))) =
+      Real.exp (-a) / Real.exp a by
+        field_simp
+        have h_num : Real.exp a + Z - Real.exp a = Z := by ring
+        have h_den : Real.exp (-a) + Z - Real.exp (-a) = Z := by ring
+        rw [h_num, h_den, div_self hZ_ne]]
+  rw [← Real.exp_sub]
+  exact congr_arg Real.exp (by ring)
 
 end MobiusAttention

@@ -4,12 +4,16 @@ Data-Dependent Continuous Semantic Gauge Möbius Attention (SG-Möbius-RoPE)
 Dual-Licensed under Apache-2.0 and MulanPSL-2.0.
 """
 
+from .gauge_predictor import (
+    HysteresisSemanticGaugePredictor,
+    SemanticGaugeConnection,
+    causal_viscous_ema,
+)
 from .mobius_attention import (
     ContinuousMobiusRoPEModulator,
-    SemanticGaugeConnection,
     SemanticGaugeMobiusRoPE,
+    SGMobiusRotaryEmbedding,
     apply_rotary_angle_addition,
-    causal_viscous_ema,
     clear_model_holonomy_phase,
     inject_mobius_attention,
     nonnegative_feature_map,
@@ -17,13 +21,15 @@ from .mobius_attention import (
 )
 
 __all__ = [
-    "SemanticGaugeConnection",
+    "SGMobiusRotaryEmbedding",
     "ContinuousMobiusRoPEModulator",
     "SemanticGaugeMobiusRoPE",
-    "inject_mobius_attention",
+    "SemanticGaugeConnection",
+    "HysteresisSemanticGaugePredictor",
     "causal_viscous_ema",
     "nonnegative_feature_map",
     "apply_rotary_angle_addition",
+    "inject_mobius_attention",
     "set_model_holonomy_phase",
-    "clear_model_holonomy_phase"
+    "clear_model_holonomy_phase",
 ]
