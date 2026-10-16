@@ -1,4 +1,3 @@
-import re
 
 def check_file(filename):
     print(f"=== Checking {filename} ===")
@@ -7,7 +6,6 @@ def check_file(filename):
     
     # Check lines
     in_code_block = False
-    in_display_math = False
     
     for idx, line in enumerate(lines):
         line_num = idx + 1

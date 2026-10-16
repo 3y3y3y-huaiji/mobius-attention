@@ -28,6 +28,13 @@ dev = [
 [tool.ruff]
 line-length = 120
 target-version = "py310"
+exclude = [
+    ".git",
+    ".pytest_cache",
+    "kaggle_*",
+    "experiments",
+    "*.ipynb",
+]
 
 [tool.ruff.lint]
 select = [
@@ -40,3 +47,8 @@ ignore = [
     "E501",  # Line too long (formatting handled flexibly for math equations)
     "W293",  # Blank line contains whitespace
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F401", "F841", "I001"]
+"examples/*" = ["I001"]
+"scripts/*" = ["I001"]

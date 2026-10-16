@@ -46,10 +46,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Run Ruff Linter & Import Sorter
+      - name: Run Ruff Linter
         uses: astral-sh/ruff-action@v3
-        with:
-          args: "check src/ formal_verification/verify_properties.py scripts/check_markdown_math.py tests/test_readme_latex.py"
 
   lean:
     name: Lean 4 Interactive Theorem Prover

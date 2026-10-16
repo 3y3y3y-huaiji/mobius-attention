@@ -198,6 +198,6 @@ def test_prefill_vs_autoregressive_kv_equivalence(seq_len, dtype):
 if __name__ == "__main__":
     test_adversarial_lipschitz_within_valid_domain()
     test_adversarial_lipschitz_counterexample_search()
-    for l in [10, 64, 128, 256, 512, 1024, 2048]:
-        test_prefill_vs_autoregressive_kv_equivalence(l, np.float64)
-        test_prefill_vs_autoregressive_kv_equivalence(l, np.float32)
+    for seq_len in [10, 64, 128, 256, 512, 1024, 2048]:
+        test_prefill_vs_autoregressive_kv_equivalence(seq_len, np.float64)
+        test_prefill_vs_autoregressive_kv_equivalence(seq_len, np.float32)

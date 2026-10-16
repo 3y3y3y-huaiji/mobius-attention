@@ -11,10 +11,8 @@ Outputs:
 """
 
 import os
-import json
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 # Set matplotlib parameters for publication-grade academic style
 plt.rcParams['font.family'] = 'DejaVu Sans'

@@ -6,7 +6,6 @@ r"""
 2. 顺承控制组测试 (无反转, 0 误报)
 3. 否定之否定恢复测试 (t=40 反转, t=110 恢复)
 """
-import math
 import numpy as np
 
 def test_semantic_gauge_mobius():
@@ -57,8 +56,6 @@ def test_semantic_gauge_mobius():
         query_pos = 150
         keys_pos = np.arange(151)
         
-        # 空间距离
-        spatial_dist = query_pos - keys_pos
         # 累积语义规范相位差 \Delta \Phi = \Phi_query - \Phi_key
         delta_phi = phi[query_pos] - phi[keys_pos]
         

@@ -29,7 +29,6 @@ def verify_latex(tex_path="paper/main.tex", bib_path="paper/references.bib"):
         bib_content = f.read()
 
     errors = []
-    warnings = []
 
     # 1. Environment Balancing
     env_stack = []

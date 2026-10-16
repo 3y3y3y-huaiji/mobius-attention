@@ -10,22 +10,15 @@ import os
 import ast
 import math
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 # Ensure root directory is on PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.mobius_attention import (
     causal_viscous_ema,
-    nonnegative_feature_map,
     apply_rotary_angle_addition,
     SemanticGaugeConnection,
     ContinuousMobiusRoPEModulator,
-    SemanticGaugeMobiusRoPE,
-    inject_mobius_attention,
-    set_model_holonomy_phase,
-    clear_model_holonomy_phase,
 )
 
 
@@ -100,7 +93,7 @@ def forensic_autograd_graph_tracing():
     assert gauge.proj.weight.grad.abs().sum().item() > 0.0, "Gauge projection weight gradient is identically zero!"
     assert q.grad is not None, "Gradient failed to flow to query q!"
     assert q.grad.abs().sum().item() > 0.0, "Query q gradient is identically zero!"
-    print(f"  -> Autograd passed: Verified end-to-end backprop with non-zero gradients.")
+    print("  -> Autograd passed: Verified end-to-end backprop with non-zero gradients.")
 
 
 def forensic_so2_orthogonal_properties():
@@ -161,7 +154,7 @@ def forensic_so2_orthogonal_properties():
         norm_err = (v_norm_orig - v_norm_rot).abs().max().item()
         assert norm_err < 1e-14, f"Vector norm deviation {norm_err} exceeds 1e-14!"
 
-    print(f"  -> SO(2) group properties passed: Det=1 (<1e-14), Orthogonality (<1e-15), Composition (<1e-14), Norm preservation (<1e-14).")
+    print("  -> SO(2) group properties passed: Det=1 (<1e-14), Orthogonality (<1e-15), Composition (<1e-14), Norm preservation (<1e-14).")
 
 
 def forensic_viscous_diffusion_and_lipschitz():

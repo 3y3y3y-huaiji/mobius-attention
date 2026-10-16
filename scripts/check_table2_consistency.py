@@ -60,9 +60,9 @@ def verify():
 
         # Standard row: Length, Pivot, Method, Decoy, Target, ACR, Entropy, Latency
         # Mobius row: empty, empty, Method, Decoy, Target, ACR, Entropy, Latency
-        print(f"\n========================================================")
+        print("\n========================================================")
         print(f"Verifying Context Length L = {L}")
-        print(f"========================================================")
+        print("========================================================")
         
         json_entry = data[f"L_{L}"]
         std_json = json_entry["standard_rope"]
@@ -82,7 +82,7 @@ def verify():
         mob_lat_tex = parse_scientific_or_float(cols_mob[7])
 
         # Assertions
-        print(f"1. Decoy Attention:")
+        print("1. Decoy Attention:")
         print(f"   LaTeX: std={std_decoy_tex:.4e}, mob={mob_decoy_tex:.4e}")
         print(f"   JSON:  std={std_json['decoy_attention']:.4e}, mob={mob_json['decoy_attention']:.4e}")
         assert abs(std_decoy_tex - std_json['decoy_attention']) / std_json['decoy_attention'] < 0.01
@@ -90,7 +90,7 @@ def verify():
         assert mob_decoy_tex < std_decoy_tex, f"Decoy not attenuated at L={L}!"
         assert r"\mathbf" in cols_mob[3], "Möbius decoy should be bolded (better)"
 
-        print(f"2. Target Attention:")
+        print("2. Target Attention:")
         print(f"   LaTeX: std={std_target_tex:.4e}, mob={mob_target_tex:.4e}")
         print(f"   JSON:  std={std_json['target_attention']:.4e}, mob={mob_json['target_attention']:.4e}")
         assert abs(std_target_tex - std_json['target_attention']) / std_json['target_attention'] < 0.01
@@ -98,7 +98,7 @@ def verify():
         assert mob_target_tex > std_target_tex, f"Target not reinforced at L={L}!"
         assert r"\mathbf" in cols_mob[4], "Möbius target should be bolded (better)"
 
-        print(f"3. ACR:")
+        print("3. ACR:")
         print(f"   LaTeX: std={std_acr_tex:.2f}, mob={mob_acr_tex:.1f}")
         print(f"   JSON:  std={std_json['attention_contrast_ratio']:.2f}, mob={mob_json['attention_contrast_ratio']:.1f}")
         assert abs(std_acr_tex - std_json['attention_contrast_ratio']) / std_json['attention_contrast_ratio'] < 0.01
@@ -107,7 +107,7 @@ def verify():
         assert json_entry["acr_improvement_factor"] > 1.0, f"ACR improvement factor not > 1.0 at L={L}!"
         assert r"\mathbf" in cols_mob[5], "Möbius ACR should be bolded (better)"
 
-        print(f"4. Entropy:")
+        print("4. Entropy:")
         print(f"   LaTeX: std={std_ent_tex:.3f}, mob={mob_ent_tex:.3f}")
         print(f"   JSON:  std={std_json['shannon_entropy']:.3f}, mob={mob_json['shannon_entropy']:.3f}")
         assert abs(std_ent_tex - std_json['shannon_entropy']) < 0.005
@@ -115,7 +115,7 @@ def verify():
         assert mob_ent_tex < std_ent_tex, f"Entropy not lower at L={L}!"
         assert r"\mathbf" in cols_mob[6], "Möbius entropy should be bolded (better)"
 
-        print(f"5. Latency:")
+        print("5. Latency:")
         print(f"   LaTeX: std={std_lat_tex:.3f} ms, mob={mob_lat_tex:.3f} ms")
         assert std_lat_tex == mob_lat_tex, f"Latency should be identical at L={L}"
         assert r"\mathbf" in cols_mob[7], "Möbius latency should be bolded"
