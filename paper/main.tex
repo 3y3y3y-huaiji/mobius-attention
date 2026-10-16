@@ -95,6 +95,9 @@ Geometric deep learning \cite{bronstein2021geometric} provides a unified framewo
 \paragraph{Context Interference and Premise Invalidation.}
 Recent empirical studies have identified context distraction and the inability to forget invalidated premises as critical bottlenecks in long-context language models \cite{liu2024lost, hsieh2024ruler, kamradt2023needle}. When an adversarial or conflicting premise is presented, models frequently suffer from premise hallucination because positive-definite Softmax attention cannot actively nullify historical tokens. Previous attempts to address this issue rely on prompt-based instruction tuning or auxiliary suppression losses, which do not address the architectural inability of positive-definite attention kernels to perform destructive cancellation.
 
+\paragraph{KV-Cache Compression vs. Phase-Modulated Retention.}
+To mitigate memory and latency bottlenecks in extended contexts, recent methods explore token eviction or KV-cache compression \cite{dao2022flashattention, xiao2023streamingllm, zhang2023h2o}. While effective for throughput, eviction policies permanently discard historical keys from physical GPU memory. Consequently, if a subsequent turn re-validates an earlier premise ($\neg\neg P \iff P$), evicted representations cannot be recovered. In contrast, SG-M\"obius preserves the intact KV-cache in GPU memory and achieves selective premise cancellation purely through non-orientable phase modulation, naturally supporting topological recovery under cyclic parity conservation.
+
 \section{Methodology}
 \subsection{Non-Orientable Fiber Bundles and Causal Holonomy}
 Let the input sequence of length $L \in \mathbb{N}$ be defined over a 1D discrete causal lattice:
@@ -319,7 +322,7 @@ As formalized in Algorithm~\ref{alg:kv_decoding}, SG-M\"obius requires zero retr
 To guarantee mathematical correctness and eliminate potential catastrophic failure modes, all topological properties and algebraic invariants were formally certified across two independent verification frameworks:
 
 \paragraph{Lean~4 Interactive Theorem Proving.}
-In \texttt{formal\_verification/MobiusAttention.lean}, we formalize the discrete base manifold, continuous torsion structure, and holonomy transport. We prove five core theorems without unproven axioms or \texttt{sorry} placeholders:
+In \texttt{formal\_verification/MobiusAttention.lean}, we formalize the discrete base manifold, continuous torsion structure, and holonomy transport using the Lean~4 interactive theorem prover \cite{moura2021lean}. We prove five core theorems without unproven axioms or \texttt{sorry} placeholders:
 \begin{itemize}
     \item \emph{Conservation of Flatness} (\texttt{conservation\_of\_flatness}): $\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$ (exact identity reduction to standard RoPE).
     \item \emph{Path-Integral Additivity} (\texttt{holonomy\_path\_additivity}): $\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$ (prefix-sum decomposition along causal trajectory).
@@ -329,7 +332,7 @@ In \texttt{formal\_verification/MobiusAttention.lean}, we formalize the discrete
 \end{itemize}
 
 \paragraph{Z3 SMT Solvers and Property-Based Fuzzing.}
-In \texttt{formal\_verification/verify\_properties.py}, we deploy Z3 SMT solvers to prove that the negations of path-integral additivity, gauge translation invariance, and phase flow factorization are strictly \texttt{UNSAT} across the unbounded real domain. Furthermore, we formally verify the continuous Lipschitz continuity bound of the rotation operator and prefill vs autoregressive KV-cache decoding equivalence, and execute 2,000 extreme-length property-based fuzzing trials across four context regimes ($L \in [10, 512]$, $[512, 2048]$, $[2048, 8192]$, and $[8192, 32768]$) with up to 50 nested reversals:
+In \texttt{formal\_verification/verify\_properties.py}, we deploy the Z3 SMT solver \cite{de2008z3} to prove that the negations of path-integral additivity, gauge translation invariance, and phase flow factorization are strictly \texttt{UNSAT} across the unbounded real domain. Furthermore, we formally verify the continuous Lipschitz continuity bound of the rotation operator and prefill vs autoregressive KV-cache decoding equivalence, and execute 2,000 extreme-length property-based fuzzing trials across four context regimes ($L \in [10, 512]$, $[512, 2048]$, $[2048, 8192]$, and $[8192, 32768]$) with up to 50 nested reversals:
 \begin{itemize}
     \item Maximum cumulative holonomy numerical drift across 32,768 tokens: $1.14 \times 10^{-13}$ (well below machine epsilon).
     \item Dual-modulation norm preservation error: $0.00 \times 10^0$ (exact machine precision), contrasting with $37.17$ maximum error for asymmetric modulation.
@@ -339,7 +342,7 @@ In \texttt{formal\_verification/verify\_properties.py}, we deploy Z3 SMT solvers
 \section{Experiments}
 
 \paragraph{Experimental Setup.}
-All empirical evaluations are conducted strictly on \textbf{Qwen3.5-9B} (\texttt{Qwen/Qwen3.5-9B}) \cite{bai2023qwen} on a dedicated multi-GPU node equipped with dual Nvidia Tesla T4 GPUs (16\,GB VRAM each). The model is executed in native 16-bit floating point (\texttt{torch.float16}) with eager attention, allocating 7.19\,GB on GPU 0 and 10.34\,GB on GPU 1 (total 17.53\,GB VRAM).
+All empirical evaluations are conducted strictly on \textbf{Qwen3.5-9B} (\texttt{Qwen/Qwen3.5-9B}) \cite{qwen25} on a dedicated multi-GPU node equipped with dual Nvidia Tesla T4 GPUs (16\,GB VRAM each). The model is executed in native 16-bit floating point (\texttt{torch.float16}) with eager attention, allocating 7.19\,GB on GPU 0 and 10.34\,GB on GPU 1 (total 17.53\,GB VRAM).
 
 \subsection{Inverted Needle In A Haystack (I-NIAH)}
 We evaluate model robustness using an adversarial Inverted Needle In A Haystack benchmark. In this setting, an initial premise (the ``decoy needle'') is placed into a long filler context, followed by an explicit invalidation statement before the operative target needle. We measure:
