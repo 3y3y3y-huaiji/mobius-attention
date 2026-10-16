@@ -415,16 +415,28 @@ To verify the impact on downstream autoregressive generation, we evaluate text c
     \item \emph{Double Negation Restoration ($L=578$)}: Both configurations successfully generate \texttt{"currently ACTIVE"}, while SG-M\"obius cleanly resumes nominal telemetry tracking, confirming topological parity recovery ($\Delta\Phi = 2\pi$, $+I_2 \in Z(\mathrm{SO}(2))$).
 \end{itemize}
 
-Figure~\ref{fig:scatter} illustrates the underlying log-scale attention scatter distribution extracted from deep layers of Qwen3.5-9B. Under standard RoPE, attention weights to the invalidated premise remain scattered across the background noise floor. Under SG-M\"obius, the distribution bifurcates: active target tokens maintain high attention affinity, while invalidated decoy tokens are driven down by destructive interference.
+Figure~\ref{fig:scaling_acr_entropy} illustrates the multi-scale scaling behavior of the Attention Contrast Ratio and Shannon entropy across context lengths scaling up to 18,030 tokens. Figure~\ref{fig:attention_distribution} depicts the full-context log-attention energy profile $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$). Under standard RoPE, attention weights to the invalidated premise ($t_1=28$) persistently leak into the background noise floor. Under SG-M\"obius, destructive phase interference suppresses obsolete decoy attention while dynamically concentrating probability mass onto the overriding target directive ($t_2=2,258$).
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
     \centering
-    \includegraphics[width=0.88\textwidth]{figures/fig1_inversion_scatter.png}
-    \caption{\textbf{Token attention log-probability distribution and continuous phase flow under successive causal inversions.} 
-    \emph{Top panel}: Attention log-probabilities $\ln P_{i,j}$ across sequence token positions $j \in [0, 546]$. Standard RoPE (blue circles) exhibits a broad, diffuse noise floor ($\sim -6.5$) that continuously leaks attention to outdated tokens. In contrast, SG-M\"obius attention (red circles) dynamically suppresses superseded tokens while producing concentrated log-probability peaks at causal reversal boundaries ($t_1 = 256$, $\Delta\Phi = \pi$) and restorative directives ($t_2 = 512$, $\Delta\Phi = 2\pi$). 
-    \emph{Bottom panel}: Smooth continuous phase flow $\Phi(t)/\pi = \frac{1}{\pi}\int_0^t \omega(\tau) d\tau$ demonstrating continuous phase accumulation across the $\pi$ and $2\pi$ topological boundaries without vertical discontinuities, while standard RoPE maintains $\Phi \equiv 0$.}
-    \label{fig:scatter}
-\end{figure}
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/fig_scaling_acr_entropy.png}
+        \caption{Multi-scale ACR and Shannon entropy scaling ($L \in [545, 18030]$).}
+        \label{fig:scaling_acr_entropy}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/fig_attention_distribution.png}
+        \caption{Log-attention distribution $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$).}
+        \label{fig:attention_distribution}
+    \end{subfigure}
+    \caption{\textbf{Empirical multi-scale context scaling and full-context attention profiles on Qwen3.5-9B (dual Tesla T4 GPUs).} 
+    (a) Attention Contrast Ratio (left) and Shannon entropy (right) scaling across sequence lengths from $545$ up to $18,030$ tokens. SG-M\"obius achieves up to $2.33\times$ suppression of obsolete decoy attention and $+118.0\%$ ACR gain at 18,030 tokens while scaling gracefully in entropy. 
+    (b) Sequence-wide log-attention energy profile $\ln A_{T-1, t}$ at $L=4,480$: Standard RoPE (blue) continuously leaks positive-definite attention to the revoked premise ($t_1=28$), while SG-M\"obius (red) enforces active destructive phase cancellation ($\Delta\Phi = \pi$) at the obsolete premise and concentrates probability mass on the overriding directive ($t_2=2,258$).}
+    \label{fig:scaling_and_distribution}
+\end{figure*}
 
 \subsection{Autoregressive KV-Cache Decoding Latency \& Micro-Benchmark Overhead}
 To provide an honest and rigorous analysis of computational latency, we report latency at two complementary granularities:

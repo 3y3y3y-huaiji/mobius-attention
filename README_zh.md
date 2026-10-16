@@ -316,16 +316,17 @@ with torch.no_grad():
 
 ## 🖼️ 全套科研图表与真实实测证据
 
-所有 6 幅高分辨率科研成果图表均基于双路英伟达 Tesla T4 GPU 上的 `Qwen/Qwen3.5-9B` 真实激活数据绘制（分辨率均为 300 DPI）：
+所有 7 幅高分辨率科研成果图表均基于双路英伟达 Tesla T4 GPU 上的 `Qwen/Qwen3.5-9B` 真实激活数据绘制（分辨率均为 300 DPI）：
 
 | 图号与文件标识 | 图表直观预览 | 核心科研实测发现与机理解析 |
 | :---: | :--- | :--- |
-| **图 1**<br>`assets/fig1_inversion_scatter.png` | [![图 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **注意力 Logit 能量分布与拓扑相干流**：绘制 Token 坐标 $j \in [0, 546]$ 处的对数注意力能量 $\ln A_{ij}$。标准 RoPE（蓝色）表现为弥散的平坦底噪 ($\sim -6.5$)；SG-Möbius（红色）在转折点 ($t_1 = 256, \Delta\Phi=\pi$)及双重转折处 ($t_2 = 512, \Delta\Phi=2\pi$)形成清晰的拓扑相干汇聚峰，并深度压制无效填充语境。 |
+| **图 1**<br>`assets/fig_attention_distribution.png` | [![图 1](assets/fig_attention_distribution.png)](assets/fig_attention_distribution.png) | **全序列对数注意力能量分布 (Qwen3.5-9B, $L=4,480$)**：全上下文对数注意力曲线 $\ln A_{T-1, t}$。标准 RoPE（蓝色）向废弃前置命题（$t_1 = 28$）持续正定性泄漏；SG-Möbius（红色）在废弃命题处通过对极相消（$\Delta\Phi = \pi$）物理切断注意力泄露，并将概率质量守恒重聚于最新修正指令（$t_2 = 2,258$）。 |
 | **图 2**<br>`assets/fig2_2d_heatmap.png` | [![图 2](assets/fig2_2d_heatmap.png)](assets/fig2_2d_heatmap.png) | **全景二维因果注意力矩阵 ($N \times N$)**：基于 Qwen3.5-9B 第 7 层的 $298 \times 298$ 矩阵对比。标准 RoPE（*左*）在因果下三角呈现大面积背景漏失；SG-Möbius（*右*）在转折边界展现出极其锐利的整块相消熄灭，物理切断后文对废弃前置命题的注意力回溯。 |
 | **图 3**<br>`assets/fig3_differential_heatmap.png` | [![图 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **主动相消差值对比热力图 ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**：双极发散色彩映射。深蓝色区域展示强烈的代数相消 ($\Delta A \le -0.148$)，精准覆盖被推翻的前置命题空间；鲜艳红色区域 ($\Delta A \ge +0.500$)展现概率质量守恒重聚至有效目标事实。 |
 | **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义扭率与光滑莫比乌斯相位流**：*上图*：连续扭率在平坦叙述中恒为严格的 $\omega(t) \equiv 0$，在识别到转折区间时 ($t \approx 51$)平滑激活。*下图*：因果累积规范势展现出光滑的连续爬升，平稳跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
 | **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：(a) **标准 RoPE**：无区分均匀衰减；(b) **固定 256 周期莫比乌斯基线**：当转折发生在非 256 位置 ($t \approx 51$) 时完全相位错位失效；(c) **自适应 SG-Möbius**：在转折区间构建极度精准的垂直因果截断壁。 |
 | **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **莫比乌斯周期相位回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下 ($t_1 \approx 39, t_2 \approx 133$)，首次转折产生相消 ($\Delta\Phi=\pi$)，二次转折推动相位达到 $\Delta\Phi=2\pi$，自然重回正向分支 ($\cos(2\pi) = +1$)，以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$)。 |
+| **图 7**<br>`assets/fig_scaling_acr_entropy.png` | [![图 7](assets/fig_scaling_acr_entropy.png)](assets/fig_scaling_acr_entropy.png) | **多尺度长程扩展对抗实测基准 ($L \in [545, 18030]$)**：(a) 注意力对比度 (ACR) 在程序化对抗扩展下持续提升至 $2.87$（$+118.0\%$ 净增益）。(b) 注意力香农熵 $H(P)$ 随序列体积平滑扩展，中性文本上保持 0 误杀。 |
 
 ---
 
@@ -440,8 +441,9 @@ pytest -q
 
 ```
 .
-├── assets/                             # 6 幅高分辨率科研论文插图 (PNG, 300 DPI)
-│   ├── fig1_inversion_scatter.png      # 注意力 Logit 对极反转微观动力学
+├── assets/                             # 7 幅高分辨率科研论文插图 (PNG, 300 DPI)
+│   ├── fig_attention_distribution.png  # 全序列对数注意力能量分布曲线 (L=4480)
+│   ├── fig_scaling_acr_entropy.png     # 多尺度 ACR 与香农熵扩展评测 (18k 上下文)
 │   ├── fig2_2d_heatmap.png            # 二维全景因果注意力矩阵对比
 │   ├── fig3_differential_heatmap.png   # 拓扑差值热力图 (Delta A)
 │   ├── fig4_gauge_curvature.png        # 自适应规范场曲率 omega(t) 与和乐
@@ -450,7 +452,9 @@ pytest -q
 ├── examples/                           # 可直接运行的应用范例
 │   └── qwen_demo.py                    # 完整的 Qwen3.5-9B 注入与生成演示
 ├── experiments/                        # 经验基准评测、运行脚本与实验数据
-│   ├── benchmark_results.json          # 跨长度上下文缩放数据 (L=512 至 8192) 与 KV 延迟
+│   ├── kaggle_experiment_results.json  # 双路 Tesla T4 多尺度长程实测全量数据 (L=545 至 18,030 Tokens)
+│   ├── run_kaggle_experiment.py        # 云端生产级全量自动化评测脚本
+│   ├── benchmark_results.json          # 跨长度上下文缩放数据与 KV 延迟
 │   ├── data/
 │   │   ├── adaptive_attention_results.npz  # Qwen3.5-9B 真实注意力激活张量
 │   │   └── adaptive_metrics.json          # Qwen3.5-9B 真实香农熵评测记录

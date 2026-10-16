@@ -316,16 +316,17 @@ with torch.no_grad():
 
 ## 🖼️ Complete Visual Gallery
 
-All 6 high-resolution publication figures generated from real `Qwen/Qwen3.5-9B` activations on dual Nvidia T4 GPUs:
+All 7 high-resolution publication figures generated from real `Qwen/Qwen3.5-9B` activations on dual Nvidia T4 GPUs:
 
 | Figure & Identifier | Visual Preview | Empirical Discovery & Analysis |
 | :---: | :--- | :--- |
-| **Figure 1**<br>`assets/fig1_inversion_scatter.png` | [![Figure 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **Logit Energy & Topological Phase Flow**: Log-scale attention logit energy ($\ln A_{ij}$) across token coordinates $j \in [0, 546]$. Standard RoPE (blue) maintains a flat noise floor at $\sim -6.5$. SG-Möbius (red) produces concentrated logit peaks at the reversal boundaries ($t_1 = 256, \Delta\Phi=\pi$) and restorative directives ($t_2 = 512, \Delta\Phi=2\pi$) while deeply suppressing filler context. |
+| **Figure 1**<br>`assets/fig_attention_distribution.png` | [![Figure 1](assets/fig_attention_distribution.png)](assets/fig_attention_distribution.png) | **Full-Context Attention Profile on Qwen3.5-9B ($L=4,480$)**: Sequence-wide log-attention energy profile ($\ln A_{T-1, t}$). Standard RoPE (blue) continuously leaks positive-definite attention into the revoked decoy premise ($t_1 = 28$); SG-Möbius (red) applies destructive phase cancellation ($\Delta\Phi = \pi$) at the obsolete premise, extinguishing decoy leakage and concentrating probability mass onto the overriding target directive ($t_2 = 2,258$). |
 | **Figure 2**<br>`assets/fig2_2d_heatmap.png` | [![Figure 2](assets/fig2_2d_heatmap.png)](assets/fig2_2d_heatmap.png) | **Full-Context Attention Matrix ($N \times N$) Under Midpoint Inversion**: Side-by-side $298 \times 298$ causal attention comparison on Qwen3.5-9B Layer 7. Standard RoPE (*left*) continuously leaks attention mass into historical context. SG-Möbius (*right*) enforces clean block nullification across the causal boundary, extinguishing obsolete keys. |
 | **Figure 3**<br>`assets/fig3_differential_heatmap.png` | [![Figure 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **Differential Contrast Map ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**: Diverging colormap centered at zero. Deep blue demonstrates active destructive cancellation ($\Delta A \le -0.148$) over the negated premise subspace; vibrant red reveals focal reinforcement ($\Delta A \ge +0.500$) diverting attention mass to operative tokens. |
 | **Figure 4**<br>`assets/fig4_gauge_curvature.png` | [![Figure 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **Dynamic Semantic Torsion Rate and Smooth Möbius Phase Flow**: *Top*: Continuous torsion rate evaluates to $\omega(t) \equiv 0$ on neutral narrative and smoothly activates across contrastive intervals ($t \approx 51$). *Bottom*: Cumulative phase flow $\Phi(t) = \sum \omega(\tau)$ smoothly rises across the $\Phi=\pi$ destructive interference boundary. |
 | **Figure 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![Figure 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Arbitrary-Position Inversion Comparison on Qwen3.5-9B**: (a) **Standard RoPE**: Uniform non-selective decay. (b) **Fixed-Period Möbius** ($T=256$): Rigid sinusoidal period fails when reversal occurs at an arbitrary token ($t \approx 51$). (c) **Adaptive SG-Möbius**: Pin-point vertical causal barrier precisely across the transition interval with complete suppression of preceding context. |
 | **Figure 6**<br>`assets/fig6_double_negation_restoration.png` | [![Figure 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **Möbius Cyclic Phase Restoration ($\neg\neg P \iff P$)**: Under two successive contrastive turns ($t_1 \approx 39, t_2 \approx 133$), the first twist induces cancellation ($\Delta\Phi=\pi$), while the second twist advances the phase to $\Delta\Phi=2\pi$, returning to positive alignment ($\cos(2\pi) = +1$) and recovering strong resonance (gains up to $+0.333$). |
+| **Figure 7**<br>`assets/fig_scaling_acr_entropy.png` | [![Figure 7](assets/fig_scaling_acr_entropy.png)](assets/fig_scaling_acr_entropy.png) | **Multi-Scale Long-Context Scaling Benchmark ($L \in [545, 18030]$)**: (a) Attention Contrast Ratio (ACR) scaling steadily up to $2.87$ ($+118.0\%$ gain) under procedural adversarial scaling on dual Tesla T4 GPUs. (b) Attention Shannon entropy $H(P)$ scaling across sequence volumes with zero false suppression on neutral text. |
 
 ---
 
@@ -440,8 +441,9 @@ The comprehensive 367-test suite covers:
 
 ```
 .
-├── assets/                             # 6 High-resolution publication figures (PNG, 300 DPI)
-│   ├── fig1_inversion_scatter.png      # Attention logit antipodal inversion dynamics
+├── assets/                             # 7 High-resolution publication figures (PNG, 300 DPI)
+│   ├── fig_attention_distribution.png  # Sequence-wide log-attention energy profile (L=4480)
+│   ├── fig_scaling_acr_entropy.png     # Multi-scale ACR & Shannon entropy scaling (18k context)
 │   ├── fig2_2d_heatmap.png            # Full-context attention matrix under midpoint inversion
 │   ├── fig3_differential_heatmap.png   # Differential attention weight matrix (Delta A)
 │   ├── fig4_gauge_curvature.png        # Semantic gauge curvature omega(t) & holonomy
@@ -450,7 +452,9 @@ The comprehensive 367-test suite covers:
 ├── examples/                           # Executable application demonstrations
 │   └── qwen_demo.py                    # Complete Qwen3.5-9B injection & inference script
 ├── experiments/                        # Empirical benchmarks, runner scripts & data
-│   ├── benchmark_results.json          # Multi-length context scaling (L=512 to 8192) & KV latency
+│   ├── kaggle_experiment_results.json  # Dual Tesla T4 multi-scale scaling (L=545 to 18,030 tokens)
+│   ├── run_kaggle_experiment.py        # Cloud production benchmark runner script
+│   ├── benchmark_results.json          # Multi-length context scaling & KV latency
 │   ├── data/
 │   │   ├── adaptive_attention_results.npz  # Real Qwen3.5-9B attention activation tensors
 │   │   └── adaptive_metrics.json          # Real Qwen3.5-9B Shannon entropy reductions

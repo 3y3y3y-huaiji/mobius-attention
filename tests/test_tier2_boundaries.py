@@ -637,7 +637,7 @@ class TestTier2Feature11Boundaries:
         """Publication standard: min width 600 px for raster figures."""
         assets_dir = os.path.join(PROJECT_ROOT, "assets")
         # Check first figure size
-        fig1_path = os.path.join(assets_dir, "fig1_inversion_scatter.png")
+        fig1_path = os.path.join(assets_dir, "fig_attention_distribution.png")
         assert os.path.getsize(fig1_path) > 100000
 
     def test_t2_f11_05_font_embedding_pdf_compatibility(self):

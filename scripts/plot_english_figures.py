@@ -10,6 +10,7 @@ Outputs:
   - paper/figures/fig6_double_negation_restoration.png
 """
 
+import json
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -31,71 +32,44 @@ os.makedirs(out_dir, exist_ok=True)
 os.makedirs(assets_dir, exist_ok=True)
 
 # -----------------------------------------------------------------------------
-# FIGURE 1: Scatter Distribution & Attention Streamlines
+# FIGURE 1: Multi-Scale ACR & Shannon Entropy Scaling (Dual Tesla T4 Production Run)
 # -----------------------------------------------------------------------------
-print("[1/6] Rendering Figure 1: Inversion Scatter & Streamlines...")
-seq_len = 546
-cycle_len = 256
-dim = 64
-np.random.seed(42)
+print("[1/6] Rendering Figure 1: Multi-Scale Scaling Benchmark...")
+json_path = "experiments/kaggle_experiment_results.json"
+with open(json_path, "r", encoding="utf-8") as f:
+    bench_data = json.load(f)["scaling_benchmarks"]
 
-t = np.arange(seq_len)
-inv_freq = 1.0 / (10000.0 ** (np.arange(0, dim, 2) / dim))
-freqs = np.outer(t, inv_freq)
+lengths = [bench_data[k]["seq_len"] for k in bench_data]
+std_acrs = [bench_data[k]["standard_rope"]["attention_contrast_ratio"] for k in bench_data]
+mob_acrs = [bench_data[k]["mobius_rope"]["attention_contrast_ratio"] for k in bench_data]
+std_entropies = [bench_data[k]["standard_rope"]["shannon_entropy"] for k in bench_data]
+mob_entropies = [bench_data[k]["mobius_rope"]["shannon_entropy"] for k in bench_data]
 
-# Continuous phase flow Phi(t) with smooth S-curves at two reversal transitions
-tau_trans = 12.0
-phi_t = (
-    np.pi / (1.0 + np.exp(-(t - 256.0) / tau_trans)) +
-    np.pi / (1.0 + np.exp(-(t - 512.0) / tau_trans))
-)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5.2), dpi=300)
 
-semantic_focus = np.zeros(seq_len)
-semantic_focus[0:15] += 2.2      # Initial premise A
-semantic_focus[240:270] += 3.8  # Causal reversal pivot at 256
-semantic_focus[500:530] += 4.5  # Secondary restoration pivot at 512
-noise = np.random.normal(0, 0.45, seq_len)
+# Panel 1: Attention Contrast Ratio
+ax1.plot(lengths, std_acrs, 'o--', color='#d9534f', label='Standard RoPE Baseline', linewidth=2.0, markersize=7)
+ax1.plot(lengths, mob_acrs, 's-', color='#2e6da4', label='SG-Möbius-RoPE (Ours, +118.0% at 18k)', linewidth=2.5, markersize=8)
+ax1.set_xscale('log', base=2)
+ax1.set_xlabel('Context Sequence Length (Tokens)', fontweight='bold')
+ax1.set_ylabel('Attention Contrast Ratio (ACR)', fontweight='bold')
+ax1.set_title('(a) Attention Contrast Ratio Scaling ($L \\in [545, 18030]$)', fontweight='bold', pad=10)
+ax1.grid(True, which="both", ls="--", alpha=0.3)
+ax1.legend(loc="upper left", frameon=True, framealpha=0.92)
 
-# Log-probabilities ln(P_ij) <= 0
-raw_std = -0.015 * t + 0.3 * np.cos(2 * np.pi * t / 128) + semantic_focus * 0.45 + noise - 6.5
-raw_mob = raw_std.copy()
-# Destructive interference suppresses invalidated premise
-raw_mob[0:50] -= 3.5 * (1.0 / (1.0 + np.exp(-(256.0 - t[0:50]) / 10.0)))
-# Focus sharpens at reversal pivots
-raw_mob += 3.2 * np.exp(-((t - 256)**2) / (2 * 14**2))
-raw_mob += 2.6 * np.exp(-((t - 515)**2) / (2 * 16**2))
-filler_mask = ((t > 50) & (t < 230)) | ((t > 280) & (t < 480))
-raw_mob[filler_mask] -= 0.65
-
-fig, (ax_scat, ax_trend) = plt.subplots(2, 1, figsize=(14, 8), sharex=True, dpi=300,
-                                        gridspec_kw={'height_ratios': [2.2, 1]})
-
-ax_scat.scatter(t, raw_std, color="#4A90E2", alpha=0.45, s=22, label=r"Standard RoPE $\ln P_{ij}$")
-ax_scat.scatter(t, raw_mob, color="#D0021B", alpha=0.65, s=28, label=r"SG-Möbius $\ln P_{ij}$ (Ours)")
-
-# Pivot highlights
-ax_scat.axvline(256, color="#9013FE", linestyle="--", linewidth=1.8, label=r"1st Inversion Transition ($t_1 \approx 256, \Delta\Phi=\pi$)")
-ax_scat.axvline(512, color="#417505", linestyle="--", linewidth=1.8, label=r"2nd Inversion Transition ($t_2 \approx 512, \Delta\Phi=2\pi$)")
-
-ax_scat.set_ylabel(r"Attention Log-Probability $\ln P_{ij}$", fontweight='bold')
-ax_scat.set_title("Figure 1: Token Attention Log-Probability and Continuous Phase Flow Under Successive Inversions", fontweight='bold', pad=12)
-ax_scat.grid(True, linestyle=":", alpha=0.5)
-ax_scat.legend(loc="upper right", frameon=True, framealpha=0.92)
-
-# Smooth Continuous Phase Flow
-ax_trend.plot(t, np.zeros_like(t), color="#4A90E2", linewidth=2.5, linestyle="--", label=r"Standard RoPE ($\Phi \equiv 0$, Trivial Orientable Flow)")
-ax_trend.plot(t, phi_t / np.pi, color="#D0021B", linewidth=2.5, label=r"SG-Möbius Continuous Phase Flow $\Phi(t)/\pi$")
-ax_trend.axhline(1.0, color="#9013FE", linestyle=":", linewidth=1.5, alpha=0.8, label=r"$\pi$ Half-Twist Boundary (Destructive Interference)")
-ax_trend.axhline(2.0, color="#417505", linestyle=":", linewidth=1.5, alpha=0.8, label=r"$2\pi$ Double-Covering Boundary (Parity Restoration)")
-ax_trend.set_xlabel("Sequence Token Position ($j$)", fontweight='bold')
-ax_trend.set_ylabel(r"Cumulative Phase $\Phi(t)/\pi$", fontweight='bold')
-ax_trend.set_ylim(-0.15, 2.35)
-ax_trend.grid(True, linestyle=":", alpha=0.5)
-ax_trend.legend(loc="upper left", frameon=True, framealpha=0.92)
+# Panel 2: Shannon Entropy
+ax2.plot(lengths, std_entropies, 'o--', color='#d9534f', label='Standard RoPE Baseline', linewidth=2.0, markersize=7)
+ax2.plot(lengths, mob_entropies, 's-', color='#3c763d', label='SG-Möbius-RoPE (Ours)', linewidth=2.5, markersize=8)
+ax2.set_xscale('log', base=2)
+ax2.set_xlabel('Context Sequence Length (Tokens)', fontweight='bold')
+ax2.set_ylabel('Attention Shannon Entropy $H(P)$', fontweight='bold')
+ax2.set_title('(b) Attention Shannon Entropy Across Scaling Regime', fontweight='bold', pad=10)
+ax2.grid(True, which="both", ls="--", alpha=0.3)
+ax2.legend(loc="upper left", frameon=True, framealpha=0.92)
 
 plt.tight_layout()
-plt.savefig(os.path.join(out_dir, "fig1_inversion_scatter.png"), bbox_inches='tight')
-plt.savefig(os.path.join(assets_dir, "fig1_inversion_scatter.png"), bbox_inches='tight')
+plt.savefig(os.path.join(out_dir, "fig_scaling_acr_entropy.png"), bbox_inches='tight')
+plt.savefig(os.path.join(assets_dir, "fig_scaling_acr_entropy.png"), bbox_inches='tight')
 plt.close()
 
 # -----------------------------------------------------------------------------

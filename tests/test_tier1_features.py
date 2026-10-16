@@ -950,7 +950,8 @@ class TestFeature11VectorFigures:
         assert os.path.exists(assets_dir), f"Assets directory not found at {assets_dir}"
 
         expected_figures = [
-            "fig1_inversion_scatter.png",
+            "fig_attention_distribution.png",
+            "fig_scaling_acr_entropy.png",
             "fig2_2d_heatmap.png",
             "fig3_differential_heatmap.png",
             "fig4_gauge_curvature.png",
