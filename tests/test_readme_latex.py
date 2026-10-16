@@ -123,6 +123,10 @@ def test_display_math_block_isolation(readme_path):
                 f"Line {line_num} in {readme_path} has unisolated $$: '{stripped}'. "
                 "Display math delimiters '$$' must be on their own line without embedded equation text."
             )
+            assert not line.startswith(" "), (
+                f"Line {line_num} in {readme_path}: Display math '$$' must start at column 0 without indentation. "
+                "GitHub math renderer treats indented $$ (e.g. inside lists) as plain text."
+            )
             if not in_math_block:
                 # Opening $$
                 in_math_block = True

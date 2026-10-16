@@ -109,21 +109,23 @@ flowchart LR
 
 ### Continuous Torsion Rate & Smooth Phase Flow
 
-1. **Continuous Torsion Rate & Viscous Smoothing**: At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$, smoothed by 1D viscous EMA diffusion:
+#### 1. Continuous Torsion Rate & Viscous Smoothing
+At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$, smoothed by 1D viscous EMA diffusion:
 
-   $$
-   \omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
-   $$
+$$
+\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
+$$
 
 where $\nu \in (0, 1]$ is the viscosity parameter and $g_{h,m}(h_t)$ projects hidden state $h_t$ to semantic torsion density.
 - *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
 - *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \text{smooth accumulation towards } \Delta\Phi = \pi$
 
-2. **Path-Integral Additivity & Prefix-Sum Decomposition**: Parallel transport along the causal trajectory yields the cumulative phase flow:
+#### 2. Path-Integral Additivity & Prefix-Sum Decomposition
+Parallel transport along the causal trajectory yields the cumulative phase flow:
 
-   $$
-   \Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
-   $$
+$$
+\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
+$$
 
 where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
 
@@ -135,21 +137,21 @@ To restore the authentic, everywhere-smooth geometric spirit of the Möbius stri
 
 We partition the $d/2$ planar rotation channels into two functional sectors:
 
-- **Structural Anchor Subspace** ($\mathcal{S}_{\mathrm{anchor}}$): Retains vanishing torsion and phase:
+**Structural Anchor Subspace** ($\mathcal{S}_{\mathrm{anchor}}$): Retains vanishing torsion and phase:
 
-  $$
-  \omega_{h,m}(t) \equiv 0, \quad \Phi_{h,m}(t) \equiv 0 \quad (\forall m \in \mathcal{S}_{\mathrm{anchor}})
-  $$
+$$
+\omega_{h,m}(t) \equiv 0, \quad \Phi_{h,m}(t) \equiv 0 \quad (\forall m \in \mathcal{S}_{\mathrm{anchor}})
+$$
 
-  preserving baseline syntax, positional ordering, and system prompt directives without distortion.
+preserving baseline syntax, positional ordering, and system prompt directives without distortion.
 
-- **Semantic Evolution Subspace** ($\mathcal{S}_{\mathrm{mob}}$): Dynamically evolves via the continuous torsion flow:
+**Semantic Evolution Subspace** ($\mathcal{S}_{\mathrm{mob}}$): Dynamically evolves via the continuous torsion flow:
 
-  $$
-  \Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau) \quad (\forall m \in \mathcal{S}_{\mathrm{mob}})
-  $$
+$$
+\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau) \quad (\forall m \in \mathcal{S}_{\mathrm{mob}})
+$$
 
-  executing smooth phase advection across narrative turns.
+executing smooth phase advection across narrative turns.
 
 #### 2. Non-Negative Feature Map Envelope
 
