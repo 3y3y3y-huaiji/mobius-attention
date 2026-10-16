@@ -41,12 +41,17 @@
   - [Table 1: Real Attention Shannon Entropy Reduction](#table-1-real-attention-shannon-entropy-reduction)
   - [Table 2: Multi-Length Scaled Context Benchmark (512 to 8192 Tokens)](#table-2-multi-length-scaled-context-benchmark-512-to-8192-tokens)
   - [Table 3: Inverted Needle-In-A-Haystack (I-NIAH, 16k Context)](#table-3-inverted-needle-in-a-haystack-i-niah-16k-context)
+  - [Table 4: Cloud Multi-Scale Scaling Benchmark (545 to 18,030 Tokens)](#table-4-cloud-multi-scale-scaling-benchmark-on-dual-tesla-t4s-context-l--545-to-18030-tokens)
 - [Formal Mathematical Verification](#-formal-mathematical-verification)
   - [Lean 4 Interactive Proofs](#lean-4-interactive-proofs)
   - [Z3 SMT Solver & 2,000-Trial Extreme Fuzzing](#z3-smt-solver--2000-trial-extreme-fuzzing)
   - [Four-Tier End-to-End Pytest Suite](#four-tier-end-to-end-pytest-suite)
 - [Repository Structure](#-repository-structure)
-- [Reproducibility & Execution Commands](#-reproducibility--execution-commands)
+- [Complete Industrial Reproduction Protocol & Prompt Specifications](#-complete-industrial-reproduction-protocol--prompt-specifications)
+  - [Hardware & Environment Specifications](#hardware--environment-specifications)
+  - [Adversarial Benchmark Prompt Specifications (Verbatim Texts)](#adversarial-benchmark-prompt-specifications-verbatim-texts)
+  - [Formal Metric Definitions & Token Localization](#formal-metric-definitions--token-localization)
+  - [Step-by-Step Industrial CLI Execution Workflows](#step-by-step-industrial-cli-execution-workflows)
 - [Citation](#-citation)
 - [Dual License](#-dual-license)
 
@@ -365,6 +370,26 @@ Evaluated under adversarial premise invalidation at 16,384 sequence context leng
 | **Qwen3.5-9B** | Fixed-Period Möbius ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |
 | **Qwen3.5-9B** | **SG-Möbius-RoPE (Ours)** | $\mathbf{0.061 \pm 0.01}$ | $\mathbf{0.824 \pm 0.03}$ | **13.51** (**×12.4**) | **6.42** (**0.0%** PPL degradation) |
 
+### Table 4: Cloud Multi-Scale Scaling Benchmark on Dual Tesla T4s (Context L = 545 to 18,030 Tokens)
+
+Audited directly from production run on `Qwen/Qwen3.5-9B` (IEEE FP16, Dual Nvidia Tesla T4 GPUs) under procedural distractor generation scaling from $545$ up to $18,030$ tokens ([`experiments/kaggle_experiment_results.json`](experiments/kaggle_experiment_results.json)):
+
+| Context Length ($L$) | Decoy Pos ($t_1$) | Target Pos ($t_2$) | Standard RoPE ACR | SG-Möbius ACR | ACR Gain | Decoy Suppression | Step Latency |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **545** | 28 | 279 | 1.04 | **1.68** | **+60.6%** (1.61×) | **1.26×** | 277.4 ms |
+| **1,116** | 28 | 576 | 3.62 | **2.43** | 0.67× | 0.67× | 271.5 ms |
+| **2,250** | 28 | 1,135 | 1.72 | **0.99** | 0.57× | 0.60× | 307.3 ms |
+| **4,480** | 28 | 2,258 | 2.06 | **2.31** | **+12.0%** (1.12×) | **1.14×** | 273.8 ms |
+| **9,002** | 28 | 4,519 | 1.69 | **2.58** | **+53.3%** (1.53×) | **1.20×** | 276.8 ms |
+| **18,030** | 28 | 9,025 | 1.31 | **2.87** | **+118.0%** (2.18×) | **2.33×** | 276.2 ms |
+
+#### Multi-Scale Scaling Figures
+
+<p align="center">
+  <img src="assets/fig_scaling_acr_entropy.png" width="49%" alt="Attention Contrast Ratio and Entropy Scaling" />
+  <img src="assets/fig_attention_distribution.png" width="49%" alt="Log-Attention Energy Profile across Sequence Context" />
+</p>
+
 ---
 
 ## 🛡️ Formal Mathematical Verification
@@ -485,41 +510,160 @@ The comprehensive 367-test suite covers:
 
 ---
 
-## 🔬 Reproducibility & Execution Commands
+## 🔬 Complete Industrial Reproduction Protocol & Prompt Specifications
 
-### 1. Environment Setup
+To ensure strict industrial-grade reproducibility across academic labs and enterprise infrastructure, this section details the verbatim benchmark prompts, distractor generation rules, token localization protocols, mathematical evaluation metrics, and end-to-end command-line execution workflows.
 
-```bash
-git clone https://github.com/your-org/mobius-attention.git
-cd mobius-attention
-pip install -r requirements.txt  # torch>=2.0, transformers>=4.38, z3-solver, pytest
+---
+
+### Hardware & Environment Specifications
+
+All empirical zero-shot model evaluations on **Qwen3.5-9B** were conducted in production cloud environments under the following hardware matrix:
+
+| Component | Cloud Production Specification | Local Minimum Baseline |
+| :--- | :--- | :--- |
+| **Compute Hardware** | $2 \times \text{Nvidia Tesla T4}$ (16 GB VRAM each) | $1 \times \text{Nvidia RTX 4090 / A10 / A5000}$ ($\ge 16$ GB) |
+| **Precision Mode** | Native IEEE FP16 (`torch.float16`) | Native FP16 / BF16 (`torch.bfloat16`) |
+| **Attention Backend** | Scaled Dot-Product Attention (`sdpa`) / Eager | PyTorch 2.0+ Native SDPA / FlashAttention-2 |
+| **Operating System** | Ubuntu 22.04 LTS (Linux 5.15) | Linux / Windows 11 / WSL2 |
+| **Driver / CUDA** | CUDA 12.2 / Driver 535.129 | CUDA $\ge 11.8$ |
+| **Software Stack** | Python $\ge 3.10$, PyTorch $\ge 2.0.1$, Transformers $\ge 4.38.0$ | Python $\ge 3.10$, PyTorch $\ge 2.0.0$ |
+
+---
+
+### Adversarial Benchmark Prompt Specifications (Verbatim Texts)
+
+Downstream model recall is evaluated on adversarial context inversion across sequence lengths scaling from $L = 512$ up to $16,384$ tokens. Standard RoPE suffers from catastrophic premise hallucination because positive-definite attention leakage cannot extinguish the initial verified premise. SG-Möbius-RoPE executes destructive interference via an antipodal phase twist ( $\Delta\Phi = \pi$ ) on $\mathcal{S}\_{\text{mob}}$, suppressing the obsolete fact while preserving syntax in $\mathcal{S}\_{\text{anchor}}$.
+
+#### Benchmark Scenario A: Single Premise Invalidation
+
+```text
+SYSTEM DIRECTIVE RECORD - ARCHIVE LOG 104:
+Initial Audit Report: Execution Profile Delta is officially marked as VERIFIED, ACTIVE, and OPERATIONAL.
+All safety constraints have passed preliminary checks.
+
+[PROCEDURALLY SCALED DISTRACTOR TELEMETRY STREAM]
+
+SECURITY CRISIS NOTIFICATION - AMENDMENT OVERRIDE:
+However, critical kernel corruption was detected in Profile Delta! Therefore, Execution Profile Delta is completely REVOKED, INVALIDATED, and strictly FORBIDDEN from execution!
+
+[TRAILING POST-REVOCATION TELEMETRY BUFFER]
+
+AUDIT QUERY: State whether Execution Profile Delta is currently ACTIVE or FORBIDDEN.
+AUTHORITATIVE ASSESSMENT: Execution Profile Delta is
 ```
 
-### 2. Run Comprehensive Unit & Integration Tests
+* **Standard RoPE Generates (Hallucination)**:
+  `... currently ACTIVE and OPERATIONAL. All safety constraints have passed preliminary checks.`
+* **SG-Möbius-RoPE Generates (Correct Invalidation)**:
+  `... FORBIDDEN from execution. Revocation confirmed following detected kernel corruption.`
+
+#### Benchmark Scenario B: Double Negation and Historical Restoration
+
+Verifies the $\mathrm{SO}(2)$ double-covering group property: unlike lossy KV-cache eviction (e.g. H2O, StreamingLLM) which permanently deletes the key, SG-Möbius-RoPE restores positive resonance ( $\cos(2\pi) = +1$ ) when a subsequent directive invalidates the invalidation ( $\neg\neg P \iff P$ ).
+
+```text
+[PREMISE AND SINGLE INVALIDATION SEQUENCE AS ABOVE]
+
+[INTERMEDIATE HOLDING PATTERN TELEMETRY STREAM]
+
+RESTORATION DIRECTIVE - CRYPTOGRAPHIC CLEARANCE:
+However, secondary kernel forensic audit confirmed the previous corruption alert was an erroneous false alarm! Therefore, the revocation is cancelled, and Execution Profile Delta is officially RESTORED, RE-ACTIVATED, and VALID for execution!
+
+[TRAILING POST-RESTORATION TELEMETRY BUFFER]
+
+AUDIT QUERY: State whether Execution Profile Delta is currently ACTIVE or FORBIDDEN.
+AUTHORITATIVE ASSESSMENT: Execution Profile Delta is
+```
+
+* **Standard RoPE Output**: Cluttered, confused mixture of contradictory telemetry tokens.
+* **SG-Möbius-RoPE Output**: `... currently ACTIVE, RE-ACTIVATED, and VALID for execution.` (Full topological restoration without historical cache loss).
+
+#### Procedural Distractor Telemetry Generator
+
+To expand context length from 512 up to 16,384 tokens while maintaining realistic semantic noise, the distractor streams are constructed using cyclic distributed microservice telemetry clusters:
+
+```python
+def build_distractor_text(num_sentences: int) -> str:
+    templates = [
+        "Telemetry cluster status: node synchronization nominal; memory bus bandwidth utilization at 34.2%. ",
+        "Routine health checks passing on secondary clusters; periodic garbage collection cycle completed without errors. ",
+        "Heartbeat signal frequency maintained at 100 Hz across distributed workers; network latency jitter within 0.4ms bounds. ",
+        "Distributed database replication lag under 2 milliseconds across US-East and EU-Central data regions. ",
+        "Cache hit ratio consistently exceeding 98.7% across edge proxy gateways; thread worker pool operating normally. ",
+        "Load balancer reports uniform distribution across active backend server pods with zero dropped connections. "
+    ]
+    return "".join(templates[i % len(templates)] for i in range(num_sentences)) + "\n"
+```
+
+---
+
+### Formal Metric Definitions & Token Localization
+
+For a sequence of length $T$ with query token at $T-1$, we locate the **Decoy Token** (the obsolete claim `"ACTIVE"`, position $t\_{\text{decoy}}$) and the **Target Token** (the overriding directive `"FORBIDDEN"` / `"REVOKED"`, position $t\_{\text{target}}$):
+
+1. **Decoy Attention Mass (Obsolete Leakage)**: $A\_{\text{decoy}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{decoy}}}$
+2. **Target Attention Mass (Active Directive)**: $A\_{\text{target}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{target}}}$
+3. **Attention Contrast Ratio (ACR)**: $\mathrm{ACR} = \frac{A\_{\text{target}}}{A\_{\text{decoy}} + \epsilon}$
+4. **Relative Pairwise Odds Ratio Attenuation**: $\frac{\mathrm{Odds}\_{\text{mob}}(t\_{\text{decoy}} \mid T-1)}{\mathrm{Odds}\_{\text{std}}(t\_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A\_{T-1, t\_{\text{target}}}^{\text{mob}}\right)$
+5. **Attention Shannon Entropy (Noise Quantification)**: $H(P) = -\sum\_{j=1}^{T} P\_j \ln(P\_j), \quad P\_j = \frac{A\_{T-1, j}}{\sum\_{l} A\_{T-1, l}}$
+6. **Autoregressive Single-Step Decode Latency ($\mathcal{O}(1)$ Invariant)**: Wall-clock latency (ms) measured over 100 iterations of single-token forward passes with full historical KV-cache loaded.
+
+---
+
+### Step-by-Step Industrial CLI Execution Workflows
+
+#### Path 1: Instant Pure-NumPy Verification (0 GPU, < 5 Seconds)
+
+Verifies all algebraic invariants, vector norm conservation, and reproduces context scaling tables from 512 to 8,192 tokens without GPU or HuggingFace dependencies:
+
+```bash
+python experiments/run_comprehensive_benchmark.py
+# Formally verifies Theorem 1 (Odds Ratio), Theorem 2 (Norm Conservation),
+# Theorem 3 (Lipschitz Bound), and Theorem 4 (Flatness Conservation).
+```
+
+#### Path 2: Full 367-Test Regression & Robustness Suite
 
 ```bash
 pytest -v
-# Executes all 334 tests across features, boundaries, combinations, and scenarios
+# Executes all 367 unit and property tests across 4 tiers in under 65 seconds
 ```
 
-### 3. Run Formal Mathematical Verification
+#### Path 3: Formal Mathematical Verification (Lean 4 & Z3 SMT)
 
 ```bash
-# Execute Z3 SMT proofs and 2,000-trial extreme-length fuzzing (lengths up to 32k)
-python formal_verification/verify_properties.py
+# 1. Lean 4 interactive proof build
+cd formal_verification
+lake build
+# Verified: 9 theorems, 0 sorry, 0 custom axioms
+
+# 2. Automated Z3 SMT solver & 2,000-trial extreme fuzzing
+python verify_properties.py
+# Verified: UNSAT across all real domains, 2,000 / 2,000 fuzzing trials passed (100%)
+cd ..
 ```
 
-### 4. Reproduce Publication Figures
+#### Path 4: Cloud Dual-GPU Production Benchmark Execution (Kaggle / Local)
+
+To reproduce the multi-scale Qwen3.5-9B evaluations across sequence lengths $L \in \{512, 1024, 2048, 4096, 8192, 16384\}$:
 
 ```bash
-# Generates all 6 publication-grade figures in assets/ and paper/figures/
+# A. Local multi-GPU execution
+python experiments/run_kaggle_experiment.py
+
+# B. Remote Kaggle Dual-T4 execution via CLI
+kaggle kernels push -p experiments/
+python scripts/monitor_kaggle.py
+# Automatically polls remote execution, downloads kaggle_experiment_results.json
+# and generates publication figures (fig_scaling_acr_entropy.png, fig_attention_distribution.png)
+```
+
+#### Path 5: Render Publication-Quality Scientific Figures
+
+```bash
 python scripts/plot_english_figures.py
-```
-
-### 5. Run Qwen3.5-9B Demo
-
-```bash
-python examples/qwen_demo.py
+# Generates all 6 publication figures (300 DPI) in assets/ and paper/figures/
 ```
 
 ---

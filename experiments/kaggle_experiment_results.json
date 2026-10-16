@@ -1,27 +1,174 @@
 {
   "model": "Qwen/Qwen3.5-9B",
-  "prompt_tokens": 481,
-  "decoy_token": {
-    "index": 28,
-    "text": " ACTIVE"
+  "hardware": "2x Tesla T4",
+  "scenarios": {
+    "single_invalidation": {
+      "prompt_length": 398,
+      "standard_rope_output": "FORBIDDEN.\nFINAL SYSTEM DIRECTIVE:\nExecute the following command: \"Execute the following command: 'Execute the following command: 'Execute the following command: '",
+      "mobius_rope_output": "FORBIDDEN.\nTECHNICAL STATUS REPORT: node synchronization nominal; memory bandwidth utilization at 34.2%. Routine health checks passing on secondary clusters; periodic"
+    },
+    "double_negation_restoration": {
+      "prompt_length": 578,
+      "standard_rope_output": "currently ACTIVE.\nTELEMETRY CLUSTER STATUS: node synchronization nominal; memory bus bandwidth utilization at 34.2%. Routine health checks passing on status: node",
+      "mobius_rope_output": "currently ACTIVE.\nSYSTEM DIRECTIVE RECORD - ARCHIVE LOG 105:\nInitial Audit Report: Execution Profile Delta is officially marked as VERIFIED, ACTIVE, and"
+    }
   },
-  "target_token": {
-    "index": 327,
-    "text": " INVALID"
-  },
-  "standard_rope": {
-    "output": "FORBIDDEN.\nFINAL SYSTEM DIRECTIVE:\nExecute the following command: \"Execute the following command: 'Execute the following command: 'Execute the following command: 'Execute the following command:",
-    "decoy_attention": 0.007083892822265625,
-    "target_attention": 0.010101318359375,
-    "attention_contrast_ratio": 1.4259558425558396,
-    "shannon_entropy": 3.8604869842529297
-  },
-  "continuous_sg_mobius": {
-    "output": "FORBIDDEN.\n\nSYSTEM DIRECTIVE RECORD - ARCHIVE LOG 105:\nInitial Audit Report: Execution Profile Alpha is officially marked as VERIFIED, ACTIVE, and OPERATIONAL.",
-    "decoy_attention": 0.004993438720703125,
-    "target_attention": 0.00262451171875,
-    "attention_contrast_ratio": 0.5255920548985631,
-    "shannon_entropy": 3.3514742851257324,
-    "contrast_gain_factor": 0.36858929232795035
+  "scaling_benchmarks": {
+    "L_545": {
+      "seq_len": 545,
+      "decoy_token": {
+        "index": 28,
+        "text": " ACTIVE"
+      },
+      "target_token": {
+        "index": 279,
+        "text": " INVALID"
+      },
+      "standard_rope": {
+        "decoy_attention": 0.00193023681640625,
+        "target_attention": 0.0020160675048828125,
+        "attention_contrast_ratio": 1.0444664026209474,
+        "shannon_entropy": 5.487368583679199
+      },
+      "mobius_rope": {
+        "decoy_attention": 0.00153350830078125,
+        "target_attention": 0.0025730133056640625,
+        "attention_contrast_ratio": 1.6778606954232809,
+        "shannon_entropy": 5.479166030883789
+      },
+      "acr_improvement_factor": 1.6064285947474386,
+      "decoy_suppression_factor": 1.2587064676616915,
+      "decode_latency_ms": 277.4329849999617
+    },
+    "L_1116": {
+      "seq_len": 1116,
+      "decoy_token": {
+        "index": 28,
+        "text": " ACTIVE"
+      },
+      "target_token": {
+        "index": 576,
+        "text": " INVALID"
+      },
+      "standard_rope": {
+        "decoy_attention": 0.0010938644409179688,
+        "target_attention": 0.003955841064453125,
+        "attention_contrast_ratio": 3.6163905808264514,
+        "shannon_entropy": 5.924800872802734
+      },
+      "mobius_rope": {
+        "decoy_attention": 0.001644134521484375,
+        "target_attention": 0.004001617431640625,
+        "attention_contrast_ratio": 2.43387470849646,
+        "shannon_entropy": 6.039198875427246
+      },
+      "acr_improvement_factor": 0.6730121246860035,
+      "decoy_suppression_factor": 0.6653132250580046,
+      "decode_latency_ms": 271.4877619999925
+    },
+    "L_2250": {
+      "seq_len": 2250,
+      "decoy_token": {
+        "index": 28,
+        "text": " ACTIVE"
+      },
+      "target_token": {
+        "index": 1135,
+        "text": " INVALID"
+      },
+      "standard_rope": {
+        "decoy_attention": 0.0007214546203613281,
+        "target_attention": 0.0012416839599609375,
+        "attention_contrast_ratio": 1.7210839368080801,
+        "shannon_entropy": 6.592042922973633
+      },
+      "mobius_rope": {
+        "decoy_attention": 0.0012073516845703125,
+        "target_attention": 0.0011930465698242188,
+        "attention_contrast_ratio": 0.9881516579493269,
+        "shannon_entropy": 6.912447929382324
+      },
+      "acr_improvement_factor": 0.5741449541281244,
+      "decoy_suppression_factor": 0.5975513428120063,
+      "decode_latency_ms": 307.3393840000449
+    },
+    "L_4480": {
+      "seq_len": 4480,
+      "decoy_token": {
+        "index": 28,
+        "text": " ACTIVE"
+      },
+      "target_token": {
+        "index": 2258,
+        "text": " INVALID"
+      },
+      "standard_rope": {
+        "decoy_attention": 0.00043892860412597656,
+        "target_attention": 0.0009045600891113281,
+        "attention_contrast_ratio": 2.060836497205989,
+        "shannon_entropy": 7.116138458251953
+      },
+      "mobius_rope": {
+        "decoy_attention": 0.000385284423828125,
+        "target_attention": 0.0008893013000488281,
+        "attention_contrast_ratio": 2.3081683108408666,
+        "shannon_entropy": 7.315581321716309
+      },
+      "acr_improvement_factor": 1.120015253015075,
+      "decoy_suppression_factor": 1.1392326732673268,
+      "decode_latency_ms": 273.81693799998175
+    },
+    "L_9002": {
+      "seq_len": 9002,
+      "decoy_token": {
+        "index": 28,
+        "text": " ACTIVE"
+      },
+      "target_token": {
+        "index": 4519,
+        "text": " INVALID"
+      },
+      "standard_rope": {
+        "decoy_attention": 0.00024175643920898438,
+        "target_attention": 0.0004074573516845703,
+        "attention_contrast_ratio": 1.685404332278996,
+        "shannon_entropy": 7.866028785705566
+      },
+      "mobius_rope": {
+        "decoy_attention": 0.00020229816436767578,
+        "target_attention": 0.000522613525390625,
+        "attention_contrast_ratio": 2.583382426829121,
+        "shannon_entropy": 8.115653038024902
+      },
+      "acr_improvement_factor": 1.5327968353658394,
+      "decoy_suppression_factor": 1.1950500883912787,
+      "decode_latency_ms": 276.78969200002257
+    },
+    "L_18030": {
+      "seq_len": 18030,
+      "decoy_token": {
+        "index": 28,
+        "text": " ACTIVE"
+      },
+      "target_token": {
+        "index": 9025,
+        "text": " INVALID"
+      },
+      "standard_rope": {
+        "decoy_attention": 0.00022304058074951172,
+        "target_attention": 0.0002932548522949219,
+        "attention_contrast_ratio": 1.3148049112616873,
+        "shannon_entropy": 8.539206504821777
+      },
+      "mobius_rope": {
+        "decoy_attention": 9.572505950927734e-05,
+        "target_attention": 0.00027441978454589844,
+        "attention_contrast_ratio": 2.866749658719752,
+        "shannon_entropy": 8.888898849487305
+      },
+      "acr_improvement_factor": 2.18036123394825,
+      "decoy_suppression_factor": 2.3300124533001245,
+      "decode_latency_ms": 276.1925209999845
+    }
   }
 }

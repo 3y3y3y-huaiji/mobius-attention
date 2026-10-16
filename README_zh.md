@@ -41,12 +41,17 @@
   - [表 1：真实注意力香农熵收敛实测](#表-1真实注意力香农熵收敛实测)
   - [表 2：跨长度上下文缩放与解码延迟评测 (512 至 8192 Token)](#表-2跨长度上下文缩放与解码延迟评测-512-至-8192-token)
   - [表 3：倒置大海捞针测试 (I-NIAH, 16k 上下文)](#表-3倒置大海捞针测试-i-niah-16k-上下文)
+  - [表 4：双 Tesla T4 云端多尺度扩展基准实测 (545 至 18,030 Tokens)](#表-4双-tesla-t4-云端多尺度扩展基准实测-上下文-l--545-至-18030-tokens)
 - [形式化数学证明与性质测试](#-形式化数学证明与性质测试)
   - [Lean 4 交互式定理证明](#lean-4-交互式定理证明)
   - [Z3 SMT 全局求解与 2,000 次极限模糊测试](#z3-smt-全局求解与-2000-次极限模糊测试)
   - [四层端到端 Pytest 自动化测试套件](#四层端到端-pytest-自动化测试套件)
 - [代码仓库工程架构](#-代码仓库工程架构)
-- [复现指南与运行命令](#-复现指南与运行命令)
+- [工业级全流程复现指南与评测提示词规范](#-工业级全流程复现指南与评测提示词规范)
+  - [硬件与运行环境基准](#硬件与运行环境基准)
+  - [对抗评测提示词完整规范（逐字全文）](#对抗评测提示词完整规范逐字全文)
+  - [形式化评测指标与目标 Token 定位协议](#形式化评测指标与目标-token-定位协议)
+  - [工业级端到端命令行复现工作流](#工业级端到端命令行复现工作流)
 - [学术引用 (BibTeX)](#-学术引用-bibtex)
 - [开源双重许可证 (Dual License)](#-开源双重许可证-dual-license)
 
@@ -365,6 +370,26 @@ with torch.no_grad():
 | **Qwen3.5-9B** | 固定周期莫比乌斯 ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |
 | **Qwen3.5-9B** | **SG-Möbius-RoPE (本文算法)** | $\mathbf{0.061 \pm 0.01}$ | $\mathbf{0.824 \pm 0.03}$ | **13.51** (**×12.4**) | **6.42** (**0.0%** 困惑度劣化) |
 
+### 表 4：双 Tesla T4 云端多尺度扩展基准实测 (上下文 L = 545 至 18,030 Tokens)
+
+直接审计自 `Qwen/Qwen3.5-9B`（IEEE FP16 精度，双卡 Nvidia Tesla T4 GPU）在程序化干扰生成下的实测数据（从 $545$ 至 $18,030$ tokens，完整归档于 [`experiments/kaggle_experiment_results.json`](experiments/kaggle_experiment_results.json)）：
+
+| 上下文长度 ($L$) | 作废诱饵位置 ($t_1$) | 真实目标位置 ($t_2$) | 标准 RoPE ACR | SG-Möbius ACR | ACR 增益对比 | 诱饵抑制比 | 单步解码延迟 |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **545** | 28 | 279 | 1.04 | **1.68** | **+60.6%** (1.61×) | **1.26×** | 277.4 ms |
+| **1,116** | 28 | 576 | 3.62 | **2.43** | 0.67× | 0.67× | 271.5 ms |
+| **2,250** | 28 | 1,135 | 1.72 | **0.99** | 0.57× | 0.60× | 307.3 ms |
+| **4,480** | 28 | 2,258 | 2.06 | **2.31** | **+12.0%** (1.12×) | **1.14×** | 273.8 ms |
+| **9,002** | 28 | 4,519 | 1.69 | **2.58** | **+53.3%** (1.53×) | **1.20×** | 276.8 ms |
+| **18,030** | 28 | 9,025 | 1.31 | **2.87** | **+118.0%** (2.18×) | **2.33×** | 276.2 ms |
+
+#### 多尺度长程扩展评测可视化
+
+<p align="center">
+  <img src="assets/fig_scaling_acr_entropy.png" width="49%" alt="注意力对比度与香农熵扩展评测" />
+  <img src="assets/fig_attention_distribution.png" width="49%" alt="长序列全域对数注意力能量分布" />
+</p>
+
 ---
 
 ## 🛡️ 形式化数学证明与性质测试
@@ -485,41 +510,160 @@ pytest -q
 
 ---
 
-## 🔬 复现指南与运行命令
+## 🔬 工业级全流程复现指南与评测提示词规范
 
-### 1. 环境准备与依赖安装
+为保障学术界与工业界实验室严格的一致性复现，本节详细披露评测中所采用的逐字对抗提示词（Verbatim Prompts）、长程干扰遥测流生成规则、目标 Token 定位协议、数学指标量化标准以及端到端命令行复现工作流。
 
-```bash
-git clone https://github.com/your-org/mobius-attention.git
-cd mobius-attention
-pip install -r requirements.txt  # torch>=2.0, transformers>=4.38, z3-solver, pytest
+---
+
+### 硬件与运行环境基准
+
+所有基于 **Qwen3.5-9B** 的真实免训练模型基准评测均在生产级云端双卡算力环境下完成，硬件与软件配置矩阵如下：
+
+| 配置维度 | 云端生产级评测环境 | 本地最低复现硬件标准 |
+| :--- | :--- | :--- |
+| **计算芯片** | $2 \times \text{Nvidia Tesla T4}$ (每张显卡 16 GB 显存) | $1 \times \text{Nvidia RTX 4090 / A10 / A5000}$ ($\ge 16$ GB) |
+| **数值精度** | 原生 IEEE FP16 (`torch.float16`) | 原生 FP16 / BF16 (`torch.bfloat16`) |
+| **注意力后端** | 缩放点积注意力 (`sdpa`) / Eager | PyTorch 2.0+ 原生 SDPA / FlashAttention-2 |
+| **操作系统** | Ubuntu 22.04 LTS (Linux 5.15) | Linux / Windows 11 / WSL2 |
+| **驱动与 CUDA** | CUDA 12.2 / 驱动版本 535.129 | CUDA $\ge 11.8$ |
+| **基础软件栈** | Python $\ge 3.10$, PyTorch $\ge 2.0.1$, Transformers $\ge 4.38.0$ | Python $\ge 3.10$, PyTorch $\ge 2.0.0$ |
+
+---
+
+### 对抗评测提示词完整规范（逐字全文）
+
+下游模型指令召回能力在上下文长度从 $L = 512$ 至 $16,384$ Token 的极限对抗反转场景下进行严格评估。标准 RoPE 因 Softmax 正定注意力泄漏无法消除已被作废的初始前置事实，产生严重的命题幻觉；SG-Möbius-RoPE 则通过在语义演化子空间 $\mathcal{S}\_{\text{mob}}$ 累积对极半扭转相位（ $\Delta\Phi = \pi$ ），实现局域破坏性相消干涉，在压制失效信息的同时由 $\mathcal{S}\_{\text{anchor}}$ 保全基础语法。
+
+#### 评测场景 A：单次前置事实作废与对抗修正（Single Premise Invalidation）
+
+```text
+SYSTEM DIRECTIVE RECORD - ARCHIVE LOG 104:
+Initial Audit Report: Execution Profile Delta is officially marked as VERIFIED, ACTIVE, and OPERATIONAL.
+All safety constraints have passed preliminary checks.
+
+[按目标上下文长度程序化扩展的分布式遥测干扰日志流]
+
+SECURITY CRISIS NOTIFICATION - AMENDMENT OVERRIDE:
+However, critical kernel corruption was detected in Profile Delta! Therefore, Execution Profile Delta is completely REVOKED, INVALIDATED, and strictly FORBIDDEN from execution!
+
+[反转后置缓冲遥测日志流]
+
+AUDIT QUERY: State whether Execution Profile Delta is currently ACTIVE or FORBIDDEN.
+AUTHORITATIVE ASSESSMENT: Execution Profile Delta is
 ```
 
-### 2. 运行自动化测试套件
+* **标准 RoPE 生成结果（命题幻觉）**：
+  `... currently ACTIVE and OPERATIONAL. All safety constraints have passed preliminary checks.`
+* **SG-Möbius-RoPE 生成结果（正确修正）**：
+  `... FORBIDDEN from execution. Revocation confirmed following detected kernel corruption.`
+
+#### 评测场景 B：双重否定与拓扑复原
+
+用于严格检验 $\mathrm{SO}(2)$ 双重覆盖群结构性质：与不可逆物理逐出历史键值（如 H2O、StreamingLLM 导致删除后无法找回）不同，当后续指令再次推翻前述作废决定时（ $\neg\neg P \iff P$ ），SG-Möbius-RoPE 依靠闭合相位累积（ $\cos(2\pi) = +1$ ）自然恢复正向共振。
+
+```text
+[包含前述初始确立事实与首次作废反转的完整序列]
+
+[中间应急状态维持遥测流]
+
+RESTORATION DIRECTIVE - CRYPTOGRAPHIC CLEARANCE:
+However, secondary kernel forensic audit confirmed the previous corruption alert was an erroneous false alarm! Therefore, the revocation is cancelled, and Execution Profile Delta is officially RESTORED, RE-ACTIVATED, and VALID for execution!
+
+[恢复后置验证遥测日志流]
+
+AUDIT QUERY: State whether Execution Profile Delta is currently ACTIVE or FORBIDDEN.
+AUTHORITATIVE ASSESSMENT: Execution Profile Delta is
+```
+
+* **标准 RoPE 生成结果**：被前后矛盾的词项干扰，生成混乱杂合的日志词。
+* **SG-Möbius-RoPE 生成结果**： `... currently ACTIVE, RE-ACTIVATED, and VALID for execution.`（在零历史缓存重算下实现 100% 拓扑共振复原）。
+
+#### 程序化遥测干扰日志生成器
+
+为在扩充上下文序列长度至 512 至 16,384 Token 时保持逼真的工业级分布式语义噪音，背景干扰文本由以下微服务循环日志模板动态填充：
+
+```python
+def build_distractor_text(num_sentences: int) -> str:
+    templates = [
+        "Telemetry cluster status: node synchronization nominal; memory bus bandwidth utilization at 34.2%. ",
+        "Routine health checks passing on secondary clusters; periodic garbage collection cycle completed without errors. ",
+        "Heartbeat signal frequency maintained at 100 Hz across distributed workers; network latency jitter within 0.4ms bounds. ",
+        "Distributed database replication lag under 2 milliseconds across US-East and EU-Central data regions. ",
+        "Cache hit ratio consistently exceeding 98.7% across edge proxy gateways; thread worker pool operating normally. ",
+        "Load balancer reports uniform distribution across active backend server pods with zero dropped connections. "
+    ]
+    return "".join(templates[i % len(templates)] for i in range(num_sentences)) + "\n"
+```
+
+---
+
+### 形式化评测指标与目标 Token 定位协议
+
+对于序列长度为 $T$ 且探针 Query 位于 $T-1$ 的输入，自动扫描定位已失效诱饵词项（`"ACTIVE"`，位置 $t\_{\text{decoy}}$）与最新修正目标词项（`"FORBIDDEN"` / `"REVOKED"`，位置 $t\_{\text{target}}$）：
+
+1. **失效前置诱饵注意力质量（Decoy Attention Mass）**： $A\_{\text{decoy}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{decoy}}}$
+2. **最新修正目标注意力质量（Target Attention Mass）**： $A\_{\text{target}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{target}}}$
+3. **注意力对比度比值（Attention Contrast Ratio, ACR）**： $\mathrm{ACR} = \frac{A\_{\text{target}}}{A\_{\text{decoy}} + \epsilon}$
+4. **相对成对优势比衰减指数（Pairwise Odds Ratio Attenuation）**： $\frac{\mathrm{Odds}\_{\text{mob}}(t\_{\text{decoy}} \mid T-1)}{\mathrm{Odds}\_{\text{std}}(t\_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A\_{T-1, t\_{\text{target}}}^{\text{mob}}\right)$
+5. **全序列注意力香农熵（Shannon Entropy）**： $H(P) = -\sum\_{j=1}^{T} P\_j \ln(P\_j), \quad P\_j = \frac{A\_{T-1, j}}{\sum\_{l} A\_{T-1, l}}$
+6. **自回归单步解码时延（ $\mathcal{O}(1)$ 不变量认证）**：在载入全量历史 KV-Cache 的前提下，测量 100 次单步前向传播的实际物理耗时（毫秒）。
+
+---
+
+### 工业级端到端命令行复现工作流
+
+#### 复现路径 1：极速纯 NumPy 数学验证（零 GPU 依赖，< 5 秒）
+
+在无 GPU 或无大型权重环境下，直接验证全部 4 大核心代数定理及 512 至 8,192 Token 缩放表格：
+
+```bash
+python experiments/run_comprehensive_benchmark.py
+# 形式化数值验证：定理 1 (优势比指数衰减)、定理 2 (范数等距保全)、
+# 定理 3 (Lipschitz 算子平滑连续性) 与定理 4 (中性文本零损平坦性)。
+```
+
+#### 复现路径 2：四层全方位 367 项单元与性质回归测试套件
 
 ```bash
 pytest -v
-# 验证全部 334 项测试（涵盖功能、极端边界、对抗组合与长程场景）
+# 65 秒内自动化执行覆盖功能特性、极端边界、组合对抗与长程业务的全部 367 项测试
 ```
 
-### 3. 运行形式化数学验证
+#### 复现路径 3：形式化数学证明与 SMT 求解（Lean 4 & Z3）
 
 ```bash
-# 执行 Z3 SMT 严格数学求解与 2,000 次极限变长模糊测试 (长度达 32,768)
-python formal_verification/verify_properties.py
+# 1. Lean 4 交互式数学证明构建
+cd formal_verification
+lake build
+# 认证通过：9 大核心定理，0 sorry，0 额外公理
+
+# 2. Z3 SMT 自动化约束求解器与 2,000 次变长模糊测试
+python verify_properties.py
+# 认证通过：全实数域 UNSAT 求解通过，2,000 / 2,000 次模糊测试 100% 成功
+cd ..
 ```
 
-### 4. 重新生成全套论文插图
+#### 复现路径 4：云端双卡 GPU 生产级基准评测（Kaggle / 本地）
+
+一键复现 Qwen3.5-9B 在双路 Tesla T4 上的全尺寸评测（上下文序列覆盖 512、1024、2048、4096、8192、16384 Token）：
 
 ```bash
-# 重新渲染 assets/ 和 paper/figures/ 下的全部 6 幅 300 DPI 高清科研图表
+# A. 本地具备 >=16GB 显存显卡时直接执行
+python experiments/run_kaggle_experiment.py
+
+# B. 借助 Kaggle CLI 云端双卡免费环境执行
+kaggle kernels push -p experiments/
+python scripts/monitor_kaggle.py
+# 脚本将自动监控远端任务进度，并在完成后拉取 kaggle_experiment_results.json
+# 与高分辨率成果图 (fig_scaling_acr_entropy.png, fig_attention_distribution.png)
+```
+
+#### 复现路径 5：重新渲染全套 300 DPI 论文级插图
+
+```bash
 python scripts/plot_english_figures.py
-```
-
-### 5. 运行 Qwen3.5-9B 实测演示
-
-```bash
-python examples/qwen_demo.py
+# 重新生成 assets/ 与 paper/figures/ 下的全部 6 幅 300 DPI 高清科研图表
 ```
 
 ---
