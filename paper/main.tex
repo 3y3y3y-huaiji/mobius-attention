@@ -426,7 +426,7 @@ Figure~\ref{fig:scatter} illustrates the underlying log-scale attention scatter 
     \label{fig:scatter}
 \end{figure}
 
-\subsection{Autoregressive KV-Cache Decoding Latency & Micro-Benchmark Overhead}
+\subsection{Autoregressive KV-Cache Decoding Latency \& Micro-Benchmark Overhead}
 To provide an honest and rigorous analysis of computational latency, we report latency at two complementary granularities:
 \begin{enumerate}
     \item \textbf{Full-Model End-to-End Decode Latency}: Measuring the wall-clock execution time of a single-token forward pass across all 28 layers of Qwen3.5-9B on dual Nvidia Tesla T4 GPUs with full historical KV-cache resident in VRAM. As documented in Table~\ref{tab:scaling}, the end-to-end forward step latency remains strictly flat at $271.5 \sim 277.4\,\text{ms}$ from $L=545$ to $L=18,030$ tokens ($276.2\,\text{ms}$ at $L=18,030$). Because the computation is dominated by parameter memory bandwidth rather than sequence length, the scaling overhead is negligible.
@@ -454,7 +454,7 @@ To provide an honest and rigorous analysis of computational latency, we report l
 \label{tab:scaling}
 \end{table}
 
-\subsection{Real Qwen3.5-9B Attention Entropy & Perplexity Conservation}
+\subsection{Real Qwen3.5-9B Attention Entropy \& Perplexity Conservation}
 To quantify attention distribution concentration, we evaluate the Shannon entropy $H(P) = -\sum_{j=0}^{T-1} P_j \ln P_j$ of the normalized attention probabilities across sequence scaling regimes. Table~\ref{tab:entropy} documents comparative attention entropy and baseline language modeling perplexity.
 
 \begin{table}[htbp]

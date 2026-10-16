@@ -60,6 +60,45 @@ def check_labels_and_refs(tex_path: str) -> tuple[set[str], set[str]]:
     return refs, broken_refs
 
 
+def check_latex_syntax(tex_path: str) -> list[str]:
+    """Check for dangerous unescaped characters in text and headings (e.g., bare '&')."""
+    with open(tex_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    issues = []
+    in_tabular = False
+    table_math_envs = (
+        "tabular", "array", "matrix", "pmatrix", "bmatrix", "vmatrix", "Vmatrix",
+        "align", "aligned", "split", "cases", "alignat", "gather"
+    )
+
+    for idx, line in enumerate(lines, 1):
+        stripped = line.split("%")[0].strip()
+        if not stripped:
+            continue
+
+        # Check for environment entry / exit
+        for env in table_math_envs:
+            if f"\\begin{{{env}}}" in stripped:
+                in_tabular = True
+            if f"\\end{{{env}}}" in stripped:
+                in_tabular = False
+
+        if stripped.startswith("\\usepackage"):
+            continue
+
+        if not in_tabular:
+            # Check for bare '&' not preceded by '\'
+            # Also ignore if single-line \begin{pmatrix}...\end{pmatrix}
+            has_single_line_env = any(f"\\begin{{{e}}}" in stripped and f"\\end{{{e}}}" in stripped for e in table_math_envs)
+            if not has_single_line_env:
+                bare_amps = list(re.finditer(r"(?<!\\)&", stripped))
+                if bare_amps:
+                    issues.append(f"Line {idx}: Unescaped '&' found in LaTeX text/heading: {stripped}")
+
+    return issues
+
+
 def check_figures(tex_path: str, base_dir: str) -> list[str]:
     with open(tex_path, "r", encoding="utf-8") as f:
         tex = f.read()
@@ -161,7 +200,7 @@ def main() -> int:
 
     # 1. Citations
     cites, missing_cites, unused_bib = check_citations(tex_path, bib_path)
-    print(f"\n[1/5] Checking Citation Bidirectional Consistency ({len(cites)} citations)...")
+    print(f"\n[1/6] Checking Citation Bidirectional Consistency ({len(cites)} citations)...")
     if missing_cites:
         print(f"  [ERROR] Missing citations in references.bib: {missing_cites}")
         has_error = True
@@ -175,25 +214,35 @@ def main() -> int:
 
     # 2. Labels & References
     refs, broken_refs = check_labels_and_refs(tex_path)
-    print(f"\n[2/5] Checking Internal Labels & References ({len(refs)} references)...")
+    print(f"\n[2/6] Checking Internal Labels & References ({len(refs)} references)...")
     if broken_refs:
         print(f"  [ERROR] Broken references in main.tex: {broken_refs}")
         has_error = True
     else:
         print("  [✓] All \\ref and \\eqref successfully resolve to valid \\labels.")
 
-    # 3. Figures
+    # 3. LaTeX Syntax & Dangerous Unescaped Characters
+    syntax_issues = check_latex_syntax(tex_path)
+    print("\n[3/6] Checking LaTeX Syntax & Unescaped Characters...")
+    if syntax_issues:
+        for iss in syntax_issues:
+            print(f"  [ERROR] {iss}")
+        has_error = True
+    else:
+        print("  [✓] Zero unescaped alignment tabs or illegal characters found.")
+
+    # 4. Figures
     missing_figs = check_figures(tex_path, paper_dir)
-    print("\n[3/5] Checking Figure Assets...")
+    print("\n[4/6] Checking Figure Assets...")
     if missing_figs:
         print(f"  [ERROR] Missing figure files referenced in main.tex: {missing_figs}")
         has_error = True
     else:
         print("  [✓] All figure files exist on disk.")
 
-    # 4. BibTeX Entry Structure
+    # 5. BibTeX Entry Structure
     bib_issues = check_bib_entries(bib_path)
-    print("\n[4/5] Checking BibTeX Schema Completeness & Anti-Hallucination...")
+    print("\n[5/6] Checking BibTeX Schema Completeness & Anti-Hallucination...")
     if bib_issues:
         for iss in bib_issues:
             print(f"  [ERROR] {iss}")
@@ -201,8 +250,8 @@ def main() -> int:
     else:
         print("  [✓] All BibTeX entries have valid schema, year bounds, and zero placeholder tokens.")
 
-    # 5. Online arXiv Verification
-    print("\n[5/5] Validating arXiv Citations against Official Scholarly API...")
+    # 6. Online arXiv Verification
+    print("\n[6/6] Validating arXiv Citations against Official Scholarly API...")
     arxiv_results = verify_arxiv_ids(bib_path)
     for key, aid, ok, title in arxiv_results:
         status = "✓" if ok else "FAIL"
