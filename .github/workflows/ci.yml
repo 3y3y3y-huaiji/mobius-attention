@@ -80,6 +80,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Verify LaTeX Citations & Anti-Hallucination Audit
+        run: python scripts/check_paper_integrity.py
+
       - name: Compile LaTeX Preprint
         uses: xu-cheng/latex-action@v3
         with:
