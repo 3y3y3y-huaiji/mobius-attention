@@ -110,22 +110,31 @@ flowchart LR
 ### 连续扭率流与因果路径和乐
 
 1. **连续扭率流与粘性平滑**：在各 Token 处，叙事演进诱发局域连续扭率 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，并经由一维粘性 EMA 扩散平滑：
-   $$\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)$$
-   其中 $\nu \in (0, 1]$ 为粘性系数，$g_{h,m}(h_t)$ 将隐藏状态映射为局域扭率密度。
-   - *顺承连接语境*（如“并且”、“因而”、“持续”） $\implies \omega(t) \approx 0$
-   - *逻辑转折语境*（如“但是”、“相反”、“作废”） $\implies \text{平滑累积至 } \Delta\Phi = \pi$
+
+$$
+\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
+$$
+
+其中 $\nu \in (0, 1]$ 为粘性系数，$g_{h,m}(h_t)$ 将隐藏状态映射为局域扭率密度。
+- *顺承连接语境*（如“并且”、“因而”、“持续”） $\implies \omega(t) \approx 0$
+- *逻辑转折语境*（如“但是”、“相反”、“作废”） $\implies \text{平滑累积至 } \Delta\Phi = \pi$
+
 2. **路径积分可加性与前缀和分解**：沿因果轨道的平行移动积分为累积相位流：
-   $$\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)$$
-   其中 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ 为因果前缀和相位。
+
+$$
+\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
+$$
+
+其中 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ 为因果前缀和相位。
 
 ### 连续子空间莫比乌斯-RoPE 与平面旋转
 
 为真正还原莫比乌斯环“局部处处光滑连续、全局渐进反相”的几何精髓，我们彻底摒弃离散狄拉克脉冲与跳跃式符号反转，构建**处处连续的子空间扭转机制（Nowhere-Discontinuous Subspace Twist）**：
 
-#### 1. 子空间正交解耦 ($\mathcal{S}_{\text{anchor}}$ 与 $\mathcal{S}_{\text{mob}}$)
+#### 1. 结构锚点与语义演化子空间正交解耦 (Subspace Decoupling)
 将每个注意力头的 $d/2$ 个二维旋转子空间划分为两大互补功能扇区：
-- **结构锚点子空间 $\mathcal{S}_{\text{anchor}}$**：强制保持 $\omega_{h,m} \equiv 0$ 且 $\Phi_{h,m} \equiv 0$。该子空间严格保留标准 RoPE 的原始相对坐标基底，确保基础句法结构、局部位置偏序以及系统提示词逻辑指令的无损锚定。
-- **语义演化子空间 $\mathcal{S}_{\text{mob}}$**：沿因果序列累积连续扭率流 $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$，在遇到逻辑转折时平滑演进累积相位，实现叙事周期内的平滑相位平流与精准相消干涉。
+- **结构锚点子空间** $\mathcal{S}_{\mathrm{anchor}}$：强制保持 $\omega_{h,m} \equiv 0$ 且 $\Phi_{h,m} \equiv 0$。该子空间严格保留标准 RoPE 的原始相对坐标基底，确保基础句法结构、局部位置偏序以及系统提示词逻辑指令的无损锚定。
+- **语义演化子空间** $\mathcal{S}_{\mathrm{mob}}$：沿因果序列累积连续扭率流 $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$，在遇到逻辑转折时平滑演进累积相位，实现叙事周期内的平滑相位平流与精准相消干涉。
 
 #### 2. 非负特征映射核包络 (Non-Negative Feature Map)
 
@@ -171,7 +180,7 @@ $$
 记 $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$。对于连续扭率有界的相邻 Token 位置 $t$ 与 $t+1$（$|\omega_m(t+1)| \le \omega_{\max}$），在稳定先验条件 $\theta_m + \omega_{\max} \le \pi$ 下：
 
 $$
-\|\tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t)\|_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
+\Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
 $$
 
 严格保证沿因果序列轨迹的算子一致 Lipschitz 连续性，杜绝离散跳变折痕。 ■

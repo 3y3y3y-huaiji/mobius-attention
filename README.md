@@ -110,22 +110,31 @@ flowchart LR
 ### Continuous Torsion Rate & Smooth Phase Flow
 
 1. **Continuous Torsion Rate & Viscous Smoothing**: At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$, smoothed by 1D viscous EMA diffusion:
-   $$\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)$$
-   where $\nu \in (0, 1]$ is the viscosity parameter and $g_{h,m}(h_t)$ projects hidden state $h_t$ to semantic torsion density.
-   - *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
-   - *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \text{smooth accumulation towards } \Delta\Phi = \pi$
+
+$$
+\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
+$$
+
+where $\nu \in (0, 1]$ is the viscosity parameter and $g_{h,m}(h_t)$ projects hidden state $h_t$ to semantic torsion density.
+- *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
+- *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \text{smooth accumulation towards } \Delta\Phi = \pi$
+
 2. **Path-Integral Additivity & Prefix-Sum Decomposition**: Parallel transport along the causal trajectory yields the cumulative phase flow:
-   $$\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)$$
-   where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
+
+$$
+\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
+$$
+
+where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
 
 ### Continuous Subspace Möbius-RoPE & Planar Rotation
 
 To restore the authentic, everywhere-smooth geometric spirit of the Möbius strip, we reject discrete Dirac delta jumps and discrete sign switches. Instead, we implement **Nowhere-Discontinuous Subspace Twist** with two core geometric principles:
 
-#### 1. Subspace Decoupling ($\mathcal{S}_{\text{anchor}}$ vs. $\mathcal{S}_{\text{mob}}$)
+#### 1. Subspace Decoupling: Structural Anchor vs. Semantic Evolution Channels
 We partition the $d/2$ planar rotation channels into two functional sectors:
-- **Structural Anchor Subspace $\mathcal{S}_{\text{anchor}}$**: Retains $\omega_{h,m} \equiv 0$ and $\Phi_{h,m} \equiv 0$, preserving baseline syntax, positional ordering, and system prompt directives without distortion.
-- **Semantic Evolution Subspace $\mathcal{S}_{\text{mob}}$**: Dynamically evolves via the continuous torsion flow $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$, executing smooth phase advection across narrative turns.
+- **Structural Anchor Subspace** $\mathcal{S}_{\mathrm{anchor}}$: Retains $\omega_{h,m} \equiv 0$ and $\Phi_{h,m} \equiv 0$, preserving baseline syntax, positional ordering, and system prompt directives without distortion.
+- **Semantic Evolution Subspace** $\mathcal{S}_{\mathrm{mob}}$: Dynamically evolves via the continuous torsion flow $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$, executing smooth phase advection across narrative turns.
 
 #### 2. Non-Negative Feature Map Envelope
 
@@ -171,14 +180,14 @@ $$
 Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$. For adjacent positions $t$ and $t+1$ with bounded continuous torsion rate $|\omega_m(t+1)| \le \omega_{\max}$ under the stability precondition $\theta_m + \omega_{\max} \le \pi$:
 
 $$
-\|\tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t)\|_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
+\Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
 $$
 
 guaranteeing uniform Lipschitz continuity along the causal sequence trajectory without discrete creases or step breaks. ■
 
 ### Exponential Relative Odds Attenuation Theorem
 
-#### Theorem 2 (Relative Odds Ratio Attenuation)
+#### Theorem 3 (Relative Odds Ratio Attenuation)
 Let $A_{ij} := \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ be the unmodulated attention logit. Under an antipodal half-twist ($\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$), the attention odds allocated to key $j$ under SG-Möbius relative to standard RoPE attenuate exponentially:
 
 $$
@@ -349,7 +358,7 @@ Extracted directly from Qwen3.5-9B Layer 7 attention activation tensors (`experi
 | **Arbitrary Single Inversion** | 298 | `Interval around t ≈ 51` | 3.4503 | **3.3966** | **-1.56%** | Selective suppression of obsolete premise; sharp vertical causal barrier. |
 | **Double Negation Recovery** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | Topological loop parity return ($\cos(2\pi) = +1$); high focal concentration. |
 
-### Table 2: Multi-Length Scaled Context Benchmark ($L \in [512, 8192]$)
+### Table 2: Multi-Length Scaled Context Benchmark (Context Length L from 512 to 8192)
 
 Audited directly from `experiments/benchmark_results.json` across sequence lengths with midpoint reversal pivots ($t = L/2$):
 

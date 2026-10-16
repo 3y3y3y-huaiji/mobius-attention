@@ -77,8 +77,10 @@ def test_no_raw_pipe_in_table_math(readme_path):
                 )
 
 @pytest.mark.parametrize("readme_path", README_FILES)
-def test_display_math_block_isolation(readme_path):
-    """GFM block math $$ should be properly delimited without inline text collision."""
+def test_no_latex_in_headings(readme_path):
+    """GFM rule: Markdown headings (#) must not contain LaTeX math or formulas.
+    GitHub's heading processor strips underscores (_ becomes <em>), corrupting KaTeX subscripts,
+    and heading math conflicts with URL anchor generation."""
     with open(readme_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
         
@@ -92,15 +94,56 @@ def test_display_math_block_isolation(readme_path):
         if in_code:
             continue
             
-        if "$$" in stripped:
-            if not (stripped == "$$" or (stripped.startswith("$$") and stripped.endswith("$$"))):
-                assert False, f"Line {line_num} in {readme_path} has unisolated $$: {stripped}"
+        if stripped.startswith("#"):
+            assert "$" not in stripped, (
+                f"Line {line_num} in {readme_path} has LaTeX in heading: '{stripped}'. "
+                "Use clean descriptive plain text for headings and define math notations in the text below."
+            )
 
 @pytest.mark.parametrize("readme_path", README_FILES)
-def test_no_broken_pipe_norm_in_inline_math(readme_path):
-    """GFM rule: do not use \\| for vector norms in inline math; use \\Vert or \\lVert/\\rVert."""
-    _, inline_matches, _ = extract_math_blocks(readme_path)
-    for expr, _ in inline_matches:
+def test_display_math_block_isolation(readme_path):
+    """GFM rule: display math $$ must be on its own line and surrounded by blank lines."""
+    with open(readme_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        
+    in_code = False
+    in_math_block = False
+    for idx, line in enumerate(lines):
+        line_num = idx + 1
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+            
+        if "$$" in stripped:
+            assert stripped == "$$", (
+                f"Line {line_num} in {readme_path} has unisolated $$: '{stripped}'. "
+                "Display math delimiters '$$' must be on their own line without embedded equation text."
+            )
+            if not in_math_block:
+                # Opening $$
+                in_math_block = True
+                if idx > 0:
+                    assert lines[idx - 1].strip() == "", (
+                        f"Line {line_num} in {readme_path}: opening '$$' must be preceded by a blank line."
+                    )
+            else:
+                # Closing $$
+                in_math_block = False
+                if idx < len(lines) - 1:
+                    assert lines[idx + 1].strip() == "", (
+                        f"Line {line_num} in {readme_path}: closing '$$' must be followed by a blank line."
+                    )
+    assert not in_math_block, f"Unclosed display math block in {readme_path}"
+
+@pytest.mark.parametrize("readme_path", README_FILES)
+def test_no_broken_pipe_norm_in_math(readme_path):
+    """GFM rule: do not use \\| for vector norms in math; use \\Vert or \\lVert/\\rVert."""
+    display_matches, inline_matches, _ = extract_math_blocks(readme_path)
+    all_math = [m[0] for m in display_matches] + [m[0] for m in inline_matches]
+    for expr in all_math:
         assert r"\|" not in expr, (
-            f"Found raw \\| in inline math in {readme_path}: '${expr}$'. Use \\Vert instead to prevent GFM pipe collision."
+            f"Found raw \\| in math in {readme_path}: '{expr}'. Use \\Vert instead to prevent GFM pipe collision."
         )
