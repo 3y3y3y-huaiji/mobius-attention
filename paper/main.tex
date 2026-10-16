@@ -391,7 +391,8 @@ Crucially, Table~\ref{tab:benchmark} also reveals a non-monotonic carrier-wave i
 
 \begin{table}[htbp]
 \centering
-\small
+\renewcommand{\arraystretch}{1.28}
+\setlength{\tabcolsep}{4.5pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{rccccccccc}
 \toprule
@@ -421,26 +422,26 @@ To verify the impact on downstream autoregressive generation, we evaluate text c
 
 Figure~\ref{fig:scaling_acr_entropy} illustrates the multi-scale scaling behavior of the Attention Contrast Ratio and Shannon entropy across context lengths scaling up to 18,030 tokens. Figure~\ref{fig:attention_distribution} depicts the full-context log-attention energy profile $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$). Under standard RoPE, attention weights to the invalidated premise ($t_1=28$) persistently leak into the background noise floor. Under SG-M\"obius, destructive phase interference suppresses obsolete decoy attention while dynamically concentrating probability mass onto the overriding target directive ($t_2=2,258$).
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
     \centering
-    \begin{subfigure}[b]{0.49\textwidth}
+    \begin{subfigure}[b]{\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figures/fig_scaling_acr_entropy.png}
-        \caption{Multi-scale ACR and Shannon entropy scaling ($L \in [545, 18030]$).}
+        \includegraphics[width=0.98\textwidth]{figures/fig_scaling_acr_entropy.png}
+        \caption{Multi-scale Attention Contrast Ratio (left) and Shannon entropy (right) scaling ($L \in [545, 18030]$) on dual Tesla T4 GPUs.}
         \label{fig:scaling_acr_entropy}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
+    \\[0.6em]
+    \begin{subfigure}[b]{\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figures/fig_attention_distribution.png}
-        \caption{Log-attention distribution $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$).}
+        \includegraphics[width=0.92\textwidth]{figures/fig_attention_distribution.png}
+        \caption{Sequence-wide log-attention energy profile $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$).}
         \label{fig:attention_distribution}
     \end{subfigure}
     \caption{\textbf{Empirical multi-scale context scaling and full-context attention profiles on Qwen3.5-9B (dual Tesla T4 GPUs).} 
     (a) Attention Contrast Ratio (left) and Shannon entropy (right) scaling across sequence lengths from $545$ up to $18,030$ tokens. SG-M\"obius achieves up to $2.33\times$ suppression of obsolete decoy attention and $+118.0\%$ ACR gain at 18,030 tokens while scaling gracefully in entropy. 
     (b) Sequence-wide log-attention energy profile $\ln A_{T-1, t}$ at $L=4,480$: Standard RoPE (blue) continuously leaks strictly positive attention to the revoked premise ($t_1=28$), while SG-M\"obius (red) enforces active destructive phase cancellation ($\Delta\Phi = \pi$) at the obsolete premise and concentrates probability mass on the overriding directive ($t_2=2,258$).}
     \label{fig:scaling_and_distribution}
-\end{figure*}
+\end{figure}
 
 \subsection{Autoregressive KV-Cache Decoding Latency \& Micro-Benchmark Overhead}
 To provide an honest and rigorous analysis of computational latency, we report latency at two complementary granularities:
