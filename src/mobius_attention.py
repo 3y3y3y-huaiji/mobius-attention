@@ -20,6 +20,26 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .gauge_predictor import (
+    HysteresisSemanticGaugePredictor,
+    SemanticGaugeConnection,
+    causal_viscous_ema,
+)
+
+__all__ = [
+    "nonnegative_feature_map",
+    "apply_rotary_angle_addition",
+    "ContinuousMobiusRoPEModulator",
+    "SGMobiusRotaryEmbedding",
+    "SemanticGaugeMobiusRoPE",
+    "inject_mobius_attention",
+    "set_model_holonomy_phase",
+    "clear_model_holonomy_phase",
+    "HysteresisSemanticGaugePredictor",
+    "SemanticGaugeConnection",
+    "causal_viscous_ema",
+]
+
 
 def nonnegative_feature_map(u: torch.Tensor) -> torch.Tensor:
     r"""
