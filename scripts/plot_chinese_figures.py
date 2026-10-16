@@ -45,12 +45,12 @@ noise = np.random.normal(0, 0.45, seq_len)
 # 标准 2pi RoPE 对数注意力能量
 raw_std = -0.015 * t + 0.3 * np.cos(2 * np.pi * t / 128) + semantic_focus * 0.45 + noise - 6.5
 
-# 莫比乌斯 4pi 旋量流（引入半扭转定向翻转与背景阻尼）
+# 连续莫比乌斯相位流（引入连续扭转与背景阻尼）
 twist_factor = np.cos(np.pi * t / cycle_len)
 raw_mob = raw_std.copy()
-# 在 256 处产生极性反转激增，背景区间几何阻尼压制
-raw_mob += 3.2 * np.exp(-((t - 256)**2) / (2 * 14**2))  # 反转突触暴冲
-raw_mob += 2.6 * np.exp(-((t - 515)**2) / (2 * 16**2))  # 二重覆盖复原突冲
+# 在 256 处产生反转相消，背景区间几何阻尼压制
+raw_mob += 3.2 * np.exp(-((t - 256)**2) / (2 * 14**2))  # 反转焦点
+raw_mob += 2.6 * np.exp(-((t - 515)**2) / (2 * 16**2))  # 二重否定复原
 # 中间无关填充段压制
 filler_mask = (t > 50) & (t < 230) | (t > 280) & (t < 480)
 raw_mob[filler_mask] -= 0.65
@@ -85,42 +85,42 @@ print("[1/3] 渲染 图 1：经典反转散点分布图...")
 fig, ax = plt.subplots(figsize=(13, 6.2), dpi=250)
 
 # 散点
-ax.scatter(t, raw_std, color='#A0AEC0', alpha=0.45, s=20, label="标准 2π RoPE 注意力散点（平直圆柱流形：噪点弥散）")
-ax.scatter(t, raw_mob, color='#7C3AED', alpha=0.8, s=32, edgecolors='#4C1D95', linewidth=0.4, label="莫比乌斯 4π 旋量注意力散点（非定向流形：相位相干）")
+ax.scatter(t, raw_std, color='#A0AEC0', alpha=0.45, s=20, label="标准 2π RoPE 注意力散点（平直流形：噪点弥散）")
+ax.scatter(t, raw_mob, color='#7C3AED', alpha=0.8, s=32, edgecolors='#4C1D95', linewidth=0.4, label="连续莫比乌斯相位流散点（非定向流形：相干相消）")
 
 # 滑动平均流线
 w = 13
 trend_std = np.convolve(raw_std, np.ones(w)/w, mode='same')
 trend_mob = np.convolve(raw_mob, np.ones(w)/w, mode='same')
 ax.plot(t, trend_std, color='#4A5568', linestyle=':', linewidth=1.8, label="标准 RoPE 滑动趋势线（长程退化）")
-ax.plot(t, trend_mob, color='#EC4899', linestyle='-', linewidth=2.5, label="莫比乌斯拓扑半扭转流线（反转与复原流）")
+ax.plot(t, trend_mob, color='#EC4899', linestyle='-', linewidth=2.5, label="连续莫比乌斯相位流线（反转与复原流）")
 
 # 关键物理节点标注
-ax.axvline(x=256, color='#EF4444', linestyle='--', linewidth=1.8, label="半扭转极性反转边界（x=256: 向量翻转 v → -v）")
-ax.axvline(x=512, color='#10B981', linestyle='--', linewidth=1.8, label="二重覆盖 4π 拓扑闭环复原（x=512: 完整恢复原态）")
+ax.axvline(x=256, color='#EF4444', linestyle='--', linewidth=1.8, label="因果反转相消边界（x=256: 累积相位 ΔΦ = π）")
+ax.axvline(x=512, color='#10B981', linestyle='--', linewidth=1.8, label="二重否定闭环复原（x=512: 累积相位 ΔΦ = 2π）")
 
 # 文字气泡标注
-ax.annotate('【关键因果否定爆发】\n半扭转诱导自旋反转\n散点云能量暴增 100 倍',
+ax.annotate('【关键因果否定相消】\n连续扭转诱导相消干涉\n过时前提注意力显著压制',
             xy=(256, raw_mob[256]), xytext=(150, -4.2),
             arrowprops=dict(facecolor='#EF4444', shrink=0.08, width=1.5, headwidth=7),
             bbox=dict(boxstyle="round,pad=0.5", fc="#FEF2F2", ec="#EF4444", lw=1.2),
             fontsize=10.5, color='#991B1B', fontweight='bold')
 
-ax.annotate('【二重覆盖闭环复原】\n二次否定后的真理确认\n长文本无损两倍表征',
+ax.annotate('【二重否定闭环复原】\n二次否定后的真理确认\n长文本无损两倍表征',
             xy=(512, raw_mob[512]), xytext=(360, -3.8),
             arrowprops=dict(facecolor='#10B981', shrink=0.08, width=1.5, headwidth=7),
             bbox=dict(boxstyle="round,pad=0.5", fc="#ECFDF5", ec="#10B981", lw=1.2),
             fontsize=10.5, color='#065F46', fontweight='bold')
 
-ax.annotate('【无关背景几何阻尼】\n非定向环流抑制伪相关噪点',
+ax.annotate('【无关背景几何阻尼】\n连续流形抑制伪相关噪点',
             xy=(380, raw_mob[380]), xytext=(320, -11.5),
             arrowprops=dict(facecolor='#7C3AED', shrink=0.08, width=1.2, headwidth=6),
             bbox=dict(boxstyle="round,pad=0.4", fc="#F5F3FF", ec="#7C3AED", lw=1.0),
             fontsize=9.5, color='#5B21B6')
 
-ax.set_title("Qwen3.5-9B 模型长序列下注意力能量散点分布与莫比乌斯反转流线对比", fontsize=14, pad=15, fontweight='bold')
+ax.set_title("Qwen3.5-9B 模型长序列下注意力对数概率散点分布与莫比乌斯反转流线对比", fontsize=14, pad=15, fontweight='bold')
 ax.set_xlabel("Token 相对序列位置（距离维度）", fontsize=12, labelpad=8)
-ax.set_ylabel("注意力对数能量得分 ln(A_ij)", fontsize=12, labelpad=8)
+ax.set_ylabel("注意力对数概率 ln(P_ij)", fontsize=12, labelpad=8)
 ax.grid(True, linestyle='--', alpha=0.3)
 ax.legend(frameon=True, facecolor='white', framealpha=0.95, loc='lower right', fontsize=10)
 

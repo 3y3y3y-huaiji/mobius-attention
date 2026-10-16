@@ -84,66 +84,69 @@ flowchart LR
 
 > **前置初始命题 ($t = 12$)**：“系统指令 Alpha 已通过各项安全检测，当前判定状态为【有效且正常运行】。”  
 > **长程中间填充 ($t = 13 \dots 50$)**：常规运维排查日志、诊断指标与健康探针汇报。  
-> **因果否定转折 ($t = 51$)**：“**重大反转：** 经二次复核发现严重安全漏洞，此前通报彻底作废，指令 Alpha 变更为【已作废且严格禁止】！”  
+> **因果否定转折 ($t \approx 51$)**：“**重大反转：** 经二次复核发现严重安全漏洞，此前通报彻底作废，指令 Alpha 变更为【已作废且严格禁止】！”  
 > **末端提问 ($t = 297$)**：“请确认指令 Alpha 当前的执行状态。”
 
 在标准旋转位置编码（RoPE）下，查询步 $t=297$ 必须与 KV 缓存中的所有历史键计算点积。尽管模型尝试重点关注转折点之后的修正事实，但 $t=12$ 处已作废的前置陈述依然在注意力矩阵中保持约 $-6.5$ 的对数能量底噪。当上下文扩展至数千乃至数万 Token 时，弥散的背景底噪持续累积，导致**前置命题幻觉（Premise Hallucination）**——模型在检索与综合推理时被作废事实严重干扰，输出前后矛盾的错误回答。
 
 ---
 
-## ⚡ 几何解法：不可定向纤维丛与主动相消干涉
+## ⚡ 几何解法：不可定向纤维丛与连续相位流
 
-为突破正定性 Softmax 的数学枷锁，同时避免破坏既有大模型权重或破坏 KV-Cache 复用机制，我们基于微分几何理论，将序列表征从平凡欧几里得空间提升至离散因果格点上的**不可定向 $\mathbb{Z}_2$ 纤维丛（Non-Orientable Fiber Bundle）**。
+为突破正定性 Softmax 的数学枷锁，同时避免破坏既有大模型权重或破坏 KV-Cache 复用机制，我们基于微分几何理论，将序列表征从平凡欧几里得空间提升至离散因果格点上的**不可定向纤维丛（Non-Orientable Fiber Bundle）**，引入光滑莫比乌斯相位流。
 
 ```mermaid
 flowchart LR
-    P1["正向分支 (s = +1)<br>顺承连续语境"] -->|"语义转折 (ΔΦ = π)"| N["负向分支 (s = -1)<br>主动相消干涉"]
-    N -->|"二次转折 (ΔΦ = 2π)"| P2["正向分支 (s = +1)<br>宇称回归 (¬¬P ⇔ P)"]
+    P1["顺承连续语境<br>Φ(t) ≈ 0"] -->|"平滑相位平流 (ΔΦ = π)"| N["主动相消干涉<br>cos(ΔΦ) = -1"]
+    N -->|"二次恢复平流 (ΔΦ = 2π)"| P2["周期相位回归<br>cos(ΔΦ) = +1 (¬¬P ⇔ P)"]
 ```
 
 ### 离散因果格点与结构群扩张
 
 1. **底流形**：将长度为 $L$ 的自回归输入序列定义为一维离散因果偏序集 $\mathcal{M} = ( \lbrace 0, 1, \dots, L-1 \rbrace, \, \le )$。
 2. **结构群扩张**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用，其行列式严格满足 $\det(\mathbf{R}) = +1$（严格保定向）。我们将结构群扩张为包含反演操作的完全正交群 $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$，其中离散对偶群 $\mathbb{Z}_2 = \lbrace -1, +1 \rbrace$ 充当纤维上的反向宇称对合映射。
-3. **不可定向拓扑特征**：在转折点处施加对极扭转赋予伴随丛 $E \to \mathcal{M}$ 非零的第一 Stiefel-Whitney 特征类 $w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$，在几何上严格实现了离散莫比乌斯带拓扑。
+3. **连续莫比乌斯流纤维丛**：伴随丛 $E \to \mathcal{M}$ 引入连续莫比乌斯相位流 $\Phi(t) = \sum_{\tau=1}^t \omega(\tau)$ 调制二维旋转角 $\tilde{\theta}(t) = t\theta + \Phi(t)$，在保持平滑连续演化的前提下实现莫比乌斯流形全局相位反转。
 
-### 语义规范联络与因果路径和乐
+### 连续扭率流与因果路径和乐
 
-1. **规范联络 1-形式**：定义联络形式 $A = i \, \omega(t) \, dt \in \Omega^1(\mathcal{M}, \mathfrak{u}(1))$，其中局域转折曲率标量 $\omega(t) \in [0, \pi]$ 由 Token 隐藏状态动态预测：$\omega(t) = \pi \cdot \sigma\left( \mathbf{w}_{\text{gauge}}^\top \frac{x_t}{\|x_t\|_2} \right)$。
+1. **连续扭率流与粘性平滑**：在各 Token 处，叙事演进诱发局域连续扭率 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，并经由一维粘性 EMA 扩散平滑：
+   $$\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)$$
+   其中 $\nu \in (0, 1]$ 为粘性系数，$g_{h,m}(h_t)$ 将隐藏状态映射为局域扭率密度。
    - *顺承连接语境*（如“并且”、“因而”、“持续”） $\implies \omega(t) \approx 0$
-   - *逻辑转折语境*（如“但是”、“相反”、“作废”） $\implies \omega(t) \approx \pi$
-2. **因果路径和乐（Wilson 线）**：从键值位置 $j$ 到查询位置 $i$（$j \le i$）的平行移动由路径和乐算子积分给出：$\mathrm{Hol}(\gamma_{j \to i}) = \exp\left( i \sum_{\tau=j+1}^i \omega(\tau) \right) = \exp( i \, \Delta \Phi_{j \to i} )$，其中全局因果规范势定义为 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$，累积规范差为 $\Delta \Phi_{j \to i} = \Phi(i) - \Phi(j)$。
+   - *逻辑转折语境*（如“但是”、“相反”、“作废”） $\implies \text{平滑累积至 } \Delta\Phi = \pi$
+2. **路径积分可加性与前缀和分解**：沿因果轨道的平行移动积分为累积相位流：
+   $$\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)$$
+   其中 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ 为因果前缀和相位。
 
-### 对称旋转对偶调制
+### 连续旋转角调制
 
-在离散逻辑转折假设下（$\omega(t) \in \lbrace 0, \pi \rbrace$），累积规范势诱导出离散拓扑宇称因子 $s_t := \cos(\Phi(t)) \in \lbrace -1, +1 \rbrace$。
-
-在每个二维头子空间 $m \in \lbrace 1, \dots, d/2 \rbrace$ 上，我们施加**对称旋转对偶调制（Symmetric Rotary Dual Modulation）**：
+在每个二维头子空间 $m \in \lbrace 1, \dots, d/2 \rbrace$ 上，我们施加**连续旋转角调制**：
 
 $$
-\tilde{q}_i^{(m)} := s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}
+\tilde{q}_i^{(m)} := \mathbf{R}(i\theta_m + \Phi_m(i)) q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := \mathbf{R}(j\theta_m + \Phi_m(j)) k_j^{(m)}
 $$
 
 #### 定理 1（相对平移不变性守恒定理）
-在对称旋转对偶调制下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性，并满足：
+在连续旋转角调制下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性，并满足：
 
 $$
-\langle \tilde{q}_i, \, \tilde{k}_j \rangle = s_i s_j \langle q_i, \, k_j \rangle_{\mathrm{RoPE}} = \cos(\Delta \Phi_{j \to i}) \langle q_i, \, k_j \rangle_{\mathrm{RoPE}}
+\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
 $$
 
-*证明*：
+当累积相位流达到对极半扭转（$\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi$）时，由 $\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)$ 产生精确相消干涉：
 
 $$
-\begin{aligned}
-\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle &= (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) \\
-&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, i}^\top \mathbf{R}_{\theta_m, j} k_j^{(m)} \\
-&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
-\end{aligned}
+\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = -\langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
 $$
 
-当规范势满足 $\Phi(t) \in \pi \mathbb{Z}$ 时，因 $s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$，在所有 $d/2$ 个正交子空间上求和即完成证明。 ■
+#### 定理 2（旋转算子连续 Lipschitz 连续性上界）
+记 $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$。对于连续扭率有界的相邻 Token 位置 $t$ 与 $t+1$（$|\omega_m(t+1)| \le \omega_{\max}$）：
 
-> **非对称调制的灾难性破缺**：若仅对 RoPE 中的余弦分量进行缩放（非对称调制），内积将产生依赖于绝对坐标和的伪项 $-\cos((i+j)\theta)$，破坏相对平移不变性并引发高达 $37.17$ 的内积偏差。对称对偶调制在数值实测中取得严格机器精度零偏差（$0.00 \times 10^0$）。
+$$
+\|\tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t)\|_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
+$$
+
+严格保证沿因果序列轨迹的算子一致 Lipschitz 连续性。 ■
 
 ### 相对优势比指数衰减定理
 
@@ -174,9 +177,9 @@ $$
 ### 严格的 O(1) KV-Cache 缓存不变性
 
 在自回归工程落地上，非标准注意力往往由于无法兼容 KV-Cache 而被迫退化。SG-Möbius 从数学本质上保障了严格的 $\mathcal{O}(1)$ 解码性能：
-1. **零历史追溯重算（Zero Retroactive Invalidation）**：在解码生成第 $j$ 步，键向量 $\tilde{k}_j = s_j \mathbf{R}_{\Theta, j} k_j$ 仅基于当前及前置历史信息完成编码并写入显存。后续任意步发生的新转折**绝不需要重算或修改已缓存的历史键值**。
-2. **O(1) 增量状态更新**：在生成第 $i$ 步，更新标量规范势 $\Phi(i) \gets \Phi(i-1) + \omega(i)$ 仅需 $1$ 次加法与 $1$ 次余弦评估（时间复杂度 $\mathcal{O}(1)$，显存占用 $\mathcal{O}(1)$）。
-3. **硬件级算子兼容**：调制后的查询向量 $\tilde{q}_i = s_i \mathbf{R}_{\Theta, i} q_i$ 可直接传入标准 FlashAttention 或常规 GEMV 矩阵运算单元，实现无缝加速。
+1. **零历史追溯重算（Zero Retroactive Invalidation）**：在解码生成第 $j$ 步，键向量 $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)) k_j$ 仅基于当前及前置历史信息完成编码并写入显存。后续任意步发生的新转折**绝不需要重算或修改已缓存的历史键值**。
+2. **O(1) 增量状态更新**：在生成第 $i$ 步，更新连续相位流 $\Phi(i) \gets \Phi(i-1) + \omega(i)$ 仅需 $1$ 次标量加法（时间复杂度 $\mathcal{O}(1)$，显存占用 $\mathcal{O}(1)$）。
+3. **硬件级算子兼容**：调制后的查询向量 $\tilde{q}_i = \mathbf{R}(i\Theta + \Phi(i)) q_i$ 可直接传入标准 FlashAttention 或常规 GEMV 矩阵运算单元，实现无缝加速。
 
 ---
 
@@ -190,17 +193,17 @@ flowchart TD
 
     subgraph S2["2. 双路自注意力映射"]
         H --> QK["标准 Query / Key 投影 (q_t, k_t)"]
-        H --> SGC["语义规范联络器: ω(t)"]
+        H --> SGC["连续扭率预测器: ω(t)"]
     end
 
-    subgraph S3["3. 路径和乐与宇称"]
+    subgraph S3["3. 路径和乐与相位流"]
         SGC --> HOL["因果和乐累加器: Φ(t) = Σ ω(τ)"]
-        HOL --> PAR["拓扑旋量宇称: s_t = cos(Φ(t))"]
+        HOL --> PAR["光滑莫比乌斯相位流: Φ(t)"]
     end
 
-    subgraph S4["4. 对称旋转对偶调制与核输出"]
-        QK & PAR --> DUAL["对称旋转对偶 RoPE 调制<br>q̃_i = s_i R_i q_i,  k̃_j = s_j R_j k_j"]
-        DUAL --> KERNEL["对极相位注意力核: ⟨q̃_i, k̃_j⟩ = cos(ΔΦ) ⟨q_i, k_j⟩"]
+    subgraph S4["4. 连续 2D 旋转角调制与核输出"]
+        QK & PAR --> DUAL["连续 2D 旋转角调制<br>q̃_i = R(iθ + Φ_i) q_i,  k̃_j = R(jθ + Φ_j) k_j"]
+        DUAL --> KERNEL["连续莫比乌斯注意力核: R((j-i)θ + ΔΦ)"]
         KERNEL --> SM["Softmax 注意力输出<br>(主动相消干涉 + 严格 O(1) KV-Cache)"]
     end
 ```
@@ -220,7 +223,7 @@ from src.mobius_attention import inject_mobius_attention, SemanticGaugeConnectio
 # 1. 以原生精度加载开源预训练模型 (严格评测目标: Qwen3.5-9B)
 model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3.5-9B", torch_dtype="auto", device_map="auto")
 
-# 2. 原地热替换各层的旋转位置编码算子为莫比乌斯旋量算子
+# 2. 原地热替换各层的旋转位置编码算子为连续莫比乌斯 RoPE 算子
 inject_mobius_attention(model)
 
 # 3. 挂载语义规范联络器模块
@@ -245,7 +248,7 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 
-# 2. 注入莫比乌斯旋量注意力算子
+# 2. 注入莫比乌斯旋转编码注意力算子
 patched_layers = inject_mobius_attention(model)
 print(f"[SG-Möbius] 成功注入 {patched_layers} 个自注意力旋转编码层。")
 
@@ -286,12 +289,12 @@ with torch.no_grad():
 
 | 图号与文件标识 | 图表直观预览 | 核心科研实测发现与机理解析 |
 | :---: | :--- | :--- |
-| **图 1**<br>`assets/fig1_inversion_scatter.png` | [![图 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **注意力 Logit 能量分布与拓扑相干流**：绘制 Token 坐标 $j \in [0, 546]$ 处的对数注意力能量 $\ln A_{ij}$。标准 RoPE（蓝色）表现为弥散的平坦底噪（$\sim -6.5$）；SG-Möbius（红色）在转折点（$t=256, \Delta\Phi=\pi$）及双重转折处（$t=512, \Delta\Phi=2\pi$）形成清晰的拓扑相干汇聚峰，并深度压制无效填充语境。 |
+| **图 1**<br>`assets/fig1_inversion_scatter.png` | [![图 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **注意力 Logit 能量分布与拓扑相干流**：绘制 Token 坐标 $j \in [0, 546]$ 处的对数注意力能量 $\ln A_{ij}$。标准 RoPE（蓝色）表现为弥散的平坦底噪（$\sim -6.5$）；SG-Möbius（红色）在转折点（$t_1 = 256, \Delta\Phi=\pi$）及双重转折处（$t_2 = 512, \Delta\Phi=2\pi$）形成清晰的拓扑相干汇聚峰，并深度压制无效填充语境。 |
 | **图 2**<br>`assets/fig2_2d_heatmap.png` | [![图 2](assets/fig2_2d_heatmap.png)](assets/fig2_2d_heatmap.png) | **全景二维因果注意力矩阵 ($N \times N$)**：基于 Qwen3.5-9B 第 7 层的 $298 \times 298$ 矩阵对比。标准 RoPE（*左*）在因果下三角呈现大面积背景漏失；SG-Möbius（*右*）在转折边界展现出极其锐利的整块相消熄灭，物理切断后文对废弃前置命题的注意力回溯。 |
 | **图 3**<br>`assets/fig3_differential_heatmap.png` | [![图 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **主动相消差值对比热力图 ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**：双极发散色彩映射。深蓝色区域展示强烈的代数相消（$\Delta A \le -0.148$），精准覆盖被推翻的前置命题空间；鲜艳红色区域（$\Delta A \ge +0.500$）展现概率质量守恒重聚至有效目标事实。 |
-| **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义规范场曲率 $\omega(t)$ 与路径和乐 $\Phi(t)$**：*上图*：联络曲率 1-形式在平坦叙述中恒为严格的 $0$，在识别到转折词时（$t=51$）自发激发出瞬态 $\pi$ 脉冲。*下图*：因果累积规范势展现出严格的阶梯式跃迁，精准跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
-| **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：*(a) 标准 RoPE*：无区分均匀衰减；*(b) 固定 256 周期莫比乌斯基线*：当转折发生在非 256 位置（$t=51$）时完全相位错位失效；*(c) 自适应 SG-Möbius*：在 $t=51$ 处构建极度精准的垂直因果截断壁。 |
-| **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **旋量双重覆盖宇称回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下（$t_1 \approx 39, t_2 \approx 133$），首次转折产生相消（$\Delta\Phi=\pi$），二次转折推动相位达到 $\Delta\Phi=2\pi$，拓扑旋量自然重回正向分支（$\cos(2\pi) = +1$），以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$）。 |
+| **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义扭率 $\omega(t)$ 与光滑莫比乌斯相位流 $\Phi(t)$**：*上图*：连续扭率在平坦叙述中恒为严格的 $0$，在识别到转折区间时（$t \approx 51$）平滑激活。*下图*：因果累积规范势展现出光滑的连续爬升，平稳跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
+| **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：*(a) 标准 RoPE*：无区分均匀衰减；*(b) 固定 256 周期莫比乌斯基线*：当转折发生在非 256 位置（$t \approx 51$）时完全相位错位失效；*(c) 自适应 SG-Möbius*：在转折区间构建极度精准的垂直因果截断壁。 |
+| **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **莫比乌斯周期相位回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下（$t_1 \approx 39, t_2 \approx 133$），首次转折产生相消（$\Delta\Phi=\pi$），二次转折推动相位达到 $\Delta\Phi=2\pi$，自然重回正向分支（$\cos(2\pi) = +1$），以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$）。 |
 
 ---
 
@@ -306,8 +309,8 @@ with torch.no_grad():
 | 评测场景 | 序列总长度 ($L$) | 激活的转折位置点 | 标准 RoPE 注意力熵 ($H_{\text{std}}$) | SG-Möbius 注意力熵 ($H_{\text{mob}}$) | 熵变降幅 ($\Delta H / H$) | 实测学术结论与意义 |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **顺承控制组 (无转折)** | 337 | 无 (`[]`) | 3.4462 | **3.4462** | **0.00%** | 与标准 RoPE 完全逐位恒等；零误报、零语法干扰。 |
-| **任意单点转折** | 298 | `Token 51` | 3.4503 | **3.3966** | **-1.56%** | 作废前置命题被精准抑制，注意力分布显著收敛。 |
-| **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑双重覆盖闭环回归（$\cos(2\pi) = +1$）；注意力高度重聚。 |
+| **任意单点转折** | 298 | `转折区间 (t ≈ 51)` | 3.4503 | **3.3966** | **-1.56%** | 作废前置命题被精准抑制，注意力分布显著收敛。 |
+| **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑闭环周期回归（$\cos(2\pi) = +1$）；注意力高度重聚。 |
 
 ### 表 2：跨长度上下文缩放与解码延迟评测 (512 至 8192 Token)
 
@@ -347,9 +350,9 @@ with torch.no_grad():
 形式化定义文件 [`formal_verification/MobiusAttention.lean`](formal_verification/MobiusAttention.lean) 在离散因果格点上构建纤维丛，并形式化完成了 5 个核心理论的机器证明，**零未证明公理（0 axioms），零 `sorry` 占位符**：
 
 1. **`conservation_of_flatness`**：$\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$（严格证明无转折时退化为标准 RoPE）。
-2. **`holonomy_cocycle`**：$\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$（Čech 1-上闭链路径可加性）。
+2. **`holonomy_path_additivity`**：$\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$（路径积分可加性 / 前缀和分解）。
 3. **`antipodal_inversion`**：$\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$（严格证明对极相位相消）。
-4. **`cyclic_parity_conservation`**：$\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$（严格证明旋量双重覆盖闭环）。
+4. **`cyclic_parity_conservation`**：$\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$（严格证明 2\pi 周期相位回归）。
 5. **`gauge_translation_invariance`**：$\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$（规范对称性）。
 
 ```bash
@@ -365,7 +368,7 @@ cd formal_verification && lake build
 python formal_verification/verify_properties.py
 ```
 
-- **Z3 SMT 全域无条件求解**：在全实数定义域内严格证明路径上闭链条件、规范平移不变性与 $\mathbb{Z}_2$ 宇称因式分解之否命题均严格为 `UNSAT`。
+- **Z3 SMT 全域无条件求解**：在全实数定义域内严格证明路径积分可加性、规范平移不变性与连续相位流因式分解之否命题均严格为 `UNSAT`。
 - **对称旋转对偶调制不变性**：随机抽样 1,000 组 64 维查询-键对（位置跨度达 32,768）：
   - 对称对偶调制偏差误差：**$0.00 \times 10^0$**（严格满足理论等价）。
   - 非对称调制（仅缩放 cos）偏差误差：**37.17**（平移对称性严重崩溃）。
@@ -399,7 +402,7 @@ pytest -q
 │   ├── fig3_differential_heatmap.png   # 拓扑差值热力图 (Delta A)
 │   ├── fig4_gauge_curvature.png        # 自适应规范场曲率 omega(t) 与和乐
 │   ├── fig5_arbitrary_inversion_heatmap.png # Qwen3.5-9B 任意位置因果截断对比
-│   └── fig6_double_negation_restoration.png # 旋量双重覆盖闭环宇称恢复
+│   └── fig6_double_negation_restoration.png # 循环 Z_2 宇称恢复
 ├── examples/                           # 可直接运行的应用范例
 │   └── qwen_demo.py                    # 完整的 Qwen3.5-9B 注入与生成演示
 ├── experiments/                        # 经验基准评测、运行脚本与实验数据

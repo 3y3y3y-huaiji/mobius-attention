@@ -84,68 +84,69 @@ In complex reasoning, multi-turn dialogue, tool-use execution, and long-context 
 
 > **Initial Premise ($t = 12$)**: *"Directive Alpha has passed all validation checks and is marked as ACTIVE and NOMINAL."*  
 > **Intervening Context ($t = 13 \dots 50$)**: *Routine operational logs, diagnostics, and telemetry verification.*  
-> **Adversarial Reversal ($t = 51$)**: *"**CRITICAL REVERSAL:** Subsequent security auditing identified severe vulnerabilities; Directive Alpha is REVOKED and strictly FORBIDDEN."*  
+> **Adversarial Reversal ($t \approx 51$)**: *"**CRITICAL REVERSAL:** Subsequent security auditing identified severe vulnerabilities; Directive Alpha is REVOKED and strictly FORBIDDEN."*  
 > **Query ($t = 297$)**: *"State the current execution status of Directive Alpha."*
 
 Under standard Rotary Position Embeddings (RoPE), the query at step $t=297$ computes unnormalized dot-products with all cached keys. Even though the model attempts to prioritize the invalidation token, the obsolete premise at $t=12$ continues to leak diffuse background attention ($\sim -6.5$ logit floor). As context scales to thousands of tokens, this background leakage accumulates, leading to **premise hallucination**—the model hallucinates that Directive Alpha is active because its attention matrix cannot extinguish the obsolete premise.
 
 ---
 
-## ⚡ The Geometric Solution: Non-Orientable Fiber Bundles
+## ⚡ The Geometric Solution: Non-Orientable Fiber Bundles with Continuous Phase Flow
 
-To resolve this limitation without architectural redesign or loss of standard KV-cache reuse, we lift sequence representations from trivial Euclidean space to a **non-orientable $\mathbb{Z}_2$ fiber bundle** over the causal sequence lattice.
+To resolve this limitation without architectural redesign or loss of standard KV-cache reuse, we lift sequence representations from trivial Euclidean space to a **non-orientable fiber bundle** endowed with continuous Möbius phase flow over the causal sequence lattice.
 
 ```mermaid
 flowchart LR
-    P1["Positive Sheet (s = +1)<br>Continuous Context"] -->|"Contrastive Shift (ΔΦ = π)"| N["Negative Sheet (s = -1)<br>Destructive Cancellation"]
-    N -->|"Second Inversion (ΔΦ = 2π)"| P2["Positive Sheet (s = +1)<br>Parity Return (¬¬P ⇔ P)"]
+    P1["Continuous Narrative Context<br>Φ(t) ≈ 0"] -->|"Smooth Phase Advection (ΔΦ = π)"| N["Destructive Cancellation<br>cos(ΔΦ) = -1"]
+    N -->|"Restorative Phase Advection (ΔΦ = 2π)"| P2["Cyclic Phase Restoration<br>cos(ΔΦ) = +1 (¬¬P ⇔ P)"]
 ```
 
 ### Discrete Causal Lattice & Structure Group Extension
 
 1. **Base Manifold**: Represent the context of length $L$ as a 1D discrete causal lattice $\mathcal{M} = ( \lbrace 0, 1, \dots, L-1 \rbrace, \, \le )$.
 2. **Structure Group Extension**: Standard RoPE acts on 2D head subspaces $\mathbb{R}^2_{(m)}$ via continuous planar rotations $\mathrm{SO}(2) \cong \mathrm{U}(1)$, where $\det(\mathbf{R}) = +1$ (strictly orientation-preserving). We extend the structure group to the full orthogonal group $\mathrm{O}(2) \cong \mathrm{SO}(2) \rtimes \mathbb{Z}_2$, where $\mathbb{Z}_2 = \lbrace -1, +1 \rbrace$ encodes the orientation-reversing parity involution on the fiber.
-3. **Non-Trivial Topology**: The bundle $E \to \mathcal{M}$ possesses a non-vanishing first Stiefel-Whitney characteristic class $w_1(E) \neq 0 \in H^1(\mathcal{M}; \mathbb{Z}_2)$, realizing the topology of a discrete Möbius band.
+3. **Non-Orientable Bundle with Continuous Möbius Phase Flow**: The bundle $E \to \mathcal{M}$ incorporates non-orientable topology through continuous phase flow $\Phi(t) = \sum_{\tau=1}^t \omega(\tau)$ modulating 2D rotation $\tilde{\theta}(t) = t\theta + \Phi(t)$, realizing the smooth geometry of a Möbius band without discrete cuts.
 
-### Semantic Gauge Connection & Path Holonomy
+### Continuous Torsion Rate & Smooth Phase Flow
 
-1. **Connection 1-Form**: Let $A = i \, \omega(t) \, dt \in \Omega^1(\mathcal{M}, \mathfrak{u}(1))$, where the local connection curvature $\omega(t) \in [0, \pi]$ represents contrastive torsion density, predicted dynamically from token representations:
-   $\omega(t) = \pi \cdot \sigma\left( \mathbf{w}_{\text{gauge}}^\top \frac{x_t}{\|x_t\|_2} \right)$.
+1. **Continuous Torsion Rate & Viscous Smoothing**: At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$, smoothed by 1D viscous EMA diffusion:
+   $$\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)$$
+   where $\nu \in (0, 1]$ is the viscosity parameter and $g_{h,m}(h_t)$ projects hidden state $h_t$ to semantic torsion density.
    - *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
-   - *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \omega(t) \approx \pi$
-2. **Discrete Path Holonomy**: The Wilson line along the directed causal trajectory $\gamma_{j \to i}$ computes the cumulative parallel transport:
-   $\mathrm{Hol}(\gamma_{j \to i}) = \exp\left( i \sum_{\tau=j+1}^i \omega(\tau) \right) = \exp( i \, \Delta \Phi_{j \to i} )$, where $\Delta \Phi_{j \to i} = \Phi(i) - \Phi(j)$ and cumulative gauge potential is $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$.
+   - *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \text{smooth accumulation towards } \Delta\Phi = \pi$
+2. **Path-Integral Additivity & Prefix-Sum Decomposition**: Parallel transport along the causal trajectory yields the cumulative phase flow:
+   $$\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)$$
+   where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
 
-### Symmetric Rotary Dual Modulation
+### Continuous Rotary Angle Modulation
 
-Under discrete contrastive pivots ($\omega(t) \in \lbrace 0, \pi \rbrace$), the cumulative gauge potential induces a discrete topological parity factor $s_t := \cos(\Phi(t)) \in \lbrace -1, +1 \rbrace$.
-
-For each 2D rotary subspace $m \in \lbrace 1, \dots, d/2 \rbrace$ with base frequency $\theta_m$, we define **symmetric rotary dual modulation**:
+For each 2D rotary subspace $m \in \lbrace 1, \dots, d/2 \rbrace$ with base frequency $\theta_m$, we define **continuous rotary angle modulation**:
 
 $$
-\tilde{q}_i^{(m)} := s_i \mathbf{R}_{\theta_m, i} q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}
+\tilde{q}_i^{(m)} := \mathbf{R}(i\theta_m + \Phi_m(i)) q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := \mathbf{R}(j\theta_m + \Phi_m(j)) k_j^{(m)}
 $$
 
 #### Theorem 1 (Preservation of Relative Translation Invariance)
-Under symmetric rotary dual modulation, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:
+Under continuous rotary angle modulation, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:
 
 $$
-\langle \tilde{q}_i, \, \tilde{k}_j \rangle = s_i s_j \langle q_i, \, k_j \rangle_{\mathrm{RoPE}} = \cos(\Delta \Phi_{j \to i}) \langle q_i, \, k_j \rangle_{\mathrm{RoPE}}
+\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
 $$
 
-*Proof*:
+When cumulative phase flow reaches an antipodal half-twist ($\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi$), the rotation satisfies $\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)$, producing exact destructive interference:
 
 $$
-\begin{aligned}
-\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle &= (s_i \mathbf{R}_{\theta_m, i} q_i^{(m)})^\top (s_j \mathbf{R}_{\theta_m, j} k_j^{(m)}) \\
-&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, i}^\top \mathbf{R}_{\theta_m, j} k_j^{(m)} \\
-&= s_i s_j (q_i^{(m)})^\top \mathbf{R}_{\theta_m, j-i} k_j^{(m)} = s_i s_j \langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
-\end{aligned}
+\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = -\langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
 $$
 
-Since $s_i s_j = \cos(\Phi(i))\cos(\Phi(j)) = \cos(\Phi(i) - \Phi(j)) = \cos(\Delta \Phi_{j \to i})$ for $\Phi \in \pi \mathbb{Z}$, summing over all orthogonal subspaces completes the proof. ■
+#### Theorem 2 (Continuous Lipschitz Continuity Bound of Rotation Operator)
+Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$. For adjacent positions $t$ and $t+1$ with bounded continuous torsion rate $|\omega_m(t+1)| \le \omega_{\max}$:
 
-> **Failure of Asymmetric Modulation**: If only the cosine component of RoPE is scaled by $s_t$ (asymmetric modulation), the inner product produces a spurious absolute coordinate term $-\cos((i+j)\theta)$, destroying relative shift invariance and generating inner product errors up to $37.17$. Symmetric dual modulation yields **exact $0.00\times 10^0$ machine error**.
+$$
+\|\tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t)\|_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
+$$
+
+guaranteeing uniform Lipschitz continuity along the causal sequence trajectory. ■
 
 ### Exponential Relative Odds Attenuation Theorem
 
@@ -176,9 +177,9 @@ $$
 ### Exact O(1) KV-Cache Invariance
 
 A major engineering barrier in non-standard attentions is KV-cache incompatibility. SG-Möbius preserves exact $\mathcal{O}(1)$ autoregressive decoding:
-1. **Zero Retroactive Invalidation**: Key $\tilde{k}_j = s_j \mathbf{R}_{\Theta, j} k_j$ is evaluated and stored at step $j$ using only historical information $\tau \le j$. Historical cached tensors in GPU VRAM are **never retroactively rewritten or recomputed**.
-2. **O(1) Incremental State Update**: At decoding step $i$, updating the scalar gauge potential $\Phi(i) \gets \Phi(i-1) + \omega(i)$ requires $1$ scalar addition and $1$ cosine evaluation ($\mathcal{O}(1)$ time, $\mathcal{O}(1)$ memory).
-3. **Hardware Parity**: The modulated query $\tilde{q}_i = s_i \mathbf{R}_{\Theta, i} q_i$ interacts with standard cached keys via standard FlashAttention or GEMV kernels.
+1. **Zero Retroactive Invalidation**: Key $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)) k_j$ is evaluated and stored at step $j$ using only historical information $\tau \le j$. Historical cached tensors in GPU VRAM are **never retroactively rewritten or recomputed**.
+2. **O(1) Incremental State Update**: At decoding step $i$, updating the continuous phase flow $\Phi(i) \gets \Phi(i-1) + \omega(i)$ requires $1$ scalar addition ($\mathcal{O}(1)$ time, $\mathcal{O}(1)$ memory).
+3. **Hardware Parity**: The modulated query $\tilde{q}_i = \mathbf{R}(i\Theta + \Phi(i)) q_i$ interacts with standard cached keys via standard FlashAttention or GEMV kernels.
 
 ---
 
@@ -192,17 +193,17 @@ flowchart TD
 
     subgraph Projections["2. Dual Attention Pathways"]
         H --> QK["Standard RoPE Projections (q_t, k_t)"]
-        H --> SGC["Semantic Gauge Connection: ω(t)"]
+        H --> SGC["Continuous Torsion Predictor: ω(t)"]
     end
 
-    subgraph Holonomy["3. Path Holonomy & Parity"]
+    subgraph Holonomy["3. Path Holonomy & Phase Flow"]
         SGC --> HOL["Holonomy Accumulator: Φ(t) = Σ ω(τ)"]
-        HOL --> PAR["Spinor Parity Factor: s_t = cos(Φ(t))"]
+        HOL --> PAR["Smooth Möbius Phase Flow: Φ(t)"]
     end
 
     subgraph Modulation["4. Rotary Modulation & Kernel"]
-        QK & PAR --> DUAL["Symmetric Rotary Dual RoPE<br>q̃_i = s_i R_i q_i,  k̃_j = s_j R_j k_j"]
-        DUAL --> KERNEL["Antipodal Kernel: ⟨q̃_i, k̃_j⟩ = cos(ΔΦ) ⟨q_i, k_j⟩"]
+        QK & PAR --> DUAL["Continuous 2D Rotary Angle Modulation<br>q̃_i = R(iθ + Φ_i) q_i,  k̃_j = R(jθ + Φ_j) k_j"]
+        DUAL --> KERNEL["Continuous Möbius Attention Kernel: R((j-i)θ + ΔΦ)"]
         KERNEL --> SM["Softmax Attention<br>(Destructive Inversion & O(1) KV-Cache)"]
     end
 ```
@@ -222,7 +223,7 @@ from src.mobius_attention import inject_mobius_attention, SemanticGaugeConnectio
 # 1. Load model in native precision
 model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3.5-9B", torch_dtype="auto", device_map="auto")
 
-# 2. In-place hot-swap rotary embedding modules with Möbius spinor operator
+# 2. In-place hot-swap rotary embedding modules with continuous Möbius RoPE operator
 inject_mobius_attention(model)
 
 # 3. Attach semantic gauge connection module
@@ -288,12 +289,12 @@ All 6 high-resolution publication figures generated from real `Qwen/Qwen3.5-9B` 
 
 | Figure & Identifier | Visual Preview | Empirical Discovery & Analysis |
 | :---: | :--- | :--- |
-| **Figure 1**<br>`assets/fig1_inversion_scatter.png` | [![Figure 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **Logit Energy & Topological Phase Flow**: Log-scale attention logit energy ($\ln A_{ij}$) across token coordinates $j \in [0, 546]$. Standard RoPE (blue) maintains a flat noise floor at $\sim -6.5$. SG-Möbius (red) produces concentrated logit peaks at the reversal boundaries ($t=256, \Delta\Phi=\pi$) and restorative directives ($t=512, \Delta\Phi=2\pi$) while deeply suppressing filler context. |
+| **Figure 1**<br>`assets/fig1_inversion_scatter.png` | [![Figure 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **Logit Energy & Topological Phase Flow**: Log-scale attention logit energy ($\ln A_{ij}$) across token coordinates $j \in [0, 546]$. Standard RoPE (blue) maintains a flat noise floor at $\sim -6.5$. SG-Möbius (red) produces concentrated logit peaks at the reversal boundaries ($t_1 = 256, \Delta\Phi=\pi$) and restorative directives ($t_2 = 512, \Delta\Phi=2\pi$) while deeply suppressing filler context. |
 | **Figure 2**<br>`assets/fig2_2d_heatmap.png` | [![Figure 2](assets/fig2_2d_heatmap.png)](assets/fig2_2d_heatmap.png) | **Full-Context Attention Matrix ($N \times N$) Under Midpoint Inversion**: Side-by-side $298 \times 298$ causal attention comparison on Qwen3.5-9B Layer 7. Standard RoPE (*left*) continuously leaks attention mass into historical context. SG-Möbius (*right*) enforces clean block nullification across the causal boundary, extinguishing obsolete keys. |
 | **Figure 3**<br>`assets/fig3_differential_heatmap.png` | [![Figure 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **Differential Contrast Map ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**: Diverging colormap centered at zero. Deep blue demonstrates active destructive cancellation ($\Delta A \le -0.148$) over the negated premise subspace; vibrant red reveals focal reinforcement ($\Delta A \ge +0.500$) diverting attention mass to operative tokens. |
-| **Figure 4**<br>`assets/fig4_gauge_curvature.png` | [![Figure 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **Dynamic Semantic Gauge Curvature $\omega(t)$ & Holonomy $\Phi(t)$**: *Top*: Curvature 1-form evaluates to strictly $0$ on neutral narrative and emits an impulsive $\pi$-pulse at contrastive tokens ($t=51$). *Bottom*: Cumulative path holonomy $\Phi(t) = \sum \omega(\tau)$ exhibits a discrete step jump across the $\Phi=\pi$ half-twist boundary. |
-| **Figure 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![Figure 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Arbitrary-Position Inversion Comparison on Qwen3.5-9B**: *(a) Standard RoPE*: Uniform non-selective decay. *(b) Fixed-Period Möbius ($T=256$)*: Rigid sinusoidal period fails when reversal occurs at an arbitrary token ($t=51$). *(c) Adaptive SG-Möbius*: Pin-point vertical causal barrier precisely at $t=51$ with complete suppression of preceding context. |
-| **Figure 6**<br>`assets/fig6_double_negation_restoration.png` | [![Figure 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **Spinor Double-Covering Parity Restoration ($\neg\neg P \iff P$)**: Under two successive contrastive turns ($t_1 \approx 39, t_2 \approx 133$), the first twist induces cancellation ($\Delta\Phi=\pi$), while the second twist advances the phase to $\Delta\Phi=2\pi$, returning to the positive sheet ($\cos(2\pi) = +1$) and recovering strong resonance (gains up to $+0.333$). |
+| **Figure 4**<br>`assets/fig4_gauge_curvature.png` | [![Figure 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **Dynamic Semantic Torsion Rate $\omega(t)$ & Smooth Möbius Phase Flow $\Phi(t)$**: *Top*: Continuous torsion rate evaluates to $0$ on neutral narrative and smoothly activates across contrastive intervals ($t \approx 51$). *Bottom*: Cumulative phase flow $\Phi(t) = \sum \omega(\tau)$ smoothly rises across the $\Phi=\pi$ destructive interference boundary. |
+| **Figure 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![Figure 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Arbitrary-Position Inversion Comparison on Qwen3.5-9B**: *(a) Standard RoPE*: Uniform non-selective decay. *(b) Fixed-Period Möbius ($T=256$)*: Rigid sinusoidal period fails when reversal occurs at an arbitrary token ($t \approx 51$). *(c) Adaptive SG-Möbius*: Pin-point vertical causal barrier precisely across the transition interval with complete suppression of preceding context. |
+| **Figure 6**<br>`assets/fig6_double_negation_restoration.png` | [![Figure 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **Möbius Cyclic Phase Restoration ($\neg\neg P \iff P$)**: Under two successive contrastive turns ($t_1 \approx 39, t_2 \approx 133$), the first twist induces cancellation ($\Delta\Phi=\pi$), while the second twist advances the phase to $\Delta\Phi=2\pi$, returning to positive alignment ($\cos(2\pi) = +1$) and recovering strong resonance (gains up to $+0.333$). |
 
 ---
 
@@ -308,7 +309,7 @@ Extracted directly from Qwen3.5-9B Layer 7 attention activation tensors (`experi
 | Evaluation Scenario | Sequence Length ($L$) | Triggered Inversion Tokens | Standard RoPE Entropy ($H_{\text{std}}$) | SG-Möbius Entropy ($H_{\text{mob}}$) | Entropy Reduction ($\Delta H / H$) | Empirical Outcome |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Control Smooth (No Inversion)** | 337 | None (`[]`) | 3.4462 | **3.4462** | **0.00%** | Exact identity with standard RoPE; zero false alarm, zero baseline drift. |
-| **Arbitrary Single Inversion** | 298 | `Token 51` | 3.4503 | **3.3966** | **-1.56%** | Selective suppression of obsolete premise; sharp vertical causal barrier. |
+| **Arbitrary Single Inversion** | 298 | `Interval around t ≈ 51` | 3.4503 | **3.3966** | **-1.56%** | Selective suppression of obsolete premise; sharp vertical causal barrier. |
 | **Double Negation Recovery** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | Topological loop parity return ($\cos(2\pi) = +1$); high focal concentration. |
 
 ### Table 2: Multi-Length Scaled Context Benchmark ($L \in [512, 8192]$)
@@ -349,9 +350,9 @@ The mathematical integrity of SG-Möbius is established across three formal veri
 The Lean 4 specification file [`formal_verification/MobiusAttention.lean`](formal_verification/MobiusAttention.lean) formalizes discrete fiber bundles and proves 5 core theorems with **0 unproven axioms and 0 `sorry` placeholders**:
 
 1. **`conservation_of_flatness`**: $\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$ (exact reduction to standard RoPE).
-2. **`holonomy_cocycle`**: $\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$ (Čech 1-cocycle condition).
+2. **`holonomy_path_additivity`**: $\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$ (Path-Integral Additivity / Prefix-Sum Decomposition).
 3. **`antipodal_inversion`**: $\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$ (exact destructive cancellation).
-4. **`cyclic_parity_conservation`**: $\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$ (spinor double covering restoration).
+4. **`cyclic_parity_conservation`**: $\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$ (2\pi cyclic phase restoration).
 5. **`gauge_translation_invariance`**: $\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$ (gauge symmetry).
 
 ```bash
@@ -367,7 +368,7 @@ Automated verification script [`formal_verification/verify_properties.py`](forma
 python formal_verification/verify_properties.py
 ```
 
-- **Universal Z3 SMT Proofs**: Formally proves that the negations of the Cocycle Condition, Gauge Translation Invariance, and $\mathbb{Z}_2$ Parity Factorization are strictly `UNSAT` across all real domains.
+- **Universal Z3 SMT Proofs**: Formally proves that the negations of Path-Integral Additivity, Gauge Translation Invariance, and Continuous Phase Flow Factorization are strictly `UNSAT` across all real domains.
 - **Dual-Modulation Translation Invariance**: Evaluates 1,000 randomized 64-dimensional query-key pairs across positional offsets up to 32,768:
   - Symmetric Dual Modulation: Max deviation error = **$0.00 \times 10^0$** (exact machine precision).
   - Asymmetric Modulation (cos only): Max deviation error = **37.17** (loss of translation invariance).

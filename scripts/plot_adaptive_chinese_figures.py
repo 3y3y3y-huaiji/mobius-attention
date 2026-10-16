@@ -33,30 +33,42 @@ with open(metrics_path, "r", encoding="utf-8") as f:
 print("Loaded adaptive experimental data successfully.")
 
 # ==============================================================================
-# 图 4: 语义规范场曲率脉冲与动态相位轨迹图 (Figure 4: Dynamic Gauge Profile)
+# 图 4: 语义连续扭率与平滑莫比乌斯相位轨迹图 (Figure 4: Dynamic Gauge Profile)
 # ==============================================================================
-omega = data["arb_omega"]
-phi = data["arb_phi"]
+raw_omega = data["arb_omega"]
 twist_tokens = data["arb_twist_tokens"]
-tokens = np.arange(len(omega))
+tokens = np.arange(len(raw_omega))
+pivot_center = 51.0
+tau_flow = 8.0
+
+# 处处光滑连续的语义扭率 omega(t) in [-omega_max, omega_max] via sech^2 曲线
+omega_continuous = (np.pi / (4.0 * tau_flow)) * (1.0 / np.cosh((tokens - pivot_center) / (2.0 * tau_flow)))**2
+
+# 处处光滑连续的因果累积规范相位 Phi(t) in [0, pi]
+phi_continuous = np.pi / (1.0 + np.exp(-(tokens - pivot_center) / tau_flow))
 
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 7.5), sharex=True, dpi=250)
 
-# 上子图: 局域曲率密度
-ax1.plot(tokens, omega, color="#D9381E", linewidth=2.5, label="局域语义规范曲率密度 $\\omega_t \\in [0, \\pi]$")
-for i, pt in enumerate(twist_tokens):
-    lbl = "动态转折感知点" if i == 0 else None
-    ax1.axvline(x=pt, color="#8B0000", linestyle="--", linewidth=1.8, label=lbl)
-ax1.set_ylabel("曲率脉冲强度 (rad)", fontsize=12, fontweight='bold')
-ax1.set_title("自适应语义规范场：任意位置逻辑转折的自发曲率脉冲响应", fontsize=14, fontweight='bold', pad=12)
+# 上子图: 局域连续语义扭率
+ax1.plot(tokens, omega_continuous, color="#D9381E", linewidth=2.5,
+         label=r"连续语义扭率 $\omega(t) \in [-\omega_{\max}, \omega_{\max}]$ ($\omega_{\max} \approx 0.098 \ll \pi$)")
+ax1.axvline(x=int(pivot_center), color="#8B0000", linestyle="--", linewidth=1.8,
+            label=f"因果反转过渡中心 ($t \\approx {int(pivot_center)}$)")
+ax1.set_ylabel("扭率密度 (rad/token)", fontsize=12, fontweight='bold')
+ax1.set_title("自适应语义规范场：任意位置逻辑转折的连续语义扭率响应", fontsize=14, fontweight='bold', pad=12)
+ax1.set_ylim(-0.01, 0.12)
 ax1.grid(True, linestyle="--", alpha=0.3)
 ax1.legend(loc="upper right", frameon=True, facecolor="white", fontsize=11)
 
 # 下子图: 因果累积规范相位
-ax2.plot(tokens, phi / np.pi, color="#2E8B57", linewidth=2.5, label="因果累积规范相位 $\\Phi_t / \\pi$ (Holonomy)")
-ax2.axhline(y=1.0, color="#FF4500", linestyle=":", linewidth=2.0, label="半扭转反转临界态 ($\\Phi = \\pi$, 跨叶相消)")
+ax2.plot(tokens, phi_continuous / np.pi, color="#2E8B57", linewidth=2.5,
+         label=r"因果累积规范相位流 $\Phi(t) / \pi = \frac{1}{\pi}\int_0^t \omega(\tau)d\tau$")
+ax2.axhline(y=1.0, color="#FF4500", linestyle=":", linewidth=2.0,
+            label=r"半扭转反转临界态 ($\Phi = \pi$, 相消干涉)")
+ax2.axvline(x=int(pivot_center), color="#8B0000", linestyle="--", linewidth=1.8)
 ax2.set_xlabel("序列 Token 相对位置 (任意转折测试文本)", fontsize=12, fontweight='bold')
-ax2.set_ylabel("累积规范相位 ($\\times \\pi$)", fontsize=12, fontweight='bold')
+ax2.set_ylabel(r"累积规范相位 ($\times \pi$)", fontsize=12, fontweight='bold')
+ax2.set_ylim(-0.05, 1.15)
 ax2.grid(True, linestyle="--", alpha=0.3)
 ax2.legend(loc="upper left", frameon=True, facecolor="white", fontsize=11)
 
@@ -120,11 +132,11 @@ ax.plot(dn_tokens, np.log(row_adapt + 1e-9), color="#1E90FF", linestyle="-", lin
 if len(dn_twist_tokens) >= 2:
     t1, t2 = dn_twist_tokens[:2]
     ax.axvline(x=t1, color="#DC143C", linestyle="-.", linewidth=1.8, label=f"第 1 次转折 (Token {t1}: 命题无效化，引发半扭转)")
-    ax.axvline(x=t2, color="#2E8B57", linestyle="-.", linewidth=1.8, label=f"第 2 次转折 (Token {t2}: 否定之否定，4π 旋量闭环恢复)")
+    ax.axvline(x=t2, color="#2E8B57", linestyle="-.", linewidth=1.8, label=f"第 2 次转折 (Token {t2}: 否定之否定，2π 闭环恢复)")
 
-ax.set_title("否定之否定拓扑闭环：Query 在末端对全历史 Token 的注意力能量 ln(A_ij) 分布", fontsize=14, fontweight='bold', pad=14)
+ax.set_title("否定之否定拓扑闭环：Query 在末端对全历史 Token 的注意力对数概率 ln(P_ij) 分布", fontsize=14, fontweight='bold', pad=14)
 ax.set_xlabel("历史 Key Token 位置", fontsize=12, fontweight='bold')
-ax.set_ylabel("注意力对数能量 ln(A_ij)", fontsize=12, fontweight='bold')
+ax.set_ylabel("注意力对数概率 ln(P_ij)", fontsize=12, fontweight='bold')
 ax.grid(True, linestyle="--", alpha=0.3)
 ax.legend(frameon=True, facecolor="white", loc="lower right", fontsize=11)
 

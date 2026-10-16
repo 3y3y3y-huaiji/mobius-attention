@@ -5,7 +5,7 @@
   Dual-Licensed under Apache-2.0 and MulanPSL-2.0.
   
   This Lean 4 formalization rigorously proves the topological invariants,
-  gauge translation invariance, and double-covering holonomy properties of
+  gauge translation invariance, and smooth Möbius phase flow properties of
   the Semantic Gauge Möbius Attention (SG-Möbius-RoPE) mechanism.
   =============================================================================
 -/
@@ -22,9 +22,9 @@ namespace MobiusAttention
 abbrev Position := ℕ
 
 /--
-  Definition 2: Semantic Gauge Curvature (Connection 1-form)
-  At each token position t, ω(t) represents the local curvature / torsion density
-  induced by contrastive semantics, bounded in [0, π].
+  Definition 2: Semantic Continuous Torsion Rate
+  At each token position t, ω(t) represents the local continuous torsion rate
+  induced by narrative evolution, bounded in [0, π].
 -/
 structure Connection where
   omega : Position → ℝ
@@ -43,8 +43,8 @@ def Holonomy (A : Connection) (j i : Position) : ℝ :=
     0
 
 /--
-  Definition 4: Möbius Spinor Parity Factor
-  Under the 4π spinor double covering of the non-orientable bundle,
+  Definition 4: Möbius Phase Modulation Factor
+  Under continuous Möbius phase flow on the non-orientable bundle,
   the topological twist acting on the rotary inner product is cos(ΔΦ).
 -/
 def ParityFactor (A : Connection) (j i : Position) : ℝ :=
@@ -74,12 +74,12 @@ theorem conservation_of_flatness
 
 /- 
   =============================================================================
-  Theorem 2: Path Additivity (Cocycle Condition)
+  Theorem 2: Path-Integral Additivity / Prefix-Sum Decomposition
   For any sequence indices j ≤ k ≤ i, the cumulative holonomy along the composite
   path is the sum of partial holonomies: Holonomy(j, i) = Holonomy(j, k) + Holonomy(k, i).
   =============================================================================
 -/
-theorem holonomy_cocycle
+theorem holonomy_path_additivity
   (A : Connection) {j k i : Position} (h1 : j ≤ k) (h2 : k ≤ i) :
   Holonomy A j i = Holonomy A j k + Holonomy A k i := by
   unfold Holonomy
@@ -101,6 +101,12 @@ theorem holonomy_cocycle
   · have h_eq : j = k := le_antisymm h1 (not_lt.mp h_jk)
     subst h_eq
     simp
+
+/-- Backward-compatibility alias for test harness -/
+theorem holonomy_cocycle
+  (A : Connection) {j k i : Position} (h1 : j ≤ k) (h2 : k ≤ i) :
+  Holonomy A j i = Holonomy A j k + Holonomy A k i :=
+  holonomy_path_additivity A h1 h2
 
 /- 
   =============================================================================

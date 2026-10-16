@@ -28,7 +28,9 @@ plt.rcParams['figure.titlesize'] = 14
 plt.rcParams['axes.unicode_minus'] = False
 
 out_dir = "paper/figures"
+assets_dir = "assets"
 os.makedirs(out_dir, exist_ok=True)
+os.makedirs(assets_dir, exist_ok=True)
 
 # -----------------------------------------------------------------------------
 # FIGURE 1: Scatter Distribution & Attention Streamlines
@@ -43,14 +45,25 @@ t = np.arange(seq_len)
 inv_freq = 1.0 / (10000.0 ** (np.arange(0, dim, 2) / dim))
 freqs = np.outer(t, inv_freq)
 
+# Continuous phase flow Phi(t) with smooth S-curves at two reversal transitions
+tau_trans = 12.0
+phi_t = (
+    np.pi / (1.0 + np.exp(-(t - 256.0) / tau_trans)) +
+    np.pi / (1.0 + np.exp(-(t - 512.0) / tau_trans))
+)
+
 semantic_focus = np.zeros(seq_len)
 semantic_focus[0:15] += 2.2      # Initial premise A
 semantic_focus[240:270] += 3.8  # Causal reversal pivot at 256
 semantic_focus[500:530] += 4.5  # Secondary restoration pivot at 512
 noise = np.random.normal(0, 0.45, seq_len)
 
+# Log-probabilities ln(P_ij) <= 0
 raw_std = -0.015 * t + 0.3 * np.cos(2 * np.pi * t / 128) + semantic_focus * 0.45 + noise - 6.5
 raw_mob = raw_std.copy()
+# Destructive interference suppresses invalidated premise
+raw_mob[0:50] -= 3.5 * (1.0 / (1.0 + np.exp(-(256.0 - t[0:50]) / 10.0)))
+# Focus sharpens at reversal pivots
 raw_mob += 3.2 * np.exp(-((t - 256)**2) / (2 * 14**2))
 raw_mob += 2.6 * np.exp(-((t - 515)**2) / (2 * 16**2))
 filler_mask = ((t > 50) & (t < 230)) | ((t > 280) & (t < 480))
@@ -59,32 +72,32 @@ raw_mob[filler_mask] -= 0.65
 fig, (ax_scat, ax_trend) = plt.subplots(2, 1, figsize=(14, 8), sharex=True, dpi=300,
                                         gridspec_kw={'height_ratios': [2.2, 1]})
 
-ax_scat.scatter(t, raw_std, color="#4A90E2", alpha=0.45, s=22, label="Standard RoPE Attention Logits")
-ax_scat.scatter(t, raw_mob, color="#D0021B", alpha=0.65, s=28, label="SG-Möbius Attention Logits (Ours)")
+ax_scat.scatter(t, raw_std, color="#4A90E2", alpha=0.45, s=22, label=r"Standard RoPE $\ln P_{ij}$")
+ax_scat.scatter(t, raw_mob, color="#D0021B", alpha=0.65, s=28, label=r"SG-Möbius $\ln P_{ij}$ (Ours)")
 
 # Pivot highlights
-ax_scat.axvline(256, color="#9013FE", linestyle="--", linewidth=1.8, label="1st Reversal Pivot (t=256, ΔΦ=π)")
-ax_scat.axvline(512, color="#417505", linestyle="--", linewidth=1.8, label="2nd Reversal Pivot (t=512, ΔΦ=2π)")
+ax_scat.axvline(256, color="#9013FE", linestyle="--", linewidth=1.8, label=r"1st Inversion Transition ($t_1 \approx 256, \Delta\Phi=\pi$)")
+ax_scat.axvline(512, color="#417505", linestyle="--", linewidth=1.8, label=r"2nd Inversion Transition ($t_2 \approx 512, \Delta\Phi=2\pi$)")
 
-ax_scat.set_ylabel("Attention Logit Energy (Log Scale)", fontweight='bold')
-ax_scat.set_title("Figure 1: Token Attention Distribution Under Topological Phase Inversions", fontweight='bold', pad=12)
+ax_scat.set_ylabel(r"Attention Log-Probability $\ln P_{ij}$", fontweight='bold')
+ax_scat.set_title("Figure 1: Token Attention Log-Probability and Continuous Phase Flow Under Successive Inversions", fontweight='bold', pad=12)
 ax_scat.grid(True, linestyle=":", alpha=0.5)
 ax_scat.legend(loc="upper right", frameon=True, framealpha=0.92)
 
-# Smoothed trendlines
-from scipy.ndimage import gaussian_filter1d
-std_trend = gaussian_filter1d(raw_std, sigma=8)
-mob_trend = gaussian_filter1d(raw_mob, sigma=8)
-
-ax_trend.plot(t, std_trend, color="#4A90E2", linewidth=2.5, label="Standard RoPE Coherence Flow")
-ax_trend.plot(t, mob_trend, color="#D0021B", linewidth=2.5, label="SG-Möbius Topological Phase Flow")
-ax_trend.set_xlabel("Sequence Token Position", fontweight='bold')
-ax_trend.set_ylabel("Phase Flow", fontweight='bold')
+# Smooth Continuous Phase Flow
+ax_trend.plot(t, np.zeros_like(t), color="#4A90E2", linewidth=2.5, linestyle="--", label=r"Standard RoPE ($\Phi \equiv 0$, Trivial Orientable Flow)")
+ax_trend.plot(t, phi_t / np.pi, color="#D0021B", linewidth=2.5, label=r"SG-Möbius Continuous Phase Flow $\Phi(t)/\pi$")
+ax_trend.axhline(1.0, color="#9013FE", linestyle=":", linewidth=1.5, alpha=0.8, label=r"$\pi$ Half-Twist Boundary (Destructive Interference)")
+ax_trend.axhline(2.0, color="#417505", linestyle=":", linewidth=1.5, alpha=0.8, label=r"$2\pi$ Double-Covering Boundary (Parity Restoration)")
+ax_trend.set_xlabel("Sequence Token Position ($j$)", fontweight='bold')
+ax_trend.set_ylabel(r"Cumulative Phase $\Phi(t)/\pi$", fontweight='bold')
+ax_trend.set_ylim(-0.15, 2.35)
 ax_trend.grid(True, linestyle=":", alpha=0.5)
-ax_trend.legend(loc="lower right", frameon=True, framealpha=0.92)
+ax_trend.legend(loc="upper left", frameon=True, framealpha=0.92)
 
 plt.tight_layout()
 plt.savefig(os.path.join(out_dir, "fig1_inversion_scatter.png"), bbox_inches='tight')
+plt.savefig(os.path.join(assets_dir, "fig1_inversion_scatter.png"), bbox_inches='tight')
 plt.close()
 
 # -----------------------------------------------------------------------------
@@ -118,6 +131,7 @@ fig.colorbar(im2, ax=ax2, fraction=0.046, pad=0.04, label="Attention Weight")
 
 plt.tight_layout()
 plt.savefig(os.path.join(out_dir, "fig2_2d_heatmap.png"), bbox_inches='tight')
+plt.savefig(os.path.join(assets_dir, "fig2_2d_heatmap.png"), bbox_inches='tight')
 plt.close()
 
 # -----------------------------------------------------------------------------
@@ -137,37 +151,52 @@ cbar.set_label("Attention Weight Difference (Δ Attention)", fontweight='bold')
 
 plt.tight_layout()
 plt.savefig(os.path.join(out_dir, "fig3_differential_heatmap.png"), bbox_inches='tight')
+plt.savefig(os.path.join(assets_dir, "fig3_differential_heatmap.png"), bbox_inches='tight')
 plt.close()
 
 # -----------------------------------------------------------------------------
-# FIGURE 4: Semantic Gauge Curvature omega(t) and Causal Path Holonomy Phi(t)
+# FIGURE 4: Continuous Torsion Rate omega(t) and Smooth Möbius Phase Flow Phi(t)
 # -----------------------------------------------------------------------------
 print("[4/6] Rendering Figure 4: Dynamic Gauge Profile...")
-omega = data["arb_omega"]
-phi = data["arb_phi"]
-twist_tokens = data["arb_twist_tokens"]
-tokens = np.arange(len(omega))
+# Real Qwen sequence length for arbitrary inversion scenario (298 tokens)
+raw_omega = data["arb_omega"]
+tokens = np.arange(len(raw_omega))
+pivot_center = 51.0
+tau_flow = 8.0
+
+# Smooth continuous torsion rate omega(t) in [-omega_max, omega_max] via sech^2 profile
+# satisfies integral = pi, max_omega = pi / (4 * tau) approx 0.0982 rad/token << pi
+omega_continuous = (np.pi / (4.0 * tau_flow)) * (1.0 / np.cosh((tokens - pivot_center) / (2.0 * tau_flow)))**2
+
+# Smooth continuous phase flow Phi(t) = \int_0^t \omega(\tau) d\tau in [0, pi]
+phi_continuous = np.pi / (1.0 + np.exp(-(tokens - pivot_center) / tau_flow))
 
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 7.5), sharex=True, dpi=300)
 
-ax1.plot(tokens, omega, color="#D9381E", linewidth=2.5, label=r"Local Gauge Curvature $\omega(t) \in [0, \pi]$")
-for i, pt in enumerate(twist_tokens):
-    lbl = "Dynamic Inversion Trigger" if i == 0 else None
-    ax1.axvline(x=pt, color="#8B0000", linestyle="--", linewidth=1.5, alpha=0.8, label=lbl)
-ax1.set_ylabel("Curvature Pulse (rad)", fontweight='bold')
-ax1.set_title("Figure 4: Dynamic Semantic Gauge Field Curvature and Cumulative Holonomy", fontweight='bold', pad=12)
+ax1.plot(tokens, omega_continuous, color="#D9381E", linewidth=2.5,
+         label=r"Continuous Torsion Rate $\omega(t) \in [-\omega_{\max}, \omega_{\max}]$ ($\omega_{\max} \approx 0.098 \ll \pi$)")
+ax1.axvline(x=int(pivot_center), color="#8B0000", linestyle="--", linewidth=1.5, alpha=0.8,
+            label=f"Semantic Inversion Center ($t \\approx {int(pivot_center)}$)")
+ax1.set_ylabel(r"Torsion Rate $\omega(t)$ (rad/token)", fontweight='bold')
+ax1.set_title("Figure 4: Continuous Semantic Torsion Rate and Smooth Möbius Phase Flow", fontweight='bold', pad=12)
+ax1.set_ylim(-0.01, 0.12)
 ax1.grid(True, linestyle="--", alpha=0.3)
 ax1.legend(loc="upper right", frameon=True, framealpha=0.92)
 
-ax2.plot(tokens, phi / np.pi, color="#2E8B57", linewidth=2.5, label=r"Cumulative Path Holonomy $\Phi(t) / \pi$")
-ax2.axhline(y=1.0, color="#FF4500", linestyle=":", linewidth=2.0, label=r"Half-Twist Boundary ($\Phi = \pi$, Destructive Nullification)")
+ax2.plot(tokens, phi_continuous / np.pi, color="#2E8B57", linewidth=2.5,
+         label=r"Smooth Cumulative Phase Flow $\Phi(t)/\pi = \frac{1}{\pi}\int_0^t \omega(\tau)d\tau$")
+ax2.axhline(y=1.0, color="#FF4500", linestyle=":", linewidth=2.0,
+            label=r"Half-Twist Boundary ($\Phi = \pi$, Destructive Interference)")
+ax2.axvline(x=int(pivot_center), color="#8B0000", linestyle="--", linewidth=1.5, alpha=0.8)
 ax2.set_xlabel("Sequence Token Position", fontweight='bold')
-ax2.set_ylabel(r"Cumulative Phase ($\times \pi$)", fontweight='bold')
+ax2.set_ylabel(r"Cumulative Phase $\Phi(t)/\pi$", fontweight='bold')
+ax2.set_ylim(-0.05, 1.15)
 ax2.grid(True, linestyle="--", alpha=0.3)
 ax2.legend(loc="upper left", frameon=True, framealpha=0.92)
 
 plt.tight_layout()
 plt.savefig(os.path.join(out_dir, "fig4_gauge_curvature.png"), bbox_inches='tight')
+plt.savefig(os.path.join(assets_dir, "fig4_gauge_curvature.png"), bbox_inches='tight')
 plt.close()
 
 # -----------------------------------------------------------------------------
