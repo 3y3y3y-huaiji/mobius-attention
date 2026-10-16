@@ -666,8 +666,8 @@ python scripts/plot_english_figures.py
 
 ```bibtex
 @article{sgmobius2026,
-  title={Semantic Gauge M{\"o}bius Attention: Resolving Positive-Definite Attention Constraints via Non-Orientable Fiber Bundles},
-  author={SG-M{\"o}bius Research Team},
+  title={Semantic Gauge M{\"o}bius Attention: Mitigating Strictly Positive Softmax Leakage via $\mathrm{SO}(2)$ Antipodal Lift and Subspace Phase Flow},
+  author={Huaiji Team},
   journal={arXiv preprint arXiv:2610.xxxxx},
   year={2026}
 }

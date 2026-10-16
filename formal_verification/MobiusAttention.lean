@@ -314,4 +314,33 @@ theorem odds_ratio_attenuation (a : ℝ) (Z : ℝ) (hZ : 0 < Z) :
   rw [← Real.exp_sub]
   exact congr_arg Real.exp (by ring)
 
+/--
+  Theorem 3c (Sign Condition for Decoy Suppression):
+  Decoy odds ratio strictly attenuates (exp(-2 * a) < 1) if and only if
+  the initial baseline alignment is strictly positive (a > 0).
+  Conversely, when a < 0, exp(-2 * a) > 1, explaining carrier-wave inversion.
+-/
+theorem decoy_odds_attenuates_iff_pos (a : ℝ) :
+    Real.exp (-2 * a) < 1 ↔ 0 < a := by
+  rw [Real.exp_lt_one_iff]
+  constructor
+  · intro h
+    nlinarith
+  · intro h
+    nlinarith
+
+/--
+  Theorem 3d (Carrier-Wave Amplification under Negative Alignment):
+  When the initial baseline RoPE alignment is negative (a < 0),
+  the unconditioned half-twist amplifies the decoy odds ratio (1 < exp(-2 * a)).
+-/
+theorem decoy_odds_amplifies_iff_neg (a : ℝ) :
+    1 < Real.exp (-2 * a) ↔ a < 0 := by
+  rw [Real.one_lt_exp_iff]
+  constructor
+  · intro h
+    nlinarith
+  · intro h
+    nlinarith
+
 end MobiusAttention
