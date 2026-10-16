@@ -11,8 +11,13 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{subcaption}
+\usepackage{enumitem}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{hyperref}
+
+% --- Global List Formatting ---
+\setlist[itemize]{itemsep=0.45em, topsep=0.35em, parsep=0.15em, leftmargin=1.5em}
+\setlist[enumerate]{itemsep=0.45em, topsep=0.35em, parsep=0.15em, leftmargin=1.5em}
 
 \hypersetup{
     colorlinks=true,
@@ -57,15 +62,17 @@ Because the Softmax operator maps real logits to strictly positive values on $\D
 
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}[b]{0.48\textwidth}
+    \begin{subfigure}[b]{0.96\textwidth}
+        \centering
         \includegraphics[width=\textwidth]{figures/fig4_gauge_curvature.png}
-        \caption{Continuous Torsion Rate $\omega(t)$ and M\"obius Phase Flow $\Phi(t)$.}
+        \caption{Continuous Torsion Rate $\omega(t)$ and Smooth M\"obius Phase Flow $\Phi(t)$.}
         \label{fig:curvature}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
+    \\[0.9em]
+    \begin{subfigure}[b]{\textwidth}
+        \centering
         \includegraphics[width=\textwidth]{figures/fig5_arbitrary_inversion_heatmap.png}
-        \caption{Comparative 2D Attention Matrices on Qwen3.5-9B.}
+        \caption{Comparative 2D Attention Matrices on Qwen3.5-9B (Layer 7): Standard RoPE (\emph{left}) vs. Periodic M\"obius Baseline ($T=256$, \emph{middle}) vs. Adaptive SG-M\"obius (\emph{right}).}
         \label{fig:arbitrary_heatmap}
     \end{subfigure}
     \caption{\textbf{Mechanism and attention response of SG-M\"obius-RoPE.} 
@@ -156,7 +163,7 @@ As demonstrated in Figure~\ref{fig:double_covering}, the continuous M\"obius pha
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.88\textwidth]{figures/fig6_double_negation_restoration.png}
+    \includegraphics[width=\textwidth]{figures/fig6_double_negation_restoration.png}
     \caption{\textbf{M\"obius cyclic phase restoration under negation-of-negation on Qwen3.5-9B.} 
     (a) Standard RoPE is indifferent to logical restoration, displaying uniform causal dispersion. 
     (b) SG-M\"obius attention matrices under two successive contrastive turns ($t_1 \approx 39$, $t_2 \approx 133$). The first invalidation shifts the phase to $\pi$ (destructive cancellation), while the second invalidation advances the total phase to $2\pi$, returning the phase flow to positive alignment ($\cos(2\pi) = +1$) and restoring attention resonance to the original premise. 
@@ -275,15 +282,17 @@ Inverting the ratio yields the decoy odds scaling factor $\exp(-2 A_{ij}^{\text{
 
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}[b]{0.58\textwidth}
-        \includegraphics[width=\textwidth]{figures/fig2_2d_heatmap.png}
-        \caption{Full $N \times N$ Causal Attention Matrices ($N=298$ tokens).}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=0.96\textwidth]{figures/fig2_2d_heatmap.png}
+        \caption{Full $N \times N$ Causal Attention Matrices ($N=298$ tokens): Standard RoPE (\emph{left}) vs. SG-M\"obius-RoPE (\emph{right}).}
         \label{fig:heatmap2d}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.38\textwidth}
-        \includegraphics[width=\textwidth]{figures/fig3_differential_heatmap.png}
-        \caption{Differential Contrast Map ($\Delta A$).}
+    \\[0.9em]
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=0.62\textwidth]{figures/fig3_differential_heatmap.png}
+        \caption{Differential Contrast Map ($\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$).}
         \label{fig:diff_heatmap}
     \end{subfigure}
     \caption{\textbf{2D attention matrices on Qwen3.5-9B Layer 7 under arbitrary-position inversion.} 
@@ -369,7 +378,7 @@ All empirical evaluations are conducted strictly on \textbf{Qwen3.5-9B} (\texttt
 
 \subsection{Multi-Scale Long-Context Invalidation Benchmark ($L \in [545, 18030]$)}
 To assess the empirical robustness of SG-M\"obius under realistic adversarial context scaling, we evaluate long sequences scaling from $L = 545$ up to $18,030$ tokens on dual Nvidia Tesla T4 GPUs. An initial verified directive (the ``decoy'', token \texttt{"ACTIVE"} at position $t_1 = 28$) is placed in the archival prompt, followed by procedurally scaled system telemetry distractors, and subsequently revoked by an overriding causal directive (the ``target'', token \texttt{"INVALID"} at position $t_2 \approx L/2$). We measure:
-\begin{itemize}
+\begin{itemize}[itemsep=0.55em, topsep=0.45em]
     \item \textbf{Decoy Attention ($A_{\mathrm{decoy}}$)}: Softmax attention probability allocated to the superseded decoy premise token span by the probe query at $T-1$, $A_{\mathrm{decoy}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\mathrm{decoy}}}$.
     \item \textbf{Target Attention ($A_{\mathrm{target}}$)}: Softmax attention probability allocated to the overriding target premise token span, $A_{\mathrm{target}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\mathrm{target}}}$.
     \item \textbf{Attention Contrast Ratio (ACR)}: Pairwise attention odds ratio $\mathrm{ACR} \triangleq A_{\mathrm{target}} / (A_{\mathrm{decoy}} + \epsilon)$.
@@ -379,7 +388,8 @@ To assess the empirical robustness of SG-M\"obius under realistic adversarial co
 
 \begin{table*}[t]
 \centering
-\small
+\renewcommand{\arraystretch}{1.30}
+\setlength{\tabcolsep}{4.5pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{rccccccccc}
 \toprule
@@ -414,17 +424,17 @@ Figure~\ref{fig:scaling_acr_entropy} illustrates the multi-scale scaling behavio
 
 \begin{figure*}[t]
     \centering
-    \begin{subfigure}[b]{0.49\textwidth}
+    \begin{subfigure}[b]{\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figures/fig_scaling_acr_entropy.png}
-        \caption{Multi-scale ACR and Shannon entropy scaling ($L \in [545, 18030]$).}
+        \includegraphics[width=0.96\textwidth]{figures/fig_scaling_acr_entropy.png}
+        \caption{Multi-scale Attention Contrast Ratio (left) and Shannon entropy (right) scaling ($L \in [545, 18030]$) on dual Tesla T4 GPUs.}
         \label{fig:scaling_acr_entropy}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
+    \\[0.9em]
+    \begin{subfigure}[b]{\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figures/fig_attention_distribution.png}
-        \caption{Log-attention distribution $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$).}
+        \includegraphics[width=0.88\textwidth]{figures/fig_attention_distribution.png}
+        \caption{Sequence-wide log-attention energy profile $\ln A_{T-1, t}$ on Qwen3.5-9B ($L=4,480$).}
         \label{fig:attention_distribution}
     \end{subfigure}
     \caption{\textbf{Empirical multi-scale context scaling and full-context attention profiles on Qwen3.5-9B (dual Tesla T4 GPUs).} 
@@ -442,8 +452,8 @@ To provide an honest and rigorous analysis of computational latency, we report l
 
 \begin{table}[htbp]
 \centering
-\small
-\resizebox{\columnwidth}{!}{%
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{12pt}
 \begin{tabular}{rcccc}
 \toprule
 \textbf{Context ($L$)} & \textbf{Decoy Pivot ($t_1$)} & \textbf{Target Pivot ($t_2$)} & \textbf{End-to-End Latency} & \textbf{Operator Overhead} \\
@@ -455,8 +465,7 @@ To provide an honest and rigorous analysis of computational latency, we report l
 9,002 & 28 & 4,519 & $276.8\,\text{ms}$ & $+2.0\,\mu\text{s}$ \\
 18,030 & 28 & 9,025 & $276.2\,\text{ms}$ & $+2.1\,\mu\text{s}$ \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \caption{\textbf{Autoregressive single-step decode latency across scaling contexts on dual Tesla T4 GPUs.} End-to-end forward latency is flat ($\approx 276\,\text{ms}$), confirming zero algorithmic scaling slowdown up to 18,030 tokens. Isolated operator overhead reflects $+1.8$ to $+2.1\,\mu\text{s}$ for epilogue angle fusion outside the attention kernel.}
 \label{tab:scaling}
 \end{table}
@@ -466,9 +475,9 @@ To quantify attention distribution concentration, we evaluate the Shannon entrop
 
 \begin{table}[htbp]
 \centering
-\small
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{rccccc}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{10pt}
+\begin{tabular}{rcccc}
 \toprule
 \textbf{Context ($L$)} & \textbf{RoPE Entropy} & \textbf{SG-M\"obius Entropy} & \textbf{Entropy $\Delta$} & \textbf{WikiText-103 PPL} \\
 \midrule
@@ -479,8 +488,7 @@ To quantify attention distribution concentration, we evaluate the Shannon entrop
 9,002 & 7.866 & 8.116 & $+0.250$ & $6.42$ ($0.0\%$) \\
 18,030 & 8.539 & 8.889 & $+0.350$ & $6.42$ ($0.0\%$) \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \caption{\textbf{Attention entropy and neutral perplexity across sequence scales on Qwen3.5-9B.} On neutral narrative text with $\omega(t) = 0$, perplexity remains strictly $6.42$ ($0.0\%$ degradation), confirming zero false suppression. Under extended scaling, entropy gracefully scales with context volume while contrastive ratio expands.}
 \label{tab:entropy}
 \end{table}
