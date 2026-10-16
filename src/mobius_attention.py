@@ -8,8 +8,8 @@ between structural anchor channels and semantic evolution channels, 1D viscous E
 non-negative feature mapping, and O(1) causal KV-cache invariance.
 """
 
-from typing import Optional, Tuple, Union, List
-import math
+from typing import Optional, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

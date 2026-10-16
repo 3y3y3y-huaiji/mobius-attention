@@ -1,14 +1,15 @@
 import re
 import sys
+
 from markdown_it import MarkdownIt
 
 sys.stdout.reconfigure(encoding='utf-8')
 md = MarkdownIt()
 
 def audit_file(fname):
-    print(f"\n==========================================")
+    print("\n==========================================")
     print(f"AUDITING FILE: {fname}")
-    print(f"==========================================")
+    print("==========================================")
     
     with open(fname, 'r', encoding='utf-8') as f:
         lines = f.readlines()

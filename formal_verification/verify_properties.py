@@ -21,9 +21,10 @@ This comprehensive formal verification harness executes:
    - Extreme boundary condition testing (origin, maximum sequence length, diagonal self-attention).
 """
 
-import sys
 import math
 import random
+import sys
+
 import numpy as np
 import z3
 
@@ -219,14 +220,14 @@ def run_rope_modulation_invariance_proof(num_trials=1000):
     print(f"  [✓] Continuous Rotary Equivalence: Max Deviation Error = {max_err_continuous:.2e}")
     print(f"      Strict theoretical equivalence: <R(θ_i + Φ_i)q_i, R(θ_j + Φ_j)k_j> ≡ <q_i, R((j - i)θ + (Φ_j - Φ_i))k_j> across {num_trials} trials.")
     print(f"  [!] Non-Relative Broken Modulation: Max Deviation Error = {max_err_broken:.4f}")
-    print(f"      Non-relative angle sum breaks translation invariance, confirming relative angle formulation necessity.")
+    print("      Non-relative angle sum breaks translation invariance, confirming relative angle formulation necessity.")
     assert max_err_continuous < 1e-10, f"Continuous rotary equivalence exceeded tolerance: {max_err_continuous}"
     print()
 
 
 def run_extreme_length_property_fuzzing(num_trials=2000):
     print("=" * 75)
-    print(f"  [4/6] 2,000-TRIAL EXTREME-LENGTH FUZZING (LENGTHS UP TO 32,768)")
+    print("  [4/6] 2,000-TRIAL EXTREME-LENGTH FUZZING (LENGTHS UP TO 32,768)")
     print("=" * 75)
     
     passed_trials = 0
@@ -300,7 +301,7 @@ def run_extreme_length_property_fuzzing(num_trials=2000):
         passed_trials += 1
         
     print(f"  [✓] All {passed_trials}/{num_trials} Extreme-Length Trials PASSED (100% Success Rate)!")
-    print(f"      - Sequence Length Range: 10 to 32,768 tokens (32k context)")
+    print("      - Sequence Length Range: 10 to 32,768 tokens (32k context)")
     print(f"      - Continuous Torsion Rate: |ω(t)| ≤ {omega_max:.2f} rad/token")
     print(f"      - Max Cumulative Holonomy Drift: {max_holonomy_drift:.2e} (< 1e-11 threshold)")
     print(f"      - Max Path-Integral Additivity Drift: {max_path_additivity_drift:.2e} (< 1e-12 threshold)")
@@ -356,7 +357,7 @@ def run_lipschitz_continuity_verification(num_trials=1000):
         max_ratio = max(max_ratio, diff_norm / theoretical_bound)
         
     print(f"  [✓] Continuous Rotation Lipschitz Bound rigorously verified across {num_trials} trials.")
-    print(f"      ∀ t, ||R~_m(t+1) - R~_m(t)||_2 ≤ 2·sin((θ_m + ω_max)/2) strictly satisfied.")
+    print("      ∀ t, ||R~_m(t+1) - R~_m(t)||_2 ≤ 2·sin((θ_m + ω_max)/2) strictly satisfied.")
     print(f"      Peak observed ratio to theoretical upper bound: {max_ratio:.4f} (<= 1.0).")
     print()
 
@@ -431,9 +432,9 @@ def run_prefill_vs_kv_cache_equivalence(seq_len=256, dim=64):
     max_abs_diff = np.max(np.abs((A_prefill - A_decode)[mask]))
     assert max_abs_diff < 1e-12, f"Prefill vs KV-Cache discrepancy exceeded: {max_abs_diff}"
     
-    print(f"  [✓] Prefill vs Autoregressive KV-Cache Decoding Equivalence: PASSED")
+    print("  [✓] Prefill vs Autoregressive KV-Cache Decoding Equivalence: PASSED")
     print(f"      Causal cache invariance strictly verified: Max absolute error = {max_abs_diff:.2e} (< 1e-12).")
-    print(f"      Guarantees exact O(1) per-token incremental decoding without historical key mutation.")
+    print("      Guarantees exact O(1) per-token incremental decoding without historical key mutation.")
     print("=" * 75)
     print("  ALL MATHEMATICAL INVARIANTS RIGOROUSLY VERIFIED & CERTIFIED ✓")
     print("=" * 75)

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mobius-attention"
+version = "1.0.0"
+description = "Continuous Möbius Attention for Transformers via Non-Orientable Fiber Bundles"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.38.0",
+    "z3-solver>=4.12.0",
+    "scipy>=1.10.0",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "markdown-it-py>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.4.0",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes (syntax, undefined variables, unused imports)
+    "I",   # isort (import sorting)
+]
+ignore = [
+    "E501",  # Line too long (formatting handled flexibly for math equations)
+    "W293",  # Blank line contains whitespace
+]

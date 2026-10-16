@@ -39,6 +39,42 @@ jobs:
           python scripts/check_markdown_math.py
           pytest tests/test_readme_latex.py -v
 
+  ruff-lint:
+    name: Python Code Quality (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Ruff Linter & Import Sorter
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check src/ formal_verification/verify_properties.py scripts/check_markdown_math.py tests/test_readme_latex.py"
+
+  lean:
+    name: Lean 4 Interactive Theorem Prover
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build & Verify Lean 4 Formal Proofs
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: "formal_verification"
+
+  security-audit:
+    name: Python Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run PyPA pip-audit
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          inputs: requirements.txt
+
   latex:
     name: Build & Validate LaTeX Paper
     runs-on: ubuntu-latest

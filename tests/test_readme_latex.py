@@ -6,6 +6,7 @@ strictly conform to GitHub Flavored Markdown (GFM) and KaTeX rendering specifica
 
 import os
 import re
+
 import pytest
 
 README_FILES = ["README.md", "README_zh.md"]

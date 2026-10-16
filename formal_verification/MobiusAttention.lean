@@ -37,7 +37,7 @@ structure Connection where
   is the sum of local connection curvature along the path.
 -/
 def Holonomy (A : Connection) (j i : Position) : ℝ :=
-  if h : j < i then
+  if _h : j < i then
     (Finset.Ico (j + 1) (i + 1)).sum A.omega
   else
     0
@@ -47,7 +47,7 @@ def Holonomy (A : Connection) (j i : Position) : ℝ :=
   Under continuous Möbius phase flow on the non-orientable bundle,
   the topological twist acting on the rotary inner product is cos(ΔΦ).
 -/
-def ParityFactor (A : Connection) (j i : Position) : ℝ :=
+noncomputable def ParityFactor (A : Connection) (j i : Position) : ℝ :=
   Real.cos (Holonomy A j i)
 
 /- 
@@ -69,7 +69,7 @@ theorem conservation_of_flatness
       exact h_flat x
     rw [h_sum_zero]
     exact Real.cos_zero
-  · simp only [h, dif_neg]
+  · simp only [h]
     exact Real.cos_zero
 
 /- 
@@ -87,14 +87,9 @@ theorem holonomy_path_additivity
   · by_cases h_ki : k < i
     · have h_ji : j < i := lt_of_lt_of_le h_jk h2
       simp only [h_ji, h_jk, h_ki, dif_pos]
-      have h_union : Finset.Ico (j + 1) (i + 1) = 
-                     Finset.Ico (j + 1) (k + 1) ∪ Finset.Ico (k + 1) (i + 1) := by
-        apply Finset.Ico_union_Ico
-        · linarith
-        · linarith
-      rw [h_union]
-      apply Finset.sum_union
-      apply Finset.Ico_disjoint_Ico_consecutive
+      have hmn : j + 1 ≤ k + 1 := Nat.succ_le_succ h1
+      have hnk : k + 1 ≤ i + 1 := Nat.succ_le_succ h2
+      exact (Finset.sum_Ico_consecutive (f := A.omega) hmn hnk).symm
     · have h_eq : k = i := le_antisymm h2 (not_lt.mp h_ki)
       subst h_eq
       simp [h_jk]

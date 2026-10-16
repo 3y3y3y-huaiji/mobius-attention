@@ -5,15 +5,15 @@ Dual-Licensed under Apache-2.0 and MulanPSL-2.0.
 """
 
 from .mobius_attention import (
-    SemanticGaugeConnection,
     ContinuousMobiusRoPEModulator,
+    SemanticGaugeConnection,
     SemanticGaugeMobiusRoPE,
-    inject_mobius_attention,
-    causal_viscous_ema,
-    nonnegative_feature_map,
     apply_rotary_angle_addition,
+    causal_viscous_ema,
+    clear_model_holonomy_phase,
+    inject_mobius_attention,
+    nonnegative_feature_map,
     set_model_holonomy_phase,
-    clear_model_holonomy_phase
 )
 
 __all__ = [
