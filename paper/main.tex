@@ -4,7 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
-\usepackage{booktabs}
+\usepackage{booktabs,multirow}
 \usepackage{graphicx}
 \usepackage{microtype}
 \usepackage{xcolor}
@@ -391,25 +391,41 @@ Crucially, Table~\ref{tab:benchmark} also reveals a non-monotonic carrier-wave i
 
 \begin{table}[htbp]
 \centering
-\renewcommand{\arraystretch}{1.28}
-\setlength{\tabcolsep}{4.5pt}
+\small
+\renewcommand{\arraystretch}{1.22}
+\setlength{\tabcolsep}{7pt}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{rccccccccc}
+\begin{tabular}{rcc l ccc c}
 \toprule
-\textbf{Context Length ($L$)} & \textbf{Decoy Pos ($t_1$)} & \textbf{Target Pos ($t_2$)} & \multicolumn{3}{c}{\textbf{Standard RoPE Baseline}} & \multicolumn{3}{c}{\textbf{SG-M\"obius-RoPE (Ours)}} & \textbf{Decoy Suppression} \\
-\cmidrule(lr){4-6} \cmidrule(lr){7-9}
-& & & \textbf{Decoy Attn} & \textbf{Target Attn} & \textbf{ACR} & \textbf{Decoy Attn} & \textbf{Target Attn} & \textbf{ACR} & \textbf{Ratio ($\uparrow$)} \\
+\textbf{Context ($L$)} & \textbf{Decoy ($t_1$)} & \textbf{Target ($t_2$)} & \textbf{Attention Model} & \textbf{Decoy Attn ($A_{\mathrm{decoy}}$)} & \textbf{Target Attn ($A_{\mathrm{target}}$)} & \textbf{ACR} & \textbf{Decoy Suppression} \\
 \midrule
-545 & 28 & 279 & $1.93 \times 10^{-3}$ & $2.02 \times 10^{-3}$ & 1.04 & $1.53 \times 10^{-3}$ & $2.57 \times 10^{-3}$ & \textbf{1.68} (+60.6\%) & \textbf{1.26}$\times$ \\
-1,116 & 28 & 576 & $1.09 \times 10^{-3}$ & $3.96 \times 10^{-3}$ & 3.62 & $1.64 \times 10^{-3}$ & $4.00 \times 10^{-3}$ & 2.43 (-32.9\%) & 0.67$\times$ \\
-2,250 & 28 & 1,135 & $7.21 \times 10^{-4}$ & $1.24 \times 10^{-3}$ & 1.72 & $1.21 \times 10^{-3}$ & $1.19 \times 10^{-3}$ & 0.99 (-42.4\%) & 0.60$\times$ \\
-4,480 & 28 & 2,258 & $4.39 \times 10^{-4}$ & $9.05 \times 10^{-4}$ & 2.06 & $3.85 \times 10^{-4}$ & $8.89 \times 10^{-4}$ & \textbf{2.31} (+12.0\%) & \textbf{1.14}$\times$ \\
-9,002 & 28 & 4,519 & $2.42 \times 10^{-4}$ & $4.07 \times 10^{-4}$ & 1.69 & $2.02 \times 10^{-4}$ & $5.23 \times 10^{-4}$ & \textbf{2.58} (+53.3\%) & \textbf{1.20}$\times$ \\
-18,030 & 28 & 9,025 & $2.23 \times 10^{-4}$ & $2.93 \times 10^{-4}$ & 1.31 & $\mathbf{9.57 \times 10^{-5}}$ & $2.74 \times 10^{-4}$ & \textbf{2.87} (+118.0\%) & \textbf{2.33}$\times$ \\
+\multirow{2}{*}{545} & \multirow{2}{*}{28} & \multirow{2}{*}{279} 
+  & Standard RoPE & $1.93 \times 10^{-3}$ & $2.02 \times 10^{-3}$ & 1.04 & \multirow{2}{*}{\textbf{1.26}$\times$} \\
+  & & & \textbf{SG-M\"obius (Ours)} & $1.53 \times 10^{-3}$ & $2.57 \times 10^{-3}$ & \textbf{1.68} \scriptsize{(+60.6\%)} & \\
+\midrule
+\multirow{2}{*}{1,116} & \multirow{2}{*}{28} & \multirow{2}{*}{576} 
+  & Standard RoPE & $1.09 \times 10^{-3}$ & $3.96 \times 10^{-3}$ & 3.62 & \multirow{2}{*}{0.67$\times$} \\
+  & & & \textbf{SG-M\"obius (Ours)} & $1.64 \times 10^{-3}$ & $4.00 \times 10^{-3}$ & 2.43 \scriptsize{(-32.9\%)} & \\
+\midrule
+\multirow{2}{*}{2,250} & \multirow{2}{*}{28} & \multirow{2}{*}{1,135} 
+  & Standard RoPE & $7.21 \times 10^{-4}$ & $1.24 \times 10^{-3}$ & 1.72 & \multirow{2}{*}{0.60$\times$} \\
+  & & & \textbf{SG-M\"obius (Ours)} & $1.21 \times 10^{-3}$ & $1.19 \times 10^{-3}$ & 0.99 \scriptsize{(-42.4\%)} & \\
+\midrule
+\multirow{2}{*}{4,480} & \multirow{2}{*}{28} & \multirow{2}{*}{2,258} 
+  & Standard RoPE & $4.39 \times 10^{-4}$ & $9.05 \times 10^{-4}$ & 2.06 & \multirow{2}{*}{\textbf{1.14}$\times$} \\
+  & & & \textbf{SG-M\"obius (Ours)} & $3.85 \times 10^{-4}$ & $8.89 \times 10^{-4}$ & \textbf{2.31} \scriptsize{(+12.0\%)} & \\
+\midrule
+\multirow{2}{*}{9,002} & \multirow{2}{*}{28} & \multirow{2}{*}{4,519} 
+  & Standard RoPE & $2.42 \times 10^{-4}$ & $4.07 \times 10^{-4}$ & 1.69 & \multirow{2}{*}{\textbf{1.20}$\times$} \\
+  & & & \textbf{SG-M\"obius (Ours)} & $2.02 \times 10^{-4}$ & $5.23 \times 10^{-4}$ & \textbf{2.58} \scriptsize{(+53.3\%)} & \\
+\midrule
+\multirow{2}{*}{18,030} & \multirow{2}{*}{28} & \multirow{2}{*}{9,025} 
+  & Standard RoPE & $2.23 \times 10^{-4}$ & $2.93 \times 10^{-4}$ & 1.31 & \multirow{2}{*}{\textbf{2.33}$\times$} \\
+  & & & \textbf{SG-M\"obius (Ours)} & $\mathbf{9.57 \times 10^{-5}}$ & $2.74 \times 10^{-4}$ & \textbf{2.87} \scriptsize{(+118.0\%)} & \\
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{Multi-Scale Scaling Benchmark on Qwen3.5-9B (native FP16, dual Nvidia Tesla T4 GPUs).} Evaluated under procedural distractor scaling up to 18,030 tokens. At extreme context ($L=18,030$), SG-M\"obius achieves a $2.33\times$ suppression of obsolete decoy attention ($2.23 \times 10^{-4} \to 9.57 \times 10^{-5}$) and expands the Attention Contrast Ratio by $+118.0\%$ ($1.31 \to 2.87$). Neutral WikiText-103 perplexity is strictly conserved at $6.42$ ($0.0\%$ degradation).}
+\caption{\textbf{Multi-Scale Scaling Benchmark on Qwen3.5-9B (native FP16, dual Nvidia Tesla T4 GPUs).} Evaluated under procedural distractor scaling up to 18,030 tokens. For each context length, the baseline Standard RoPE and our SG-M\"obius are presented pairwise in two rows. At extreme context ($L=18,030$), SG-M\"obius achieves a $2.33\times$ suppression of obsolete decoy attention ($2.23 \times 10^{-4} \to 9.57 \times 10^{-5}$) and expands the Attention Contrast Ratio by $+118.0\%$ ($1.31 \to 2.87$). Neutral WikiText-103 perplexity is strictly conserved at $6.42$ ($0.0\%$ degradation).}
 \label{tab:benchmark}
 \end{table}
 
