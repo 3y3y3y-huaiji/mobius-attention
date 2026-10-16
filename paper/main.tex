@@ -342,7 +342,7 @@ In \texttt{formal\_verification/verify\_properties.py}, we deploy the Z3 SMT sol
 \section{Experiments}
 
 \paragraph{Experimental Setup.}
-All empirical evaluations are conducted strictly on \textbf{Qwen3.5-9B} (\texttt{Qwen/Qwen3.5-9B}) \cite{qwen25} on a dedicated multi-GPU node equipped with dual Nvidia Tesla T4 GPUs (16\,GB VRAM each). The model is executed in native 16-bit floating point (\texttt{torch.float16}) with eager attention, allocating 7.19\,GB on GPU 0 and 10.34\,GB on GPU 1 (total 17.53\,GB VRAM).
+All empirical evaluations are conducted strictly on \textbf{Qwen3.5-9B} (\texttt{Qwen/Qwen3.5-9B}) \cite{qwen35} on a dedicated multi-GPU node equipped with dual Nvidia Tesla T4 GPUs (16\,GB VRAM each). The model is executed in native 16-bit floating point (\texttt{torch.float16}) with eager attention, allocating 7.19\,GB on GPU 0 and 10.34\,GB on GPU 1 (total 17.53\,GB VRAM).
 
 \subsection{Inverted Needle In A Haystack (I-NIAH)}
 We evaluate model robustness using an adversarial Inverted Needle In A Haystack benchmark. In this setting, an initial premise (the ``decoy needle'') is placed into a long filler context, followed by an explicit invalidation statement before the operative target needle. We measure:
