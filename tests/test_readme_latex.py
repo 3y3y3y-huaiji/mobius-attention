@@ -17,7 +17,18 @@ def extract_math_blocks(filepath):
 
     # Strip code blocks
     content_no_code = re.sub(r"```[\s\S]*?```", "", content)
-    content_no_inline_code = re.sub(r"`[^`]*?`", "", content_no_code)
+
+    # Extract GitHub dollar-backtick inline math ($`...`$) FIRST so it is preserved as math
+    dollar_backtick_math = []
+    def save_dollar_backtick(match):
+        expr = match.group(1)
+        dollar_backtick_math.append((expr, match.start()))
+        return " MATHDOLLARBACKTICK "
+
+    content_handled = re.sub(r"\$`([^`]+?)`\$", save_dollar_backtick, content_no_code)
+
+    # Strip regular inline code spans
+    content_no_inline_code = re.sub(r"`[^`]*?`", "", content_handled)
 
     # Extract display math ($$ ... $$)
     display_matches = []
@@ -25,7 +36,7 @@ def extract_math_blocks(filepath):
         display_matches.append((m.group(1).strip(), m.start()))
 
     # Extract inline math ($ ... $)
-    inline_matches = []
+    inline_matches = list(dollar_backtick_math)
     text_inline = re.sub(r"\$\$[\s\S]*?\$\$", "", content_no_inline_code)
     for m in re.finditer(r"(?<!\$)\$(?!\$)(.*?)(?<!\$)\$(?!\$)", text_inline):
         inline_matches.append((m.group(1), m.start()))
@@ -71,9 +82,11 @@ def test_no_raw_pipe_in_table_math(readme_path):
         line_num = idx + 1
         stripped = line.strip()
         if stripped.startswith("|") and stripped.endswith("|"):
-            math_exprs = re.findall(r"\$([^$]+)\$", stripped)
+            math_exprs = re.findall(r"\$`([^`]+)`\$", stripped) + re.findall(r"(?<!`)\$([^$`]+)\$(?!`)", stripped)
             for m in math_exprs:
-                assert "|" not in m or r"\|" in m, (
+                # Raw pipe not allowed; \vert, \mid, \| are allowed
+                m_no_escaped = m.replace(r"\|", "").replace(r"\mid", "").replace(r"\vert", "")
+                assert "|" not in m_no_escaped, (
                     f"Line {line_num} in {readme_path} has raw pipe in table math: ${m}$"
                 )
 

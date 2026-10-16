@@ -17,7 +17,7 @@
 </p>
 
 > **基于双重覆盖规范几何的大语言模型正定性 Softmax 瓶颈严谨解决方案。**  
-> 为旋转位置编码（RoPE）引入 $\mathrm{SO}(2)$ 双重覆盖规范相位流与 $\mathcal{S}\_{\text{anchor}} \oplus \mathcal{S}\_{\text{mob}}$ 子空间分解，诱发**主动相消干涉（Destructive Phase Interference）**与**任意位置前置命题的精准相消截断**。在长程对抗检索基准中实现**超一个数量级的注意力对比度提升（ACR 达 13.51）**，同时在数学上严格保证**标准 $\mathcal{O}(1)$ KV-Cache 解码吞吐**与顺承中性文本 **0.0% 困惑度（PPL）零损耗**。
+> 为旋转位置编码（RoPE）引入 $\mathrm{SO}(2)$ 双重覆盖规范相位流与 $`\mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}`$ 子空间分解，诱发**主动相消干涉（Destructive Phase Interference）**与**任意位置前置命题的精准相消截断**。在长程对抗检索基准中实现**超一个数量级的注意力对比度提升（ACR 达 13.51）**，同时在数学上严格保证**标准 $\mathcal{O}(1)$ KV-Cache 解码吞吐**与顺承中性文本 **0.0% 困惑度（PPL）零损耗**。
 
 ---
 
@@ -115,11 +115,11 @@ $$
 \mathbb{Z}_2 \hookrightarrow \mathrm{SO}(2) \xrightarrow{\pi_{2:1}} \mathrm{SO}(2)/\mathbb{Z}_2 \cong \mathrm{PSO}(2)
 $$
 
-通过将离散语义宇称状态 $\sigma(t) \in \lbrace +1, -1 \rbrace$ 提升为 $\mathrm{SO}(2)$ 上的连续阿贝尔规范相位流 $\Phi(t) = \sum\_{\tau=1}^t \omega(\tau)$，累积平行移动 $\Delta\Phi = \pi$ 穿过双重覆盖的非平凡层（即 $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ），在严格保向等距变换（即 $\det \mathbf{R} \equiv +1$ ）的前提下实现 $\mathcal{S}\_{\text{mob}}$ 上的内积符号精准翻转。二次逻辑否定再次累积 $\Delta\Phi = 2\pi$，闭合双重覆盖环路（即 $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ），在拓扑层面自然实现双重否定的正向共振复原（ $\neg\neg P \iff P$ ）。
+通过将离散语义宇称状态 $\sigma(t) \in \lbrace +1, -1 \rbrace$ 提升为 $\mathrm{SO}(2)$ 上的连续阿贝尔规范相位流 $`\Phi(t) = \sum_{\tau=1}^t \omega(\tau)`$，累积平行移动 $\Delta\Phi = \pi$ 穿过双重覆盖的非平凡层（即 $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ），在严格保向等距变换（即 $\det \mathbf{R} \equiv +1$ ）的前提下实现 $`\mathcal{S}_{\text{mob}}`$ 上的内积符号精准翻转。二次逻辑否定再次累积 $\Delta\Phi = 2\pi$，闭合双重覆盖环路（即 $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ），在拓扑层面自然实现双重否定的正向共振复原（ $\neg\neg P \iff P$ ）。
 
 3. **子空间正交解耦**：将 $d/2$ 个二维旋转通道划分为两大互补扇区：
-   - **结构锚点子空间** ($\mathcal{S}\_{\mathrm{anchor}}$)：强制保持扭率与相位恒为零（ $\omega \equiv 0, \Phi \equiv 0$ ），冻结前 $\lfloor \alpha d/2 \rfloor$ 个高频通道（通常 $\alpha=0.5$），确保基础句法、局部偏序以及系统指令绝对不受相消干扰。
-   - **语义演化子空间** ($\mathcal{S}\_{\mathrm{mob}}$)：沿因果序列累积连续扭率流（ $\Phi(t) = \sum\_{\tau=1}^t \omega(\tau)$ ），负责在逻辑转折时执行连续相位平流。
+   - **结构锚点子空间** ($`\mathcal{S}_{\mathrm{anchor}}`$)：强制保持扭率与相位恒为零（ $\omega \equiv 0, \, \Phi \equiv 0$ ），冻结前 $\lfloor \alpha d/2 \rfloor$ 个高频通道（通常 $\alpha=0.5$），确保基础句法、局部偏序以及系统指令绝对不受相消干扰。
+   - **语义演化子空间** ($`\mathcal{S}_{\mathrm{mob}}`$)：沿因果序列累积连续扭率流（ $`\Phi(t) = \sum_{\tau=1}^t \omega(\tau)`$ ），负责在逻辑转折时执行连续相位平流。
 
 ### 连续扭率流与相位自锁流
 
@@ -185,7 +185,7 @@ $$
 ### 成对目标-诱饵相对优势比（ACR 衰减）
 
 #### 定理 3（成对目标-诱饵相对优势比衰减定理）
-令查询 $q\_i \in \mathbb{R}^d$ 通过 Softmax 注意力访问历史键值 $l \in \lbrace 0, \dots, i \rbrace$。考虑与查询同相位的当前有效目标键值 $k$（$\Delta\Phi\_{k \to i} = 0$），以及经历对极半扭转的作废诱饵键值 $j$（在 $\mathcal{S}\_{\text{mob}}$ 上满足 $\Delta\Phi\_{j \to i} = \pi$）。将未调制的点积分量正交分解为 $A\_{il} = A\_{il}^{\text{anchor}} + A\_{il}^{\text{mob}}$，其中 $A\_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}} \langle q\_i, k\_l \rangle_{\mathcal{S}\_{\text{mob}}}$。在任意上下文的 Softmax 归一化下（总配分函数为 $\tilde{Z}\_i = \sum\_{l=0}^i \exp(\tilde{A}\_{il})$），目标-诱饵成对注意力优势比 $\Omega(j, k \mid i) \triangleq P(j \mid i) / P(k \mid i)$ 严格按指数规律衰减：
+令查询 $`q_i \in \mathbb{R}^d`$ 通过 Softmax 注意力访问历史键值 $`l \in \lbrace 0, \dots, i \rbrace`$。考虑与查询同相位的当前有效目标键值 $k$（$`\Delta\Phi_{k \to i} = 0`$），以及经历对极半扭转的作废诱饵键值 $j$（在 $`\mathcal{S}_{\text{mob}}`$ 上满足 $`\Delta\Phi_{j \to i} = \pi`$）。将未调制的点积分量正交分解为 $`A_{il} = A_{il}^{\text{anchor}} + A_{il}^{\text{mob}}`$，其中 $`A_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}} \langle q_i, k_l \rangle_{\mathcal{S}_{\text{mob}}}`$。在任意上下文的 Softmax 归一化下（总配分函数为 $`\tilde{Z}_i = \sum_{l=0}^i \exp(\tilde{A}_{il})`$），目标-诱饵成对注意力优势比 $`\Omega(j, k \mid i) \triangleq P(j \mid i) / P(k \mid i)`$ 严格按指数规律衰减：
 
 $$
 \frac{\Omega_{\mathrm{mob}}(j, k \mid i)}{\Omega_{\mathrm{std}}(j, k \mid i)} \equiv \exp\left( -2 A_{ij}^{\mathrm{mob}} \right) = \exp\left( -2 \frac{\langle q_i, \, k_j \rangle_{\mathcal{S}_{\mathrm{mob}}}}{\sqrt{d}} \right)
@@ -400,15 +400,17 @@ with torch.no_grad():
 
 形式化定义文件 [`formal_verification/MobiusAttention.lean`](formal_verification/MobiusAttention.lean) 在离散因果格点上构建纤维丛与二维旋转代数，并形式化完成了 9 个核心理论的机器证明，**零未证明公理（0 axioms），零 `sorry` 占位符**：
 
-1. **`rope_relative_rotation_invariance`**：$\langle \mathbf{R}(i\theta + \Phi\_i)q, \mathbf{R}(j\theta + \Phi\_j)k \rangle = \langle q, \mathbf{R}((j-i)\theta + (\Phi\_j - \Phi\_i))k \rangle$（严格证明二维相对旋转平移不变性）。
-2. **`antipodal_bilinear_cancellation`**（定理 1）：$\Phi\_i - \Phi\_j = \pi \implies \langle \tilde{q}\_i, \tilde{k}\_j \rangle = -\langle q\_i, k\_j \rangle\_{\mathrm{RoPE}}$（形式化证明二维双线性正交相消干涉）。
-3. **`double_negation_bilinear_restoration`**（定理 1b）：$\Phi\_i - \Phi\_j = 2\pi \implies \langle \tilde{q}\_i, \tilde{k}\_j \rangle = +\langle q\_i, k\_j \rangle\_{\mathrm{RoPE}}$（形式化证明 $2\pi$ 双重否定闭合复原）。
-4. **`pairwise_odds_ratio_attenuation`**（定理 3）：$(\Omega\_{\mathrm{mob}} / \Omega\_{\mathrm{std}}) = \exp(-2a)$，总配分函数在分子分母中 100% 严格抵消。
-5. **`odds_ratio_attenuation`**：单 Token 优势比在 Logit 取负下的严格指数衰减。
-6. **`conservation_of_flatness`**：$\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$（严格证明平坦语境下 100% 退化为标准 RoPE）。
-7. **`holonomy_path_additivity`**：$\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$（路径积分可加性 / 前缀和分解）。
-8. **`antipodal_inversion`**：$\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$。
-9. **`cyclic_parity_conservation`**：$\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$。
+| # | 定理标识符 (Lean 4 Identifier) | 形式化数学命题 (Formal Theorem Statement) | 物理与理论意义 |
+| :-: | :--- | :--- | :--- |
+| 1 | `rope_relative_rotation_invariance` | $`\langle \mathbf{R}(i\theta + \Phi_i)q, \, \mathbf{R}(j\theta + \Phi_j)k \rangle = \langle q, \, \mathbf{R}((j-i)\theta + (\Phi_j - \Phi_i))k \rangle`$ | 严格证明二维相对旋转平移不变性 |
+| 2 | `antipodal_bilinear_cancellation` (定理 1) | $`\Phi_i - \Phi_j = \pi \implies \langle \tilde{q}_i, \, \tilde{k}_j \rangle = -\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}`$ | 形式化证明二维双线性正交相消干涉 |
+| 3 | `double_negation_bilinear_restoration` (定理 1b) | $`\Phi_i - \Phi_j = 2\pi \implies \langle \tilde{q}_i, \, \tilde{k}_j \rangle = +\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}`$ | 形式化证明 $2\pi$ 双重否定闭合复原 |
+| 4 | `pairwise_odds_ratio_attenuation` (定理 3) | $`\Omega_{\mathrm{mob}} / \Omega_{\mathrm{std}} = \exp(-2A_{ij}^{\mathrm{mob}})`$ | 目标-诱饵相对优势比背景配分函数严格消除 |
+| 5 | `odds_ratio_attenuation` | $`\mathrm{Odds}_{\mathrm{mob}}(j \mid i) / \mathrm{Odds}_{\mathrm{std}}(j \mid i) = \exp(-2A_{ij})`$ | 单 Token 优势比在 Logit 取负下的严格指数衰减 |
+| 6 | `conservation_of_flatness` | $`\forall t, \, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1`$ | 严格证明平坦语境下 100% 退化为标准 RoPE |
+| 7 | `holonomy_path_additivity` | $`\forall j \le k \le i, \, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)`$ | 一维因果路径积分严格可加性与前缀和分解 |
+| 8 | `antipodal_inversion` | $`\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1`$ | 半周期对极半扭转符号反演 |
+| 9 | `cyclic_parity_conservation` | $`\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1`$ | 整周期拓扑闭环宇称守恒 |
 
 ```bash
 # 验证 Lean 4 形式化证明
@@ -533,7 +535,7 @@ pytest -q
 
 ### 对抗评测提示词完整规范（逐字全文）
 
-下游模型指令召回能力在上下文长度从 $L = 512$ 至 $16,384$ Token 的极限对抗反转场景下进行严格评估。标准 RoPE 因 Softmax 正定注意力泄漏无法消除已被作废的初始前置事实，产生严重的命题幻觉；SG-Möbius-RoPE 则通过在语义演化子空间 $\mathcal{S}\_{\text{mob}}$ 累积对极半扭转相位（ $\Delta\Phi = \pi$ ），实现局域破坏性相消干涉，在压制失效信息的同时由 $\mathcal{S}\_{\text{anchor}}$ 保全基础语法。
+下游模型指令召回能力在上下文长度从 $L = 512$ 至 $16,384$ Token 的极限对抗反转场景下进行严格评估。标准 RoPE 因 Softmax 正定注意力泄漏无法消除已被作废的初始前置事实，产生严重的命题幻觉；SG-Möbius-RoPE 则通过在语义演化子空间 $`\mathcal{S}_{\text{mob}}`$ 累积对极半扭转相位（ $\Delta\Phi = \pi$ ），实现局域破坏性相消干涉，在压制失效信息的同时由 $`\mathcal{S}_{\text{anchor}}`$ 保全基础语法。
 
 #### 评测场景 A：单次前置事实作废与对抗修正（Single Premise Invalidation）
 
@@ -600,14 +602,14 @@ def build_distractor_text(num_sentences: int) -> str:
 
 ### 形式化评测指标与目标 Token 定位协议
 
-对于序列长度为 $T$ 且探针 Query 位于 $T-1$ 的输入，自动扫描定位已失效诱饵词项（`"ACTIVE"`，位置 $t\_{\text{decoy}}$）与最新修正目标词项（`"FORBIDDEN"` / `"REVOKED"`，位置 $t\_{\text{target}}$）：
+对于序列长度为 $T$ 且探针 Query 位于 $T-1$ 的输入，自动扫描定位已失效诱饵词项（`"ACTIVE"`，位置 $`t_{\text{decoy}}`$）与最新修正目标词项（`"FORBIDDEN"` / `"REVOKED"`，位置 $`t_{\text{target}}`$）：
 
-1. **失效前置诱饵注意力质量（Decoy Attention Mass）**： $A\_{\text{decoy}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{decoy}}}$
-2. **最新修正目标注意力质量（Target Attention Mass）**： $A\_{\text{target}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{target}}}$
-3. **注意力对比度比值（Attention Contrast Ratio, ACR）**： $\mathrm{ACR} = \frac{A\_{\text{target}}}{A\_{\text{decoy}} + \epsilon}$
-4. **相对成对优势比衰减指数（Pairwise Odds Ratio Attenuation）**： $\frac{\mathrm{Odds}\_{\text{mob}}(t\_{\text{decoy}} \mid T-1)}{\mathrm{Odds}\_{\text{std}}(t\_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A\_{T-1, t\_{\text{target}}}^{\text{mob}}\right)$
-5. **全序列注意力香农熵（Shannon Entropy）**： $H(P) = -\sum\_{j=1}^{T} P\_j \ln(P\_j), \quad P\_j = \frac{A\_{T-1, j}}{\sum\_{l} A\_{T-1, l}}$
-6. **自回归单步解码时延（ $\mathcal{O}(1)$ 不变量认证）**：在载入全量历史 KV-Cache 的前提下，测量 100 次单步前向传播的实际物理耗时（毫秒）。
+1. **失效前置诱饵注意力质量（Decoy Attention Mass）**： $`A_{\text{decoy}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\text{decoy}}}`$
+2. **最新修正目标注意力质量（Target Attention Mass）**： $`A_{\text{target}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\text{target}}}`$
+3. **注意力对比度比值（Attention Contrast Ratio, ACR）**： $`\mathrm{ACR} = \frac{A_{\text{target}}}{A_{\text{decoy}} + \epsilon}`$
+4. **相对成对优势比衰减指数（Pairwise Odds Ratio Attenuation）**： $`\frac{\mathrm{Odds}_{\text{mob}}(t_{\text{decoy}} \mid T-1)}{\mathrm{Odds}_{\text{std}}(t_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A_{T-1, t_{\text{target}}}^{\text{mob}}\right)`$
+5. **全序列注意力香农熵（Shannon Entropy）**： $`H(P) = -\sum_{j=1}^{T} P_j \ln(P_j), \quad P_j = \frac{A_{T-1, j}}{\sum_{l} A_{T-1, l}}`$
+6. **自回归单步解码时延（$`\mathcal{O}(1)`$ 不变量认证）**：在载入全量历史 KV-Cache 的前提下，测量 100 次单步前向传播的实际物理耗时（毫秒）。
 
 ---
 
