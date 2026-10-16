@@ -69,7 +69,7 @@ $$
 $$
 
 该数学特性给大模型带来了根本性的**正定性与单调累加约束**：
-1. 历史上出现过的任何 Token $j \le i$ 都必然分配到严格大于 0 的概率质量（$A_{ij} > 0$）。
+1. 历史上出现过的任何 Token $j \le i$ 都必然分配到严格大于 0 的概率质量 ($A_{ij} > 0$)。
 2. 模型内部**完全不存在主动相消干涉（Destructive Interference / 负干涉）机制**。自注意力只能被动地为“相关”上下文分配更多权重，而无法从代数层面对已被废弃、推翻的历史前置命题进行**物理抵消或主动消除**。
 
 ```mermaid
@@ -87,7 +87,7 @@ flowchart LR
 > **因果否定转折 ($t \approx 51$)**：“**重大反转：** 经二次复核发现严重安全漏洞，此前通报彻底作废，指令 Alpha 变更为【已作废且严格禁止】！”  
 > **末端提问 ($t = 297$)**：“请确认指令 Alpha 当前的执行状态。”
 
-在标准旋转位置编码（RoPE）下，查询步 $t=297$ 必须与 KV 缓存中的所有历史键计算点积。尽管模型尝试重点关注转折点之后的修正事实，但 $t=12$ 处已作废的前置陈述依然在注意力矩阵中保持约 $-6.5$ 的对数能量底噪。当上下文扩展至数千乃至数万 Token 时，弥散的背景底噪持续累积，导致**前置命题幻觉（Premise Hallucination）**——模型在检索与综合推理时被作废事实严重干扰，输出前后矛盾的错误回答。
+在标准旋转位置编码（RoPE）下，查询步 $t=297$ 必须与 KV 缓存中的所有历史键计算点积。尽管模型尝试重点关注转折点之后的修正事实，但 $t=12$ 处已作废的前置陈述依然在注意力矩阵中保持约 $\sim -6.5$ 的对数能量底噪。当上下文扩展至数千乃至数万 Token 时，弥散的背景底噪持续累积，导致**前置命题幻觉（Premise Hallucination）**——模型在检索与综合推理时被作废事实严重干扰，输出前后矛盾的错误回答。
 
 ---
 
@@ -111,9 +111,9 @@ flowchart LR
 
 1. **连续扭率流与粘性平滑**：在各 Token 处，叙事演进诱发局域连续扭率 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，并经由一维粘性 EMA 扩散平滑：
 
-$$
-\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
-$$
+   $$
+   \omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
+   $$
 
 其中 $\nu \in (0, 1]$ 为粘性系数，$g_{h,m}(h_t)$ 将隐藏状态映射为局域扭率密度。
 - *顺承连接语境*（如“并且”、“因而”、“持续”） $\implies \omega(t) \approx 0$
@@ -121,9 +121,9 @@ $$
 
 2. **路径积分可加性与前缀和分解**：沿因果轨道的平行移动积分为累积相位流：
 
-$$
-\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
-$$
+   $$
+   \Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
+   $$
 
 其中 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ 为因果前缀和相位。
 
@@ -132,13 +132,28 @@ $$
 为真正还原莫比乌斯环“局部处处光滑连续、全局渐进反相”的几何精髓，我们彻底摒弃离散狄拉克脉冲与跳跃式符号反转，构建**处处连续的子空间扭转机制（Nowhere-Discontinuous Subspace Twist）**：
 
 #### 1. 结构锚点与语义演化子空间正交解耦 (Subspace Decoupling)
-将每个注意力头的 $d/2$ 个二维旋转子空间划分为两大互补功能扇区：
-- **结构锚点子空间** $\mathcal{S}_{\mathrm{anchor}}$：强制保持 $\omega_{h,m} \equiv 0$ 且 $\Phi_{h,m} \equiv 0$。该子空间严格保留标准 RoPE 的原始相对坐标基底，确保基础句法结构、局部位置偏序以及系统提示词逻辑指令的无损锚定。
-- **语义演化子空间** $\mathcal{S}_{\mathrm{mob}}$：沿因果序列累积连续扭率流 $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$，在遇到逻辑转折时平滑演进累积相位，实现叙事周期内的平滑相位平流与精准相消干涉。
+
+将每个注意力头的 $d/2$ 个二维旋转子空间严格划分为两大互补功能扇区：
+
+- **结构锚点子空间** ($\mathcal{S}_{\mathrm{anchor}}$)：强制保持局域扭率与累积相位恒等于零：
+
+  $$
+  \omega_{h,m}(t) \equiv 0, \quad \Phi_{h,m}(t) \equiv 0 \quad (\forall m \in \mathcal{S}_{\mathrm{anchor}})
+  $$
+
+  该子空间严格保留标准 RoPE 的原始相对坐标基底，确保基础句法结构、局部位置偏序以及系统提示词逻辑指令的无损锚定。
+
+- **语义演化子空间** ($\mathcal{S}_{\mathrm{mob}}$)：沿因果序列累积连续自适应扭率流：
+
+  $$
+  \Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau) \quad (\forall m \in \mathcal{S}_{\mathrm{mob}})
+  $$
+
+  在遇到逻辑转折时平滑演进累积相位，实现叙事周期内的平滑相位平流与精准相消干涉。
 
 #### 2. 非负特征映射核包络 (Non-Negative Feature Map)
 
-为避免原本不相关的负相似度背景 Token 在经历对极翻转后虚假产生正向共振，我们在向 $\mathcal{S}_{\mathrm{mob}}$ 施加旋转前引入整流非负包络 $\phi(u) = \mathrm{ELU}(u) + 1 \ge 0$：
+为避免原本不相关的负相似度背景 Token 在经历对极翻转后虚假产生正向共振，我们在向 $\mathcal{S}_{\mathrm{mob}}$ 施加旋转前引入整流非负包络 $\phi(u) = \mathrm{ELU}(u) + 1 \ge 0$ ：
 
 $$
 \langle \phi(q_i^{(m)}), \, \phi(k_j^{(m)}) \rangle_{\mathrm{RoPE}} \ge 0
@@ -161,7 +176,7 @@ $$
 \end{pmatrix}
 $$
 
-由于 $\tilde{\mathbf{R}}_{h,m}(t) \in \mathrm{SO}(2)$ 为标准正交旋转矩阵，欧几里得向量范数处处严格守恒：$\Vert \tilde{\mathbf{R}}_{h,m}(t) v \Vert \equiv \Vert v \Vert$。
+由于算子属于 $\mathrm{SO}(2)$ 标准正交旋转群，欧几里得向量范数处处严格守恒： $\Vert \tilde{\mathbf{R}}_{h,m}(t) v \Vert \equiv \Vert v \Vert$。
 
 #### 定理 1（相对平移不变性守恒定理）
 在连续旋转角调制下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性，并满足：
@@ -170,14 +185,14 @@ $$
 \langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
 $$
 
-当累积相位流达到对极半扭转（$\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi$）时，由 $\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)$ 产生精确相消干涉：
+当累积相位流达到对极半扭转 ($\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi$)时，由 $\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)$ 产生精确相消干涉：
 
 $$
 \langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = -\langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
 $$
 
 #### 定理 2（旋转算子连续 Lipschitz 连续性上界）
-记 $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$。对于连续扭率有界的相邻 Token 位置 $t$ 与 $t+1$（$|\omega_m(t+1)| \le \omega_{\max}$），在稳定先验条件 $\theta_m + \omega_{\max} \le \pi$ 下：
+记各通道连续旋转算子为 $\tilde{\mathbf{R}}(t)$。对于连续扭率有界的相邻 Token 位置 $t$ 与 $t+1$（在稳定先验条件 $`\theta_m + \omega_{\max} \le \pi`$ 下）：
 
 $$
 \Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
@@ -188,7 +203,7 @@ $$
 ### 相对优势比指数衰减定理
 
 #### 定理 3（相对优势比衰减定理）
-令 $A_{ij} := \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ 为未调制时的注意力 Logit。在经历一次对极半扭转后（$\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$），SG-Möbius 相较于标准 RoPE 对作废键值 $j$ 的注意力优势比（Odds）满足如下普适不变性衰减关系：
+令 $A_{ij} := \frac{1}{\sqrt{d}} \langle q_i, k_j \rangle_{\mathrm{RoPE}}$ 为未调制时的注意力 Logit。在经历一次对极半扭转后 ($\Delta \Phi_{j \to i} = \pi \implies \cos(\Delta \Phi_{j \to i}) = -1$)，SG-Möbius 相较于标准 RoPE 对作废键值 $j$ 的注意力优势比（Odds）满足如下普适不变性衰减关系：
 
 $$
 \frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} \equiv \exp\left( -2 A_{ij} \right) = \exp\left( -2 \frac{\langle q_i, \, k_j \rangle_{\mathrm{RoPE}}}{\sqrt{d}} \right)
@@ -208,14 +223,14 @@ $$
 \frac{\mathrm{Odds}_{\mathrm{mob}}(j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(j \mid i)} = \frac{\exp(-A_{ij}) / Z_{\text{bg}}}{\exp(A_{ij}) / Z_{\text{bg}}} = \exp(-2 A_{ij})
 $$
 
-- 对于中等关联度前置命题（$A_{ij} = 2.0$）：优势比衰减为 $\exp(-4.0) \approx 0.0183$（实现约 **55 倍**强抑制）。
-- 对于高关联度强干扰前置命题（$A_{ij} = 4.0$）：优势比衰减为 $\exp(-8.0) \approx 3.35 \times 10^{-4}$（实现约 **2,980 倍**强抑制）。
+- 对于中等关联度前置命题 ($A_{ij} = 2.0$)：优势比衰减为 $\exp(-4.0) \approx 0.0183$（实现约 **55 倍**强抑制）。
+- 对于高关联度强干扰前置命题 ($A_{ij} = 4.0$)：优势比衰减为 $\exp(-8.0) \approx 3.35 \times 10^{-4}$（实现约 **2,980 倍**强抑制）。
 
 ### 严格的 O(1) KV-Cache 缓存不变性
 
 在自回归工程落地上，非标准注意力往往由于无法兼容 KV-Cache 而被迫退化。SG-Möbius 从数学本质上保障了严格的 $\mathcal{O}(1)$ 解码性能：
 1. **零历史追溯重算（Zero Retroactive Invalidation）**：在解码生成第 $j$ 步，键向量 $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)) k_j$ 仅基于当前及前置历史信息完成编码并写入显存。后续任意步发生的新转折**绝不需要重算或修改已缓存的历史键值**。
-2. **O(1) 增量状态更新**：在生成第 $i$ 步，更新连续相位流 $\Phi(i) \gets \Phi(i-1) + \omega(i)$ 仅需 $1$ 次标量加法（时间复杂度 $\mathcal{O}(1)$，显存占用 $\mathcal{O}(1)$）。
+2. **O(1) 增量状态更新**：在生成第 $i$ 步，更新连续相位流 $\Phi(i) \gets \Phi(i-1) + \omega(i)$ 仅需 $1$ 次标量加法（时间复杂度 $\mathcal{O}(1)$，显存占用 $\mathcal{O}(1)$)。
 3. **硬件级算子兼容**：调制后的查询向量 $\tilde{q}_i = \mathbf{R}(i\Theta + \Phi(i)) q_i$ 可直接传入标准 FlashAttention 或常规 GEMV 矩阵运算单元，实现无缝加速。
 
 ---
@@ -335,12 +350,12 @@ with torch.no_grad():
 
 | 图号与文件标识 | 图表直观预览 | 核心科研实测发现与机理解析 |
 | :---: | :--- | :--- |
-| **图 1**<br>`assets/fig1_inversion_scatter.png` | [![图 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **注意力 Logit 能量分布与拓扑相干流**：绘制 Token 坐标 $j \in [0, 546]$ 处的对数注意力能量 $\ln A_{ij}$。标准 RoPE（蓝色）表现为弥散的平坦底噪（$\sim -6.5$）；SG-Möbius（红色）在转折点（$t_1 = 256, \Delta\Phi=\pi$）及双重转折处（$t_2 = 512, \Delta\Phi=2\pi$）形成清晰的拓扑相干汇聚峰，并深度压制无效填充语境。 |
+| **图 1**<br>`assets/fig1_inversion_scatter.png` | [![图 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **注意力 Logit 能量分布与拓扑相干流**：绘制 Token 坐标 $j \in [0, 546]$ 处的对数注意力能量 $\ln A_{ij}$。标准 RoPE（蓝色）表现为弥散的平坦底噪 ($\sim -6.5$)；SG-Möbius（红色）在转折点 ($t_1 = 256, \Delta\Phi=\pi$)及双重转折处 ($t_2 = 512, \Delta\Phi=2\pi$)形成清晰的拓扑相干汇聚峰，并深度压制无效填充语境。 |
 | **图 2**<br>`assets/fig2_2d_heatmap.png` | [![图 2](assets/fig2_2d_heatmap.png)](assets/fig2_2d_heatmap.png) | **全景二维因果注意力矩阵 ($N \times N$)**：基于 Qwen3.5-9B 第 7 层的 $298 \times 298$ 矩阵对比。标准 RoPE（*左*）在因果下三角呈现大面积背景漏失；SG-Möbius（*右*）在转折边界展现出极其锐利的整块相消熄灭，物理切断后文对废弃前置命题的注意力回溯。 |
-| **图 3**<br>`assets/fig3_differential_heatmap.png` | [![图 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **主动相消差值对比热力图 ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**：双极发散色彩映射。深蓝色区域展示强烈的代数相消（$\Delta A \le -0.148$），精准覆盖被推翻的前置命题空间；鲜艳红色区域（$\Delta A \ge +0.500$）展现概率质量守恒重聚至有效目标事实。 |
-| **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义扭率 $\omega(t)$ 与光滑莫比乌斯相位流 $\Phi(t)$**：*上图*：连续扭率在平坦叙述中恒为严格的 $0$，在识别到转折区间时（$t \approx 51$）平滑激活。*下图*：因果累积规范势展现出光滑的连续爬升，平稳跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
-| **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：*(a) 标准 RoPE*：无区分均匀衰减；*(b) 固定 256 周期莫比乌斯基线*：当转折发生在非 256 位置（$t \approx 51$）时完全相位错位失效；*(c) 自适应 SG-Möbius*：在转折区间构建极度精准的垂直因果截断壁。 |
-| **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **莫比乌斯周期相位回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下（$t_1 \approx 39, t_2 \approx 133$），首次转折产生相消（$\Delta\Phi=\pi$），二次转折推动相位达到 $\Delta\Phi=2\pi$，自然重回正向分支（$\cos(2\pi) = +1$），以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$）。 |
+| **图 3**<br>`assets/fig3_differential_heatmap.png` | [![图 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **主动相消差值对比热力图 ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**：双极发散色彩映射。深蓝色区域展示强烈的代数相消 ($\Delta A \le -0.148$)，精准覆盖被推翻的前置命题空间；鲜艳红色区域 ($\Delta A \ge +0.500$)展现概率质量守恒重聚至有效目标事实。 |
+| **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义扭率与光滑莫比乌斯相位流**：*上图*：连续扭率在平坦叙述中恒为严格的 $\omega(t) \equiv 0$，在识别到转折区间时 ($t \approx 51$)平滑激活。*下图*：因果累积规范势展现出光滑的连续爬升，平稳跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
+| **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：(a) **标准 RoPE**：无区分均匀衰减；(b) **固定 256 周期莫比乌斯基线**：当转折发生在非 256 位置 ($t \approx 51$) 时完全相位错位失效；(c) **自适应 SG-Möbius**：在转折区间构建极度精准的垂直因果截断壁。 |
+| **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **莫比乌斯周期相位回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下 ($t_1 \approx 39, t_2 \approx 133$)，首次转折产生相消 ($\Delta\Phi=\pi$)，二次转折推动相位达到 $\Delta\Phi=2\pi$，自然重回正向分支 ($\cos(2\pi) = +1$)，以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$)。 |
 
 ---
 
@@ -356,24 +371,24 @@ with torch.no_grad():
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **顺承控制组 (无转折)** | 337 | 无 (`[]`) | 3.4462 | **3.4462** | **0.00%** | 与标准 RoPE 完全逐位恒等；零误报、零语法干扰。 |
 | **任意单点转折** | 298 | `转折区间 (t ≈ 51)` | 3.4503 | **3.3966** | **-1.56%** | 作废前置命题被精准抑制，注意力分布显著收敛。 |
-| **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑闭环周期回归（$\cos(2\pi) = +1$）；注意力高度重聚。 |
+| **双重否定恢复** | 234 | `Tokens 39, 133` | 3.3120 | **3.1626** | **-4.51%** | 拓扑闭环周期回归 ($\cos(2\pi) = +1$)；注意力高度重聚。 |
 
 ### 表 2：跨长度上下文缩放与解码延迟评测 (512 至 8192 Token)
 
-完整提取自 `experiments/benchmark_results.json`，在序列中央位置构造因果反转（$t = L/2$）：
+完整提取自 `experiments/benchmark_results.json`，在序列中央位置构造因果反转 ($t = L/2$)：
 
 | 上下文长度 ($L$) | 转折锚点 ($t$) | 注意力机制方案 | 废弃键注意力 ($A_{\text{decoy}} \downarrow$) | 目标键注意力 ($A_{\text{target}} \uparrow$) | 注意力对比度 ($\text{ACR} \uparrow$) | 香农注意力熵 ($H$) | 单步 KV 解码延迟 |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
 | **512** | 256 | 标准 RoPE 基线 | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
-| | | **SG-Möbius (本文)** | **$1.79 \times 10^{-5}$** | **$8.18 \times 10^{-3}$** | **457.3** (+403×) | **5.403** | **$0.0023\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (本文)** | $\mathbf{1.79 \times 10^{-5}}$ | $\mathbf{8.18 \times 10^{-3}}$ | **457.3** (+403×) | **5.403** | $\mathbf{0.0023\,\text{ms}}$ (+0.0%) |
 | **1,024** | 512 | 标准 RoPE 基线 | $1.00 \times 10^{-3}$ | $1.04 \times 10^{-3}$ | 1.04 | 6.931 | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$) |
-| | | **SG-Möbius (本文)** | **$3.50 \times 10^{-5}$** | **$4.20 \times 10^{-3}$** | **120.2** (+115×) | **6.025** | **$0.0049\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (本文)** | $\mathbf{3.50 \times 10^{-5}}$ | $\mathbf{4.20 \times 10^{-3}}$ | **120.2** (+115×) | **6.025** | $\mathbf{0.0049\,\text{ms}}$ (+0.0%) |
 | **2,048** | 1,024 | 标准 RoPE 基线 | $4.80 \times 10^{-4}$ | $6.01 \times 10^{-4}$ | 1.25 | 7.624 | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$) |
-| | | **SG-Möbius (本文)** | **$5.46 \times 10^{-5}$** | **$4.29 \times 10^{-3}$** | **78.5** (+62×) | **6.656** | **$0.0098\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (本文)** | $\mathbf{5.46 \times 10^{-5}}$ | $\mathbf{4.29 \times 10^{-3}}$ | **78.5** (+62×) | **6.656** | $\mathbf{0.0098\,\text{ms}}$ (+0.0%) |
 | **4,096** | 2,048 | 标准 RoPE 基线 | $2.43 \times 10^{-4}$ | $3.02 \times 10^{-4}$ | 1.24 | 8.318 | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$) |
-| | | **SG-Möbius (本文)** | **$3.53 \times 10^{-5}$** | **$3.88 \times 10^{-3}$** | **109.8** (+88×) | **7.318** | **$0.0206\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (本文)** | $\mathbf{3.53 \times 10^{-5}}$ | $\mathbf{3.88 \times 10^{-3}}$ | **109.8** (+88×) | **7.318** | $\mathbf{0.0206\,\text{ms}}$ (+0.0%) |
 | **8,192** | 4,096 | 标准 RoPE 基线 | $1.26 \times 10^{-4}$ | $1.37 \times 10^{-4}$ | 1.08 | 9.011 | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$) |
-| | | **SG-Möbius (本文)** | **$4.90 \times 10^{-5}$** | **$2.08 \times 10^{-3}$** | **42.4** (+39×) | **8.244** | **$0.0749\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (本文)** | $\mathbf{4.90 \times 10^{-5}}$ | $\mathbf{2.08 \times 10^{-3}}$ | **42.4** (+39×) | **8.244** | $\mathbf{0.0749\,\text{ms}}$ (+0.0%) |
 
 ### 表 3：倒置大海捞针测试 (I-NIAH, 16k 上下文)
 
@@ -383,7 +398,7 @@ with torch.no_grad():
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Qwen3.5-9B** | 标准 RoPE 基线 | $0.412 \pm 0.03$ | $0.448 \pm 0.04$ | 1.09 | 6.42 |
 | **Qwen3.5-9B** | 固定周期莫比乌斯 ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |
-| **Qwen3.5-9B** | **SG-Möbius-RoPE (本文算法)** | **$0.061 \pm 0.01$** | **$0.824 \pm 0.03$** | **13.51** (**×12.4**) | **6.42** (**0.0%** 困惑度劣化) |
+| **Qwen3.5-9B** | **SG-Möbius-RoPE (本文算法)** | $\mathbf{0.061 \pm 0.01}$ | $\mathbf{0.824 \pm 0.03}$ | **13.51** (**×12.4**) | **6.42** (**0.0%** 困惑度劣化) |
 
 ---
 
@@ -395,11 +410,11 @@ with torch.no_grad():
 
 形式化定义文件 [`formal_verification/MobiusAttention.lean`](formal_verification/MobiusAttention.lean) 在离散因果格点上构建纤维丛，并形式化完成了 5 个核心理论的机器证明，**零未证明公理（0 axioms），零 `sorry` 占位符**：
 
-1. **`conservation_of_flatness`**：$\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$（严格证明无转折时退化为标准 RoPE）。
-2. **`holonomy_path_additivity`**：$\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$（路径积分可加性 / 前缀和分解）。
-3. **`antipodal_inversion`**：$\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$（严格证明对极相位相消）。
-4. **`cyclic_parity_conservation`**：$\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$（严格证明 2\pi 周期相位回归）。
-5. **`gauge_translation_invariance`**：$\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$（规范对称性）。
+1. **`conservation_of_flatness`**： $\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$（严格证明无转折时退化为标准 RoPE）。
+2. **`holonomy_path_additivity`**： $\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$（路径积分可加性 / 前缀和分解）。
+3. **`antipodal_inversion`**： $\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$（严格证明对极相位相消）。
+4. **`cyclic_parity_conservation`**： $\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$（严格证明 $2\pi$ 周期相位回归）。
+5. **`gauge_translation_invariance`**： $\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$（规范对称性）。
 
 ```bash
 # 验证 Lean 4 形式化证明
@@ -416,11 +431,11 @@ python formal_verification/verify_properties.py
 
 - **Z3 SMT 全域无条件求解**：在全实数定义域内严格证明路径积分可加性、规范平移不变性与连续相位流因式分解之否命题均严格为 `UNSAT`。
 - **对称旋转对偶调制不变性**：随机抽样 1,000 组 64 维查询-键对（位置跨度达 32,768）：
-  - 对称对偶调制偏差误差：**$0.00 \times 10^0$**（严格满足理论等价）。
+  - 对称对偶调制偏差误差： $\mathbf{0.00 \times 10^0}$（严格满足理论等价）。
   - 非对称调制（仅缩放 cos）偏差误差：**37.17**（平移对称性严重崩溃）。
 - **2,000 次极限长度模糊测试**：在 $[10, 32768]$ 范围内抽样长文本，包含多达 50 层非周期嵌套转折：
-  - 累积路径和乐最大数值漂移：**$1.14 \times 10^{-13}$**（远低于 $10^{-12}$ 阈值）。
-  - 宇称因子最大漂移：**$0.00 \times 10^0$**。
+  - 累积路径和乐最大数值漂移： $\mathbf{1.14 \times 10^{-13}}$（远低于 $10^{-12}$ 阈值）。
+  - 宇称因子最大漂移： $\mathbf{0.00 \times 10^0}$。
   - 通过率：**2,000 / 2,000 轮（100% 成功）**。
 
 ### 四层端到端 Pytest 自动化测试套件
@@ -432,7 +447,7 @@ pytest -q
 
 全方位 334 项测试套件严密覆盖：
 - **第一层 (核心功能特性，60 项测试)**：`ContinuousMobiusRoPEModulator`、`SemanticGaugeConnection`、基于三角和角公式的 2D 平面旋转、50% 结构锚点 / 50% 连续演化子空间解耦、1D 粘性 EMA 扩散平滑、非负 ELU+1 特征映射包络、原地热替换注入与代数宇称等价性。
-- **第二层 (极端边界条件，60 项测试)**：零长度空序列、单 Token、超大位置偏移（$L=32,768$）、极端基频底数与算子边界数值稳定性。
+- **第二层 (极端边界条件，60 项测试)**：零长度空序列、单 Token、超大位置偏移 ($L=32,768$)、极端基频底数与算子边界数值稳定性。
 - **第三层 (复杂组合对抗，12 项测试)**：多重嵌套逻辑否定、连续反转连词、引号内转折屏蔽与跨特性交叉复合测试。
 - **第四层 (真实业务场景，5 项测试)**：长文本法律合同条款撤销、医疗诊断冲突推翻、软件安全漏洞追溯、多轮对话博弈撤回与跨语言知识反转。
 - **底层架构鲁棒性认证 (197 项测试)**：跨架构兼容性（Qwen, Llama, Mistral）、严格 $\mathcal{O}(1)$ KV-Cache 增量解码线性时空不变性、极限 16k/32k 倒置大海捞针对抗检索与性质模糊测试。

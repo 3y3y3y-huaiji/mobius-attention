@@ -147,3 +147,37 @@ def test_no_broken_pipe_norm_in_math(readme_path):
         assert r"\|" not in expr, (
             f"Found raw \\| in math in {readme_path}: '{expr}'. Use \\Vert instead to prevent GFM pipe collision."
         )
+
+@pytest.mark.parametrize("readme_path", README_FILES)
+def test_no_italic_swallowed_latex(readme_path):
+    """GFM rule: underscores in LaTeX subscripts must not be parsed as Markdown italics."""
+    try:
+        from markdown_it import MarkdownIt
+    except ImportError:
+        pytest.skip("markdown-it-py not installed")
+
+    md = MarkdownIt()
+    with open(readme_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    in_code = False
+    in_display_math = False
+    for idx, line in enumerate(lines, 1):
+        s = line.strip()
+        if s.startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        if s == "$$":
+            in_display_math = not in_display_math
+            continue
+        if in_display_math or "_" not in line:
+            continue
+
+        html = md.render(line)
+        ems = re.findall(r"<em>(.*?)</em>", html)
+        for em in ems:
+            if any(ch in em for ch in ("$", "\\", "{", "}", "^", "=", "<", ">", "+", "-")):
+                assert False, f"Line {idx} in {readme_path} has corrupted math swallowed into <em> tag: '{em}'"
+

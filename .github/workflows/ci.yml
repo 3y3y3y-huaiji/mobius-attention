@@ -11,6 +11,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  markdown-math:
+    name: Markdown LaTeX Lint & AST Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify with mdmathlint (Official GitHub Math Linter)
+        run: npx --yes mdmathlint --profile github README.md README_zh.md
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Lint Dependencies
+        run: pip install markdown-it-py pytest
+
+      - name: Run Markdown AST Integrity & GFM LaTeX Tests
+        run: |
+          python scripts/check_markdown_math.py
+          pytest tests/test_readme_latex.py -v
+
   latex:
     name: Build & Validate LaTeX Paper
     runs-on: ubuntu-latest

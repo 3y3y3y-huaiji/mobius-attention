@@ -111,9 +111,9 @@ flowchart LR
 
 1. **Continuous Torsion Rate & Viscous Smoothing**: At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$, smoothed by 1D viscous EMA diffusion:
 
-$$
-\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
-$$
+   $$
+   \omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)
+   $$
 
 where $\nu \in (0, 1]$ is the viscosity parameter and $g_{h,m}(h_t)$ projects hidden state $h_t$ to semantic torsion density.
 - *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
@@ -121,9 +121,9 @@ where $\nu \in (0, 1]$ is the viscosity parameter and $g_{h,m}(h_t)$ projects hi
 
 2. **Path-Integral Additivity & Prefix-Sum Decomposition**: Parallel transport along the causal trajectory yields the cumulative phase flow:
 
-$$
-\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
-$$
+   $$
+   \Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
+   $$
 
 where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
 
@@ -132,9 +132,24 @@ where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
 To restore the authentic, everywhere-smooth geometric spirit of the Möbius strip, we reject discrete Dirac delta jumps and discrete sign switches. Instead, we implement **Nowhere-Discontinuous Subspace Twist** with two core geometric principles:
 
 #### 1. Subspace Decoupling: Structural Anchor vs. Semantic Evolution Channels
+
 We partition the $d/2$ planar rotation channels into two functional sectors:
-- **Structural Anchor Subspace** $\mathcal{S}_{\mathrm{anchor}}$: Retains $\omega_{h,m} \equiv 0$ and $\Phi_{h,m} \equiv 0$, preserving baseline syntax, positional ordering, and system prompt directives without distortion.
-- **Semantic Evolution Subspace** $\mathcal{S}_{\mathrm{mob}}$: Dynamically evolves via the continuous torsion flow $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$, executing smooth phase advection across narrative turns.
+
+- **Structural Anchor Subspace** ($\mathcal{S}_{\mathrm{anchor}}$): Retains vanishing torsion and phase:
+
+  $$
+  \omega_{h,m}(t) \equiv 0, \quad \Phi_{h,m}(t) \equiv 0 \quad (\forall m \in \mathcal{S}_{\mathrm{anchor}})
+  $$
+
+  preserving baseline syntax, positional ordering, and system prompt directives without distortion.
+
+- **Semantic Evolution Subspace** ($\mathcal{S}_{\mathrm{mob}}$): Dynamically evolves via the continuous torsion flow:
+
+  $$
+  \Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau) \quad (\forall m \in \mathcal{S}_{\mathrm{mob}})
+  $$
+
+  executing smooth phase advection across narrative turns.
 
 #### 2. Non-Negative Feature Map Envelope
 
@@ -177,7 +192,7 @@ $$
 $$
 
 #### Theorem 2 (Continuous Lipschitz Continuity Bound of Rotation Operator)
-Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$. For adjacent positions $t$ and $t+1$ with bounded continuous torsion rate $|\omega_m(t+1)| \le \omega_{\max}$ under the stability precondition $\theta_m + \omega_{\max} \le \pi$:
+Let $\tilde{\mathbf{R}}(t)$ denote the continuous rotation operator across 2D planar channels. For adjacent positions $t$ and $t+1$ under the stability precondition $`\theta_m + \omega_{\max} \le \pi`$:
 
 $$
 \Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
@@ -338,8 +353,8 @@ All 6 high-resolution publication figures generated from real `Qwen/Qwen3.5-9B` 
 | **Figure 1**<br>`assets/fig1_inversion_scatter.png` | [![Figure 1](assets/fig1_inversion_scatter.png)](assets/fig1_inversion_scatter.png) | **Logit Energy & Topological Phase Flow**: Log-scale attention logit energy ($\ln A_{ij}$) across token coordinates $j \in [0, 546]$. Standard RoPE (blue) maintains a flat noise floor at $\sim -6.5$. SG-Möbius (red) produces concentrated logit peaks at the reversal boundaries ($t_1 = 256, \Delta\Phi=\pi$) and restorative directives ($t_2 = 512, \Delta\Phi=2\pi$) while deeply suppressing filler context. |
 | **Figure 2**<br>`assets/fig2_2d_heatmap.png` | [![Figure 2](assets/fig2_2d_heatmap.png)](assets/fig2_2d_heatmap.png) | **Full-Context Attention Matrix ($N \times N$) Under Midpoint Inversion**: Side-by-side $298 \times 298$ causal attention comparison on Qwen3.5-9B Layer 7. Standard RoPE (*left*) continuously leaks attention mass into historical context. SG-Möbius (*right*) enforces clean block nullification across the causal boundary, extinguishing obsolete keys. |
 | **Figure 3**<br>`assets/fig3_differential_heatmap.png` | [![Figure 3](assets/fig3_differential_heatmap.png)](assets/fig3_differential_heatmap.png) | **Differential Contrast Map ($\Delta A = A_{\text{mob}} - A_{\text{std}}$)**: Diverging colormap centered at zero. Deep blue demonstrates active destructive cancellation ($\Delta A \le -0.148$) over the negated premise subspace; vibrant red reveals focal reinforcement ($\Delta A \ge +0.500$) diverting attention mass to operative tokens. |
-| **Figure 4**<br>`assets/fig4_gauge_curvature.png` | [![Figure 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **Dynamic Semantic Torsion Rate $\omega(t)$ & Smooth Möbius Phase Flow $\Phi(t)$**: *Top*: Continuous torsion rate evaluates to $0$ on neutral narrative and smoothly activates across contrastive intervals ($t \approx 51$). *Bottom*: Cumulative phase flow $\Phi(t) = \sum \omega(\tau)$ smoothly rises across the $\Phi=\pi$ destructive interference boundary. |
-| **Figure 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![Figure 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Arbitrary-Position Inversion Comparison on Qwen3.5-9B**: *(a) Standard RoPE*: Uniform non-selective decay. *(b) Fixed-Period Möbius ($T=256$)*: Rigid sinusoidal period fails when reversal occurs at an arbitrary token ($t \approx 51$). *(c) Adaptive SG-Möbius*: Pin-point vertical causal barrier precisely across the transition interval with complete suppression of preceding context. |
+| **Figure 4**<br>`assets/fig4_gauge_curvature.png` | [![Figure 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **Dynamic Semantic Torsion Rate and Smooth Möbius Phase Flow**: *Top*: Continuous torsion rate evaluates to $\omega(t) \equiv 0$ on neutral narrative and smoothly activates across contrastive intervals ($t \approx 51$). *Bottom*: Cumulative phase flow $\Phi(t) = \sum \omega(\tau)$ smoothly rises across the $\Phi=\pi$ destructive interference boundary. |
+| **Figure 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![Figure 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Arbitrary-Position Inversion Comparison on Qwen3.5-9B**: (a) **Standard RoPE**: Uniform non-selective decay. (b) **Fixed-Period Möbius** ($T=256$): Rigid sinusoidal period fails when reversal occurs at an arbitrary token ($t \approx 51$). (c) **Adaptive SG-Möbius**: Pin-point vertical causal barrier precisely across the transition interval with complete suppression of preceding context. |
 | **Figure 6**<br>`assets/fig6_double_negation_restoration.png` | [![Figure 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **Möbius Cyclic Phase Restoration ($\neg\neg P \iff P$)**: Under two successive contrastive turns ($t_1 \approx 39, t_2 \approx 133$), the first twist induces cancellation ($\Delta\Phi=\pi$), while the second twist advances the phase to $\Delta\Phi=2\pi$, returning to positive alignment ($\cos(2\pi) = +1$) and recovering strong resonance (gains up to $+0.333$). |
 
 ---
@@ -365,15 +380,15 @@ Audited directly from `experiments/benchmark_results.json` across sequence lengt
 | Context Length ($L$) | Reversal Pivot ($t$) | Attention Method | Decoy Attn ($A_{\text{decoy}} \downarrow$) | Target Attn ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio ($\text{ACR} \uparrow$) | Shannon Entropy ($H$) | Decoding Step Latency |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
 | **512** | 256 | Standard RoPE Baseline | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$1.79 \times 10^{-5}$** | **$8.18 \times 10^{-3}$** | **457.3** (+403×) | **5.403** | **$0.0023\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | $\mathbf{1.79 \times 10^{-5}}$ | $\mathbf{8.18 \times 10^{-3}}$ | **457.3** (+403×) | **5.403** | $\mathbf{0.0023\,\text{ms}}$ (+0.0%) |
 | **1,024** | 512 | Standard RoPE Baseline | $1.00 \times 10^{-3}$ | $1.04 \times 10^{-3}$ | 1.04 | 6.931 | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$3.50 \times 10^{-5}$** | **$4.20 \times 10^{-3}$** | **120.2** (+115×) | **6.025** | **$0.0049\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | $\mathbf{3.50 \times 10^{-5}}$ | $\mathbf{4.20 \times 10^{-3}}$ | **120.2** (+115×) | **6.025** | $\mathbf{0.0049\,\text{ms}}$ (+0.0%) |
 | **2,048** | 1,024 | Standard RoPE Baseline | $4.80 \times 10^{-4}$ | $6.01 \times 10^{-4}$ | 1.25 | 7.624 | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$5.46 \times 10^{-5}$** | **$4.29 \times 10^{-3}$** | **78.5** (+62×) | **6.656** | **$0.0098\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | $\mathbf{5.46 \times 10^{-5}}$ | $\mathbf{4.29 \times 10^{-3}}$ | **78.5** (+62×) | **6.656** | $\mathbf{0.0098\,\text{ms}}$ (+0.0%) |
 | **4,096** | 2,048 | Standard RoPE Baseline | $2.43 \times 10^{-4}$ | $3.02 \times 10^{-4}$ | 1.24 | 8.318 | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$3.53 \times 10^{-5}$** | **$3.88 \times 10^{-3}$** | **109.8** (+88×) | **7.318** | **$0.0206\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | $\mathbf{3.53 \times 10^{-5}}$ | $\mathbf{3.88 \times 10^{-3}}$ | **109.8** (+88×) | **7.318** | $\mathbf{0.0206\,\text{ms}}$ (+0.0%) |
 | **8,192** | 4,096 | Standard RoPE Baseline | $1.26 \times 10^{-4}$ | $1.37 \times 10^{-4}$ | 1.08 | 9.011 | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$4.90 \times 10^{-5}$** | **$2.08 \times 10^{-3}$** | **42.4** (+39×) | **8.244** | **$0.0749\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | $\mathbf{4.90 \times 10^{-5}}$ | $\mathbf{2.08 \times 10^{-3}}$ | **42.4** (+39×) | **8.244** | $\mathbf{0.0749\,\text{ms}}$ (+0.0%) |
 
 ### Table 3: Inverted Needle-In-A-Haystack (I-NIAH, 16k Context)
 
@@ -383,7 +398,7 @@ Evaluated under adversarial premise invalidation at 16,384 sequence context leng
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Qwen3.5-9B** | Standard RoPE Baseline | $0.412 \pm 0.03$ | $0.448 \pm 0.04$ | 1.09 | 6.42 |
 | **Qwen3.5-9B** | Fixed-Period Möbius ($T=256$) | $0.395 \pm 0.04$ | $0.461 \pm 0.04$ | 1.17 | 6.42 |
-| **Qwen3.5-9B** | **SG-Möbius-RoPE (Ours)** | **$0.061 \pm 0.01$** | **$0.824 \pm 0.03$** | **13.51** (**×12.4**) | **6.42** (**0.0%** PPL degradation) |
+| **Qwen3.5-9B** | **SG-Möbius-RoPE (Ours)** | $\mathbf{0.061 \pm 0.01}$ | $\mathbf{0.824 \pm 0.03}$ | **13.51** (**×12.4**) | **6.42** (**0.0%** PPL degradation) |
 
 ---
 
@@ -416,11 +431,11 @@ python formal_verification/verify_properties.py
 
 - **Universal Z3 SMT Proofs**: Formally proves that the negations of Path-Integral Additivity, Gauge Translation Invariance, and Continuous Phase Flow Factorization are strictly `UNSAT` across all real domains.
 - **Dual-Modulation Translation Invariance**: Evaluates 1,000 randomized 64-dimensional query-key pairs across positional offsets up to 32,768:
-  - Symmetric Dual Modulation: Max deviation error = **$0.00 \times 10^0$** (exact machine precision).
+  - Symmetric Dual Modulation: Max deviation error = $\mathbf{0.00 \times 10^0}$ (exact machine precision).
   - Asymmetric Modulation (cos only): Max deviation error = **37.17** (loss of translation invariance).
 - **2,000-Trial Extreme Fuzzing**: Sequences sampled across $[10, 32768]$ tokens with up to 50 nested reversals:
-  - Max cumulative holonomy numerical drift: **$1.14 \times 10^{-13}$** ($< 10^{-12}$ threshold).
-  - Max parity factor numerical drift: **$0.00 \times 10^0$**.
+  - Max cumulative holonomy numerical drift: $\mathbf{1.14 \times 10^{-13}}$ ($< 10^{-12}$ threshold).
+  - Max parity factor numerical drift: $\mathbf{0.00 \times 10^0}$.
   - Pass rate: **2,000 / 2,000 trials (100% success rate)**.
 
 ### Four-Tier End-to-End Pytest Suite
