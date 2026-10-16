@@ -128,19 +128,31 @@ We partition the $d/2$ planar rotation channels into two functional sectors:
 - **Semantic Evolution Subspace $\mathcal{S}_{\text{mob}}$**: Dynamically evolves via the continuous torsion flow $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$, executing smooth phase advection across narrative turns.
 
 #### 2. Non-Negative Feature Map Envelope
-To ensure that irrelevant tokens with negative baseline similarity do not spuriously flip into positive affinities under an antipodal twist, we apply a rectified non-negative envelope $\phi(u) = \text{ELU}(u) + 1 \ge 0$ to coordinates in $\mathcal{S}_{\text{mob}}$ prior to rotation:
-$$\langle \phi(q_i^{(m)}), \, \phi(k_j^{(m)}) \rangle_{\mathrm{RoPE}} \ge 0$$
+
+To ensure that irrelevant tokens with negative baseline similarity do not spuriously flip into positive affinities under an antipodal twist, we apply a rectified non-negative envelope $\phi(u) = \mathrm{ELU}(u) + 1 \ge 0$ to coordinates in $\mathcal{S}_{\mathrm{mob}}$ prior to rotation:
+
+$$
+\langle \phi(q_i^{(m)}), \, \phi(k_j^{(m)}) \rangle_{\mathrm{RoPE}} \ge 0
+$$
+
 This guarantees that unassociated background tokens remain suppressed, while only actively contradicted historical premises are smoothly driven into destructive interference.
 
 #### 3. Continuous 2D SO(2) Planar Rotation via Angle Addition
+
 For each 2D planar subspace $m$ with base frequency $\theta_m$, rotation is performed via exact trigonometric angle addition:
+
 $$
 \tilde{\theta}_{h,m}(t) = t\theta_m + \Phi_{h,m}(t)
 $$
+
 $$
-\tilde{\mathbf{R}}_{h,m}(t) = \begin{pmatrix} \cos(t\theta_m + \Phi_{h,m}(t)) & -\sin(t\theta_m + \Phi_{h,m}(t)) \\ \sin(t\theta_m + \Phi_{h,m}(t)) & \cos(t\theta_m + \Phi_{h,m}(t)) \end{pmatrix}
+\tilde{\mathbf{R}}_{h,m}(t) = \begin{pmatrix}
+\cos(t\theta_m + \Phi_{h,m}(t)) & -\sin(t\theta_m + \Phi_{h,m}(t)) \\
+\sin(t\theta_m + \Phi_{h,m}(t)) & \cos(t\theta_m + \Phi_{h,m}(t))
+\end{pmatrix}
 $$
-identically preserving Euclidean vector norms: $\|\tilde{\mathbf{R}}_{h,m}(t) v\| \equiv \|v\|$.
+
+identically preserving Euclidean vector norms: $\Vert \tilde{\mathbf{R}}_{h,m}(t) v \Vert \equiv \Vert v \Vert$.
 
 #### Theorem 1 (Preservation of Relative Translation Invariance)
 Under continuous rotary angle modulation, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:

@@ -25,7 +25,6 @@ def extract_math_blocks(filepath):
 
     # Extract inline math ($ ... $)
     inline_matches = []
-    # Remove display math first
     text_inline = re.sub(r"\$\$[\s\S]*?\$\$", "", content_no_inline_code)
     for m in re.finditer(r"(?<!\$)\$(?!\$)(.*?)(?<!\$)\$(?!\$)", text_inline):
         inline_matches.append((m.group(1), m.start()))
@@ -52,13 +51,11 @@ def test_math_balanced_braces_and_environments(readme_path):
     all_math = [m[0] for m in display_matches] + [m[0] for m in inline_matches]
     
     for expr in all_math:
-        # Check braces (ignore escaped \{ and \})
         cleaned = expr.replace(r"\{", "").replace(r"\}", "")
         open_braces = cleaned.count("{")
         close_braces = cleaned.count("}")
         assert open_braces == close_braces, f"Unbalanced braces in {readme_path}: '{expr}' ({open_braces} != {close_braces})"
         
-        # Check begin/end environments
         begins = re.findall(r"\\begin\{([a-zA-Z0-9*]+)\}", expr)
         ends = re.findall(r"\\end\{([a-zA-Z0-9*]+)\}", expr)
         assert begins == ends, f"Mismatched environments in {readme_path}: begins={begins}, ends={ends}"
@@ -73,10 +70,8 @@ def test_no_raw_pipe_in_table_math(readme_path):
         line_num = idx + 1
         stripped = line.strip()
         if stripped.startswith("|") and stripped.endswith("|"):
-            # Check inside inline math
             math_exprs = re.findall(r"\$([^$]+)\$", stripped)
             for m in math_exprs:
-                # Raw unescaped | inside table math breaks column parsing
                 assert "|" not in m or r"\|" in m, (
                     f"Line {line_num} in {readme_path} has raw pipe in table math: ${m}$"
                 )
@@ -98,7 +93,14 @@ def test_display_math_block_isolation(readme_path):
             continue
             
         if "$$" in stripped:
-            # Should be pure $$ or $$ formula $$ on its own
             if not (stripped == "$$" or (stripped.startswith("$$") and stripped.endswith("$$"))):
-                # Text collision like "text $$ formula"
                 assert False, f"Line {line_num} in {readme_path} has unisolated $$: {stripped}"
+
+@pytest.mark.parametrize("readme_path", README_FILES)
+def test_no_broken_pipe_norm_in_inline_math(readme_path):
+    """GFM rule: do not use \\| for vector norms in inline math; use \\Vert or \\lVert/\\rVert."""
+    _, inline_matches, _ = extract_math_blocks(readme_path)
+    for expr, _ in inline_matches:
+        assert r"\|" not in expr, (
+            f"Found raw \\| in inline math in {readme_path}: '${expr}$'. Use \\Vert instead to prevent GFM pipe collision."
+        )

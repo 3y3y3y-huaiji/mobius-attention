@@ -128,21 +128,31 @@ flowchart LR
 - **语义演化子空间 $\mathcal{S}_{\text{mob}}$**：沿因果序列累积连续扭率流 $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$，在遇到逻辑转折时平滑演进累积相位，实现叙事周期内的平滑相位平流与精准相消干涉。
 
 #### 2. 非负特征映射核包络 (Non-Negative Feature Map)
-为避免原本不相关的负相似度背景 Token 在经历对极翻转后虚假产生正向共振，我们在向 $\mathcal{S}_{\text{mob}}$ 施加旋转前引入整流非负包络 $\phi(u) = \text{ELU}(u) + 1 \ge 0$：
+
+为避免原本不相关的负相似度背景 Token 在经历对极翻转后虚假产生正向共振，我们在向 $\mathcal{S}_{\mathrm{mob}}$ 施加旋转前引入整流非负包络 $\phi(u) = \mathrm{ELU}(u) + 1 \ge 0$：
+
 $$
 \langle \phi(q_i^{(m)}), \, \phi(k_j^{(m)}) \rangle_{\mathrm{RoPE}} \ge 0
 $$
+
 这保证了无关背景噪声在旋转翻转后依然保持受控压制，唯有语义高度相关的作废前置命题才会被平滑驱动至主动相消干涉区。
 
 #### 3. 基于三角和角公式的连续 2D SO(2) 平面旋转
+
 在每个二维子空间 $m$ 上，旋转操作通过精确的三角和角公式计算，而非向量级全局标量相乘：
+
 $$
 \tilde{\theta}_{h,m}(t) = t\theta_m + \Phi_{h,m}(t)
 $$
+
 $$
-\tilde{\mathbf{R}}_{h,m}(t) = \begin{pmatrix} \cos(t\theta_m + \Phi_{h,m}(t)) & -\sin(t\theta_m + \Phi_{h,m}(t)) \\ \sin(t\theta_m + \Phi_{h,m}(t)) & \cos(t\theta_m + \Phi_{h,m}(t)) \end{pmatrix}
+\tilde{\mathbf{R}}_{h,m}(t) = \begin{pmatrix}
+\cos(t\theta_m + \Phi_{h,m}(t)) & -\sin(t\theta_m + \Phi_{h,m}(t)) \\
+\sin(t\theta_m + \Phi_{h,m}(t)) & \cos(t\theta_m + \Phi_{h,m}(t))
+\end{pmatrix}
 $$
-由于 $\tilde{\mathbf{R}}_{h,m}(t) \in \mathrm{SO}(2)$ 为标准正交旋转矩阵，欧几里得向量范数处处严格守恒：$\|\tilde{\mathbf{R}}_{h,m}(t) v\| \equiv \|v\|$。
+
+由于 $\tilde{\mathbf{R}}_{h,m}(t) \in \mathrm{SO}(2)$ 为标准正交旋转矩阵，欧几里得向量范数处处严格守恒：$\Vert \tilde{\mathbf{R}}_{h,m}(t) v \Vert \equiv \Vert v \Vert$。
 
 #### 定理 1（相对平移不变性守恒定理）
 在连续旋转角调制下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性，并满足：
