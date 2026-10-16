@@ -104,17 +104,17 @@ flowchart LR
 #### 双重覆盖规范丛与子空间正交分解
 
 1. **底流形**：将长度为 $L$ 的自回归输入序列定义为一维离散因果偏序集 $\mathcal{M} = ( \lbrace 0, 1, \dots, L-1 \rbrace, \, \le )$。
-2. **$\mathrm{SO}(2)$ 双重覆盖宇称中心**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用。$\mathrm{SO}(2)$ 群的中心为离散循环对偶子群 $Z(\mathrm{SO}(2)) = \lbrace \pm \mathbf{I}_2 \rbrace \cong \mathbb{Z}_2$，由对极半周期旋转 $\mathbf{R}(\pi) = -\mathbf{I}_2$ 生成。这诱导了标准的 $2:1$ 双重覆盖正则正合列：
+2. **SO(2) 双重覆盖宇称中心**：标准 RoPE 将隐空间正交分解为 $d/2$ 个二维旋转子空间 $\mathbb{R}^2_{(m)}$，由连续平面旋转群 $\mathrm{SO}(2) \cong \mathrm{U}(1)$ 作用。 $\mathrm{SO}(2)$ 群的中心为离散循环对偶子群 $Z(\mathrm{SO}(2)) = \lbrace \pm \mathbf{I}_2 \rbrace \cong \mathbb{Z}_2$，由对极半周期旋转 $\mathbf{R}(\pi) = -\mathbf{I}_2$ 生成。这诱导了标准的 $2:1$ 双重覆盖正则正合列：
 
 $$
 \mathbb{Z}_2 \hookrightarrow \mathrm{SO}(2) \xrightarrow{\pi_{2:1}} \mathrm{SO}(2)/\mathbb{Z}_2 \cong \mathrm{PSO}(2)
 $$
 
-通过将离散语义宇称状态 $\sigma(t) \in \lbrace +1, -1 \rbrace$ 提升为 $\mathrm{SO}(2)$ 上的连续阿贝尔规范相位流 $\Phi(t) = \sum\_{\tau=1}^t \omega(\tau)$，累积平行移动 $\Delta\Phi = \pi$ 穿过双重覆盖的非平凡层（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在严格保向等距变换（$\det \mathbf{R} \equiv +1$）的前提下实现 $\mathcal{S}\_{\text{mob}}$ 上的内积符号精准翻转。二次逻辑否定再次累积 $\Delta\Phi = 2\pi$，闭合双重覆盖环路（$\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$），在拓扑层面自然实现双重否定的正向共振复原（$\neg\neg P \iff P$）。
+通过将离散语义宇称状态 $\sigma(t) \in \lbrace +1, -1 \rbrace$ 提升为 $\mathrm{SO}(2)$ 上的连续阿贝尔规范相位流 $\Phi(t) = \sum\_{\tau=1}^t \omega(\tau)$，累积平行移动 $\Delta\Phi = \pi$ 穿过双重覆盖的非平凡层（即 $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ），在严格保向等距变换（即 $\det \mathbf{R} \equiv +1$ ）的前提下实现 $\mathcal{S}\_{\text{mob}}$ 上的内积符号精准翻转。二次逻辑否定再次累积 $\Delta\Phi = 2\pi$，闭合双重覆盖环路（即 $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ），在拓扑层面自然实现双重否定的正向共振复原（ $\neg\neg P \iff P$ ）。
 
 3. **子空间正交解耦**：将 $d/2$ 个二维旋转通道划分为两大互补扇区：
-   - **结构锚点子空间** ($\mathcal{S}\_{\mathrm{anchor}}$)：强制保持扭率与相位恒为零（$\omega \equiv 0, \Phi \equiv 0$），冻结前 $\lfloor \alpha d/2 \rfloor$ 个高频通道（通常 $\alpha=0.5$），确保基础句法、局部偏序以及系统指令绝对不受相消干扰。
-   - **语义演化子空间** ($\mathcal{S}\_{\mathrm{mob}}$)：沿因果序列累积连续扭率流（$\Phi(t) = \sum\_{\tau=1}^t \omega(\tau)$），负责在逻辑转折时执行连续相位平流。
+   - **结构锚点子空间** ($\mathcal{S}\_{\mathrm{anchor}}$)：强制保持扭率与相位恒为零（ $\omega \equiv 0, \Phi \equiv 0$ ），冻结前 $\lfloor \alpha d/2 \rfloor$ 个高频通道（通常 $\alpha=0.5$），确保基础句法、局部偏序以及系统指令绝对不受相消干扰。
+   - **语义演化子空间** ($\mathcal{S}\_{\mathrm{mob}}$)：沿因果序列累积连续扭率流（ $\Phi(t) = \sum\_{\tau=1}^t \omega(\tau)$ ），负责在逻辑转折时执行连续相位平流。
 
 ### 连续扭率流与相位自锁流
 
