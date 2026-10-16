@@ -27,6 +27,15 @@ scratch/
 .lake/
 formal_verification/.lake/
 
+# Paper artifacts
+paper_arXiv/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+
 # OS files
 .DS_Store
 Thumbs.db

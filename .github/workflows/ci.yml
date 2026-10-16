@@ -85,14 +85,26 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Paper Verification Tools
+        run: pip install arxiv-latex-cleaner bibtexparser
+
+      - name: Verify arXiv Cleaner Compliance (Google Research Tool)
+        run: arxiv_latex_cleaner paper --keep_bib
+
       - name: Verify LaTeX Citations & Anti-Hallucination Audit
         run: python scripts/check_paper_integrity.py
 
-      - name: Compile LaTeX Preprint
+      - name: Compile LaTeX Preprint with Strict Zero-Warning Enforcement
         uses: xu-cheng/latex-action@v3
         with:
           root_file: main.tex
           working_directory: paper
+          args: "-pdf -file-line-error -halt-on-error -interaction=nonstopmode"
+          post_compile: |
+            if grep -E "LaTeX Warning: (Citation .* undefined|Reference .* undefined|There were undefined references)" main.log; then
+              echo "::error::Undefined citations or references detected in LaTeX log!"
+              exit 1
+            fi
 
       - name: Archive Compiled Preprint PDF
         uses: actions/upload-artifact@v6
