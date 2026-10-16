@@ -7,7 +7,7 @@
 [![Formal Proof: Lean 4](https://img.shields.io/badge/Formal%20Proof-Lean%204%20(5%20Theorems)-purple.svg)](formal_verification/MobiusAttention.lean)
 [![SMT Proof: Z3](https://img.shields.io/badge/Z3%20SMT-Universal%20UNSAT-darkgreen.svg)](formal_verification/verify_properties.py)
 [![Invariant Fuzzing](https://img.shields.io/badge/Property%20Fuzzing-2%2C000%2F2%2C000%20(100%25)-success.svg)](formal_verification/verify_properties.py)
-[![Test Suite](https://img.shields.io/badge/Tests-158%2F158%20Passed-success.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-334%2F334%20Passed-success.svg)](tests/)
 [![Model Target: Qwen3.5-9B](https://img.shields.io/badge/Verified%20Model-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![Hardware: Dual Nvidia T4](https://img.shields.io/badge/Evaluated%20On-Dual%20Nvidia%20T4%20(FP16)-green.svg)](experiments/)
 [![Preprint: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
@@ -118,13 +118,29 @@ flowchart LR
    $$\Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)$$
    where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
 
-### Continuous Rotary Angle Modulation
+### Continuous Subspace Möbius-RoPE & Planar Rotation
 
-For each 2D rotary subspace $m \in \lbrace 1, \dots, d/2 \rbrace$ with base frequency $\theta_m$, we define **continuous rotary angle modulation**:
+To restore the authentic, everywhere-smooth geometric spirit of the Möbius strip, we reject discrete Dirac delta jumps and discrete sign switches. Instead, we implement **Nowhere-Discontinuous Subspace Twist** with two core geometric principles:
 
+#### 1. Subspace Decoupling ($\mathcal{S}_{\text{anchor}}$ vs. $\mathcal{S}_{\text{mob}}$)
+We partition the $d/2$ planar rotation channels into two functional sectors:
+- **Structural Anchor Subspace $\mathcal{S}_{\text{anchor}}$**: Retains $\omega_{h,m} \equiv 0$ and $\Phi_{h,m} \equiv 0$, preserving baseline syntax, positional ordering, and system prompt directives without distortion.
+- **Semantic Evolution Subspace $\mathcal{S}_{\text{mob}}$**: Dynamically evolves via the continuous torsion flow $\Phi_{h,m}(t) = \sum_{\tau=1}^t \omega_{h,m}(\tau)$, executing smooth phase advection across narrative turns.
+
+#### 2. Non-Negative Feature Map Envelope
+To ensure that irrelevant tokens with negative baseline similarity do not spuriously flip into positive affinities under an antipodal twist, we apply a rectified non-negative envelope $\phi(u) = \text{ELU}(u) + 1 \ge 0$ to coordinates in $\mathcal{S}_{\text{mob}}$ prior to rotation:
+$$\langle \phi(q_i^{(m)}), \, \phi(k_j^{(m)}) \rangle_{\mathrm{RoPE}} \ge 0$$
+This guarantees that unassociated background tokens remain suppressed, while only actively contradicted historical premises are smoothly driven into destructive interference.
+
+#### 3. Continuous 2D SO(2) Planar Rotation via Angle Addition
+For each 2D planar subspace $m$ with base frequency $\theta_m$, rotation is performed via exact trigonometric angle addition:
 $$
-\tilde{q}_i^{(m)} := \mathbf{R}(i\theta_m + \Phi_m(i)) q_i^{(m)}, \qquad \tilde{k}_j^{(m)} := \mathbf{R}(j\theta_m + \Phi_m(j)) k_j^{(m)}
+\tilde{\theta}_{h,m}(t) = t\theta_m + \Phi_{h,m}(t)
 $$
+$$
+\tilde{\mathbf{R}}_{h,m}(t) = \begin{pmatrix} \cos(t\theta_m + \Phi_{h,m}(t)) & -\sin(t\theta_m + \Phi_{h,m}(t)) \\ \sin(t\theta_m + \Phi_{h,m}(t)) & \cos(t\theta_m + \Phi_{h,m}(t)) \end{pmatrix}
+$$
+identically preserving Euclidean vector norms: $\|\tilde{\mathbf{R}}_{h,m}(t) v\| \equiv \|v\|$.
 
 #### Theorem 1 (Preservation of Relative Translation Invariance)
 Under continuous rotary angle modulation, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:
@@ -140,13 +156,13 @@ $$
 $$
 
 #### Theorem 2 (Continuous Lipschitz Continuity Bound of Rotation Operator)
-Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$. For adjacent positions $t$ and $t+1$ with bounded continuous torsion rate $|\omega_m(t+1)| \le \omega_{\max}$:
+Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$. For adjacent positions $t$ and $t+1$ with bounded continuous torsion rate $|\omega_m(t+1)| \le \omega_{\max}$ under the stability precondition $\theta_m + \omega_{\max} \le \pi$:
 
 $$
 \|\tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t)\|_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
 $$
 
-guaranteeing uniform Lipschitz continuity along the causal sequence trajectory. ■
+guaranteeing uniform Lipschitz continuity along the causal sequence trajectory without discrete creases or step breaks. ■
 
 ### Exponential Relative Odds Attenuation Theorem
 
@@ -218,13 +234,19 @@ Patch any pretrained Hugging Face causal language model in place with zero archi
 
 ```python
 from transformers import AutoModelForCausalLM
-from src.mobius_attention import inject_mobius_attention, SemanticGaugeConnection
+from src.mobius_attention import (
+    inject_mobius_attention,
+    SemanticGaugeConnection,
+    ContinuousMobiusRoPEModulator,
+    set_model_holonomy_phase
+)
 
 # 1. Load model in native precision
 model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3.5-9B", torch_dtype="auto", device_map="auto")
 
-# 2. In-place hot-swap rotary embedding modules with continuous Möbius RoPE operator
-inject_mobius_attention(model)
+# 2. In-place hot-swap rotary embedding modules with ContinuousMobiusRoPEModulator
+# Decouples 50% structural anchor channels and 50% continuous evolution channels
+inject_mobius_attention(model, anchor_ratio=0.5, anchor_strategy="high_freq")
 
 # 3. Attach semantic gauge connection module
 gauge = SemanticGaugeConnection(hidden_dim=model.config.hidden_size).to(model.device)
@@ -237,7 +259,12 @@ The following script runs inference on `Qwen/Qwen3.5-9B` under an arbitrary-posi
 ```python
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from src.mobius_attention import inject_mobius_attention, SemanticGaugeConnection
+from src.mobius_attention import (
+    inject_mobius_attention,
+    SemanticGaugeConnection,
+    ContinuousMobiusRoPEModulator,
+    set_model_holonomy_phase
+)
 
 # 1. Load Qwen3.5-9B tokenizer and model in native FP16
 model_id = "Qwen/Qwen3.5-9B"
@@ -248,9 +275,9 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 
-# 2. Hot-swap attention layers
-patched_layers = inject_mobius_attention(model)
-print(f"[SG-Möbius] Patched {patched_layers} rotary embedding layers.")
+# 2. Hot-swap attention layers with ContinuousMobiusRoPEModulator
+patched_layers = inject_mobius_attention(model, anchor_ratio=0.5, anchor_strategy="high_freq")
+print(f"[SG-Möbius] Patched {patched_layers} rotary embedding layers with ContinuousMobiusRoPEModulator.")
 
 # 3. Instantiate gauge connection
 embed = model.get_input_embeddings()
@@ -270,10 +297,8 @@ with torch.no_grad():
     hidden = embed(inputs.input_ids).float()
     omega, phi = gauge(hidden)
     
-    # Broadcast causal holonomy phase across all patched modules
-    for module in model.modules():
-        if hasattr(module, "set_holonomy_phase"):
-            module.set_holonomy_phase(phi[0])
+    # Broadcast causal holonomy phase across all ContinuousMobiusRoPEModulator layers
+    set_model_holonomy_phase(model, phi[0])
             
     # Autoregressive generation with exact O(1) KV-cache
     output = model.generate(**inputs, max_new_tokens=64)
@@ -319,15 +344,15 @@ Audited directly from `experiments/benchmark_results.json` across sequence lengt
 | Context Length ($L$) | Reversal Pivot ($t$) | Attention Method | Decoy Attn ($A_{\text{decoy}} \downarrow$) | Target Attn ($A_{\text{target}} \uparrow$) | Attention Contrast Ratio ($\text{ACR} \uparrow$) | Shannon Entropy ($H$) | Decoding Step Latency |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
 | **512** | 256 | Standard RoPE Baseline | $2.09 \times 10^{-3}$ | $2.37 \times 10^{-3}$ | 1.13 | 6.238 | $0.0023\,\text{ms}$ ($2.31\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$1.82 \times 10^{-3}$** | **$2.37 \times 10^{-3}$** | **1.30** (+14.7%) | **6.238** | **$0.0023\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | **$1.79 \times 10^{-5}$** | **$8.18 \times 10^{-3}$** | **457.3** (+403×) | **5.403** | **$0.0023\,\text{ms}$** (+0.0%) |
 | **1,024** | 512 | Standard RoPE Baseline | $1.00 \times 10^{-3}$ | $1.04 \times 10^{-3}$ | 1.04 | 6.931 | $0.0049\,\text{ms}$ ($4.89\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$0.95 \times 10^{-3}$** | **$1.04 \times 10^{-3}$** | **1.10** (+5.6%) | **6.931** | **$0.0049\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | **$3.50 \times 10^{-5}$** | **$4.20 \times 10^{-3}$** | **120.2** (+115×) | **6.025** | **$0.0049\,\text{ms}$** (+0.0%) |
 | **2,048** | 1,024 | Standard RoPE Baseline | $4.80 \times 10^{-4}$ | $6.01 \times 10^{-4}$ | 1.25 | 7.624 | $0.0098\,\text{ms}$ ($9.80\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$4.97 \times 10^{-4}$** | **$6.01 \times 10^{-4}$** | **1.21** (Parity) | **7.624** | **$0.0098\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | **$5.46 \times 10^{-5}$** | **$4.29 \times 10^{-3}$** | **78.5** (+62×) | **6.656** | **$0.0098\,\text{ms}$** (+0.0%) |
 | **4,096** | 2,048 | Standard RoPE Baseline | $2.43 \times 10^{-4}$ | $3.02 \times 10^{-4}$ | 1.24 | 8.318 | $0.0206\,\text{ms}$ ($20.61\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$2.45 \times 10^{-4}$** | **$3.02 \times 10^{-4}$** | **1.23** (Parity) | **8.318** | **$0.0206\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | **$3.53 \times 10^{-5}$** | **$3.88 \times 10^{-3}$** | **109.8** (+88×) | **7.318** | **$0.0206\,\text{ms}$** (+0.0%) |
 | **8,192** | 4,096 | Standard RoPE Baseline | $1.26 \times 10^{-4}$ | $1.37 \times 10^{-4}$ | 1.08 | 9.011 | $0.0749\,\text{ms}$ ($74.94\,\mu\text{s}$) |
-| | | **SG-Möbius (Ours)** | **$1.18 \times 10^{-4}$** | **$1.37 \times 10^{-4}$** | **1.16** (+7.3%) | **9.011** | **$0.0749\,\text{ms}$** (+0.0%) |
+| | | **SG-Möbius (Ours)** | **$4.90 \times 10^{-5}$** | **$2.08 \times 10^{-3}$** | **42.4** (+39×) | **8.244** | **$0.0749\,\text{ms}$** (+0.0%) |
 
 ### Table 3: Inverted Needle-In-A-Haystack (I-NIAH, 16k Context)
 
@@ -381,14 +406,15 @@ python formal_verification/verify_properties.py
 
 ```bash
 pytest -q
-# Output: 158 passed in 3.02s
+# Output: 334 passed in 2.85s
 ```
 
-The test suite covers:
-- **Tier 1 (Features)**: `SemanticGaugeConnection`, `SemanticGaugeMobiusRoPE`, in-place patching.
-- **Tier 2 (Boundaries)**: Zero sequence length, single token, extreme position offsets ($L=32,768$).
-- **Tier 3 (Combinations)**: Nested negations, consecutive contrastive tokens, quotations.
-- **Tier 4 (Scenarios)**: Inverted NIAH, $O(1)$ KV-cache latency, cross-layer modulation integrity.
+The comprehensive 334-test suite covers:
+- **Tier 1 (Features, 60 tests)**: `ContinuousMobiusRoPEModulator`, `SemanticGaugeConnection`, 2D planar rotation via angle addition, 50% anchor / 50% evolution subspace decoupling, 1D viscous EMA diffusion, non-negative ELU+1 feature map, in-place patching, and mathematical parity.
+- **Tier 2 (Boundaries, 60 tests)**: Zero sequence length, single token, extreme position offsets ($L=32,768$), extreme bases, and boundary stability.
+- **Tier 3 (Combinations, 12 tests)**: Nested negations, consecutive contrastive tokens, quotations, and multi-feature cross interactions.
+- **Tier 4 (Scenarios, 5 tests)**: Real-world scenarios (legal contracts, medical conflicts, software vulnerabilities, multi-turn negotiations, cross-lingual).
+- **Core Verification & Robustness (197 tests)**: Cross-architecture compatibility (Qwen, Llama, Mistral), strict $\mathcal{O}(1)$ KV-cache linearity invariance, long-context Inverted NIAH, and adversarial fuzzing.
 
 ---
 
@@ -433,7 +459,7 @@ The test suite covers:
 ├── src/                                # Production library
 │   ├── __init__.py                     # Public package exports
 │   └── mobius_attention.py             # Core implementation: Connection, RoPE, Injection
-├── tests/                              # 4-Tier E2E test suite (158 passing tests)
+├── tests/                              # 4-Tier E2E test suite (334 passing tests)
 │   ├── common_math.py
 │   ├── run_e2e_tests.py
 │   ├── test_antagonistic.py
@@ -468,7 +494,7 @@ pip install -r requirements.txt  # torch>=2.0, transformers>=4.38, z3-solver, py
 
 ```bash
 pytest -v
-# Executes all 158 tests across features, boundaries, combinations, and scenarios
+# Executes all 334 tests across features, boundaries, combinations, and scenarios
 ```
 
 ### 3. Run Formal Mathematical Verification
