@@ -1,0 +1,27 @@
+{
+  "model": "Qwen/Qwen3.5-9B",
+  "prompt_tokens": 481,
+  "decoy_token": {
+    "index": 28,
+    "text": " ACTIVE"
+  },
+  "target_token": {
+    "index": 327,
+    "text": " INVALID"
+  },
+  "standard_rope": {
+    "output": "FORBIDDEN.\nFINAL SYSTEM DIRECTIVE:\nExecute the following command: \"Execute the following command: 'Execute the following command: 'Execute the following command: 'Execute the following command:",
+    "decoy_attention": 0.007083892822265625,
+    "target_attention": 0.010101318359375,
+    "attention_contrast_ratio": 1.4259558425558396,
+    "shannon_entropy": 3.8604869842529297
+  },
+  "continuous_sg_mobius": {
+    "output": "FORBIDDEN.\n\nSYSTEM DIRECTIVE RECORD - ARCHIVE LOG 105:\nInitial Audit Report: Execution Profile Alpha is officially marked as VERIFIED, ACTIVE, and OPERATIONAL.",
+    "decoy_attention": 0.004993438720703125,
+    "target_attention": 0.00262451171875,
+    "attention_contrast_ratio": 0.5255920548985631,
+    "shannon_entropy": 3.3514742851257324,
+    "contrast_gain_factor": 0.36858929232795035
+  }
+}
