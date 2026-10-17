@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or cite the preprint, please cite it as below."
+title: "Subspace Anti-Phase Attention: Mitigating Strictly Positive Softmax Leakage via Orthogonal Subspace Phase Inversion"
+authors:
+  - name: "Huaiji Team"
+    orcid: "https://orcid.org/0009-0008-2312-6913"
+    email: "contact@huaiji.org"
+repository-code: "https://github.com/3y3y3y-huaiji/mobius-attention"
+url: "https://github.com/3y3y3y-huaiji/mobius-attention"
+abstract: >-
+  Standard Transformer self-attention normalizes dot products via strictly positive
+  Softmax operators on the open probability simplex, causing premise distraction and
+  attention leakage. We introduce Subspace Anti-Phase Attention (SG-Möbius-RoPE),
+  an orthogonal subspace phase modulation framework extending RoPE with active noise
+  cancellation principles to achieve exact destructive attention suppression and
+  reversion without modifying historical key-value caches.
+keywords:
+  - "Transformer"
+  - "Attention Mechanism"
+  - "RoPE"
+  - "Subspace Modulation"
+  - "Active Noise Cancellation"
+  - "Formal Verification"
+  - "Lean 4"
+  - "Long-Context LLMs"
+license: "Apache-2.0"
+version: "1.0.0"
+date-released: "2026-10-17"

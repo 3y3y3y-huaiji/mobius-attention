@@ -7,10 +7,11 @@
 [![Formal Proof: Lean 4](https://img.shields.io/badge/Formal%20Proof-Lean%204%20(9%20Theorems)-purple.svg)](formal_verification/MobiusAttention.lean)
 [![SMT Proof: Z3](https://img.shields.io/badge/Z3%20SMT-Universal%20UNSAT-darkgreen.svg)](formal_verification/verify_properties.py)
 [![Invariant Fuzzing](https://img.shields.io/badge/Property%20Fuzzing-2%2C000%2F2%2C000%20(100%25)-success.svg)](formal_verification/verify_properties.py)
-[![Test Suite](https://img.shields.io/badge/Tests-367%2F367%20Passed-success.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-404%2F404%20Passed-success.svg)](tests/)
 [![Model Target: Qwen3.5-9B](https://img.shields.io/badge/Verified%20Model-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![Hardware: Dual Nvidia T4](https://img.shields.io/badge/Evaluated%20On-Dual%20Nvidia%20T4%20(FP16)-green.svg)](experiments/)
 [![Preprint: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
+[![ORCID: 0009-0008-2312-6913](https://img.shields.io/badge/ORCID-0009--0008--2312--6913-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-2312-6913)
 [![CI: Build & Paper PDFs](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml)
 
 <p align="center">
@@ -706,11 +707,13 @@ Both English and Chinese preprints are automatically compiled by GitHub Actions 
 If you find this research or codebase helpful in your work, please cite our technical preprint:
 
 ```bibtex
-@article{sgmobius2026,
-  title={Semantic Gauge M{\"o}bius Attention: Mitigating Strictly Positive Softmax Leakage via $\mathrm{SO}(2)$ Antipodal Lift and Subspace Phase Flow},
+@article{huaiji2026subspace,
+  title={Subspace Anti-Phase Attention: Mitigating Strictly Positive Softmax Leakage via Orthogonal Subspace Phase Inversion},
   author={Huaiji Team},
   journal={arXiv preprint arXiv:2610.xxxxx},
-  year={2026}
+  year={2026},
+  author+an={1:orcid=0009-0008-2312-6913},
+  url={https://github.com/3y3y3y-huaiji/mobius-attention}
 }
 ```
 

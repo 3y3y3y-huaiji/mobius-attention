@@ -7,10 +7,11 @@
 [![形式化证明: Lean 4](https://img.shields.io/badge/形式化证明-Lean%204%20(9大核心定理)-purple.svg)](formal_verification/MobiusAttention.lean)
 [![SMT 验证: Z3](https://img.shields.io/badge/Z3%20SMT-全局普遍%20UNSAT-darkgreen.svg)](formal_verification/verify_properties.py)
 [![不变性模糊测试](https://img.shields.io/badge/性质模糊测试-2%2C000%2F2%2C000%20(100%25)-success.svg)](formal_verification/verify_properties.py)
-[![测试套件](https://img.shields.io/badge/测试-367%2F367%20全通过-success.svg)](tests/)
+[![测试套件](https://img.shields.io/badge/测试-404%2F404%20全通过-success.svg)](tests/)
 [![实测验证模型: Qwen3.5-9B](https://img.shields.io/badge/实测模型-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![实测硬件: 双路 Nvidia T4](https://img.shields.io/badge/实测硬件-双路%20Nvidia%20T4%20(原生%20FP16)-green.svg)](experiments/)
 [![预印本: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
+[![ORCID: 0009-0008-2312-6913](https://img.shields.io/badge/ORCID-0009--0008--2312--6913-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-2312-6913)
 [![CI: 中英文论文编译](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml)
 
 <p align="center">
@@ -700,11 +701,13 @@ python scripts/plot_english_figures.py
 如果您在学术研究或工业系统开发中参考了本项目或论文，请援引预印本论文：
 
 ```bibtex
-@article{sgmobius2026,
-  title={Semantic Gauge M{\"o}bius Attention: Mitigating Strictly Positive Softmax Leakage via $\mathrm{SO}(2)$ Antipodal Lift and Subspace Phase Flow},
+@article{huaiji2026subspace,
+  title={Subspace Anti-Phase Attention: Mitigating Strictly Positive Softmax Leakage via Orthogonal Subspace Phase Inversion},
   author={Huaiji Team},
   journal={arXiv preprint arXiv:2610.xxxxx},
-  year={2026}
+  year={2026},
+  author+an={1:orcid=0009-0008-2312-6913},
+  url={https://github.com/3y3y3y-huaiji/mobius-attention}
 }
 ```
 
