@@ -343,6 +343,10 @@ class SemanticGaugeConnection(nn.Module):
                     b_val = -self.tau_gate * float(polar_direction.norm(p=2)) if self.tau_gate > 0.0 else -0.5
                     self.proj.bias.fill_(b_val)
 
+        # Stateful buffers for token-by-token autoregressive decoding
+        self.register_buffer("_last_omega", None, persistent=False)
+        self.register_buffer("_last_phi", None, persistent=False)
+
     @classmethod
     def from_contrastive_embeddings(
         cls,
@@ -375,10 +379,6 @@ class SemanticGaugeConnection(nn.Module):
             bias=True,
             **kwargs
         )
-
-        # Stateful buffers for token-by-token autoregressive decoding
-        self.register_buffer("_last_omega", None, persistent=False)
-        self.register_buffer("_last_phi", None, persistent=False)
 
     def reset_state(self):
         """Resets internal autoregressive decoding state buffers."""
