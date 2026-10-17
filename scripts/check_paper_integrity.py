@@ -24,9 +24,34 @@ if sys.stdout.encoding != 'utf-8':
         pass
 
 
-def check_citations(tex_path: str, bib_path: str) -> tuple[set[str], set[str], set[str]]:
+def read_tex_with_inputs(tex_path: str, visited: set = None) -> str:
+    r"""Recursively expand LaTeX \input{...} files to support modular SSOT tables and subdocuments."""
+    if visited is None:
+        visited = set()
+    tex_path = os.path.abspath(tex_path)
+    if tex_path in visited or not os.path.exists(tex_path):
+        return ""
+    visited.add(tex_path)
+
     with open(tex_path, "r", encoding="utf-8") as f:
-        tex_content = f.read()
+        content = f.read()
+
+    base_dir = os.path.dirname(tex_path)
+
+    def replacer(match):
+        rel = match.group(1).strip()
+        candidate = os.path.join(base_dir, rel if rel.endswith(".tex") else rel + ".tex")
+        if not os.path.exists(candidate):
+            candidate = os.path.join(base_dir, rel)
+        if os.path.exists(candidate):
+            return read_tex_with_inputs(candidate, visited)
+        return match.group(0)
+
+    return re.sub(r"\\input\{([^}]+)\}", replacer, content)
+
+
+def check_citations(tex_path: str, bib_path: str) -> tuple[set[str], set[str], set[str]]:
+    tex_content = read_tex_with_inputs(tex_path)
 
     with open(bib_path, "r", encoding="utf-8") as f:
         bib_content = f.read()
@@ -48,8 +73,7 @@ def check_citations(tex_path: str, bib_path: str) -> tuple[set[str], set[str], s
 
 
 def check_labels_and_refs(tex_path: str) -> tuple[set[str], set[str]]:
-    with open(tex_path, "r", encoding="utf-8") as f:
-        tex = f.read()
+    tex = read_tex_with_inputs(tex_path)
 
     labels = set(re.findall(r"\\label\{([^}]+)\}", tex))
     refs = set()
@@ -206,10 +230,18 @@ def verify_arxiv_ids(bib_path: str) -> list[tuple[str, str, bool, str]]:
 
 def main() -> int:
     workspace = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    tex_filename = sys.argv[1] if len(sys.argv) > 1 else "main.tex"
-    tex_path = os.path.join(workspace, "paper", tex_filename) if not os.path.isabs(tex_filename) else tex_filename
-    bib_path = os.path.join(workspace, "paper", "references.bib")
-    paper_dir = os.path.join(workspace, "paper")
+    tex_arg = sys.argv[1] if len(sys.argv) > 1 else "main.tex"
+    if os.path.isabs(tex_arg):
+        tex_path = tex_arg
+    elif os.path.exists(os.path.join(workspace, tex_arg)):
+        tex_path = os.path.join(workspace, tex_arg)
+    elif os.path.exists(os.path.join(workspace, "paper", tex_arg)):
+        tex_path = os.path.join(workspace, "paper", tex_arg)
+    else:
+        tex_path = os.path.join(workspace, "paper", tex_arg)
+
+    paper_dir = os.path.dirname(os.path.abspath(tex_path))
+    bib_path = os.path.join(paper_dir, "references.bib")
 
     print("=" * 70)
     print(f"  AUTOMATED LATEX PAPER & BIBTEX INTEGRITY VERIFIER: {os.path.basename(tex_path)}")

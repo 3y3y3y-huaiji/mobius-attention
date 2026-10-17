@@ -86,13 +86,14 @@ jobs:
           python-version: "3.11"
 
       - name: Install Paper Verification Tools
-        run: pip install arxiv-latex-cleaner bibtexparser
+        run: pip install arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate
 
       - name: Verify arXiv Cleaner Compliance (Google Research Tool)
         run: arxiv_latex_cleaner paper --keep_bib
 
       - name: Verify LaTeX Citations & Anti-Hallucination Audit
         run: |
+          python scripts/generate_paper_tables.py
           python scripts/check_paper_integrity.py main.tex
           python scripts/check_paper_integrity.py main_zh.tex
           python scripts/verify_paper_claims.py
