@@ -132,9 +132,9 @@
         "gain": "13.6x contrast improvement"
       },
       "neutral_text_perplexity": {
-        "standard_rope": 6.42,
-        "continuous_sg_mobius_ours": 6.42,
-        "degradation": "0.00% (Strictly zero false suppression on normal text)"
+        "standard_rope": 7.48,
+        "continuous_sg_mobius_ours": 7.48,
+        "degradation": "0.00% (Strictly zero false suppression on normal text, measured loss 2.0126)"
       }
     },
     "multi_length_scaling_and_latency": [

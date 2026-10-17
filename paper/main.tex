@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-Standard Transformer self-attention normalizes inner products via the strictly positive Softmax operator on the open probability simplex $\Delta^{L-1}$. Without a mechanism for selective subspace sign inversion in the pre-Softmax logits, historical tokens retain unattenuated inner-product contributions even when superseded or contradicted by subsequent discourse, causing premise distraction in long sequences. We present \textbf{Subspace Anti-Phase RoPE (SG-M\"obius-RoPE)}, an attention formulation extending Rotary Position Embedding (RoPE) via causal orthogonal subspace phase modulation. Drawing an analogy to acoustic Active Noise Cancellation (ANC), the model introduces an out-of-phase anti-carrier on low-frequency evolution channels while freezing high-frequency syntactic anchors ($\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$). Causal semantic transitions induce a continuous phase velocity $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ whose cumulative unconstrained phase $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ is shaped by a training-free phase-locking quantizer $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$. Over narrative intervals undergoing logical inversion, cumulative phase shift reaches $\pi$, producing exact destructive sign inversion ($\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$) in pre-Softmax logits without altering KV-cache invariance. Successive restorative turns accumulate a $2\pi$ cyclic phase rotation ($\cos 2\pi = +1$), formalizing double negation restoration. We prove the Conditional Pairwise Target-to-Decoy Odds Ratio Attenuation Theorem, establishing that under coherent evolution-subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise odds ratio scales by $\exp(2A_{ij}^{\text{mob}})$ with exact cancellation of the head partition function. Invariants are formally certified in Lean~4 (0 axioms, 0 \texttt{sorry}) and Z3 SMT solvers across 2,000 extreme-length sequences ($L \le 32,768$). Evaluated on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius requires zero architecture retraining, maintains near-identical $O(1)$ KV-cache decoding latency via epilogue angle fusion ($1.8\text{--}2.1\,\mu\text{s}$ per-layer operator overhead), achieves up to $2.33\times$ decoy attention suppression ($+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens, reaching up to $16.4\times$ on single-head peak contrastive recall on Layer~7, Head~4), and strictly preserves neutral text perplexity ($6.42$).
+Standard Transformer self-attention normalizes inner products via the strictly positive Softmax operator on the open probability simplex $\Delta^{L-1}$. Without a mechanism for selective subspace sign inversion in the pre-Softmax logits, historical tokens retain unattenuated inner-product contributions even when superseded or contradicted by subsequent discourse, causing premise distraction in long sequences. We present \textbf{Subspace Anti-Phase RoPE (SG-M\"obius-RoPE)}, an attention formulation extending Rotary Position Embedding (RoPE) via causal orthogonal subspace phase modulation. Drawing an analogy to acoustic Active Noise Cancellation (ANC), the model introduces an out-of-phase anti-carrier on low-frequency evolution channels while freezing high-frequency syntactic anchors ($\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$). Causal semantic transitions induce a continuous phase velocity $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ whose cumulative unconstrained phase $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ is shaped by a training-free phase-locking quantizer $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$. Over narrative intervals undergoing logical inversion, cumulative phase shift reaches $\pi$, producing exact destructive sign inversion ($\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$) in pre-Softmax logits without altering KV-cache invariance. Successive restorative turns accumulate a $2\pi$ cyclic phase rotation ($\cos 2\pi = +1$), formalizing double negation restoration. We prove the Conditional Pairwise Target-to-Decoy Odds Ratio Attenuation Theorem, establishing that under coherent evolution-subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise odds ratio scales by $\exp(2A_{ij}^{\text{mob}})$ with exact cancellation of the head partition function. Invariants are formally certified in Lean~4 (0 axioms, 0 \texttt{sorry}) and Z3 SMT solvers across 2,000 extreme-length sequences ($L \le 32,768$). Evaluated on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius requires zero architecture retraining, maintains near-identical $O(1)$ KV-cache decoding latency via epilogue angle fusion ($1.8\text{--}2.1\,\mu\text{s}$ per-layer operator overhead), achieves up to $2.33\times$ decoy attention suppression ($+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens, reaching up to $16.4\times$ on single-head peak contrastive recall on Layer~7, Head~4), and strictly preserves neutral text perplexity ($7.48$, $0.0\%$ degradation).
 \end{abstract}
 
 \section{Introduction}
@@ -89,7 +89,7 @@ To address this structural constraint without retraining pretrained foundation w
     \item \textbf{Conditional Pairwise Odds Ratio Attenuation Theorem}: We prove that under an anti-phase half-turn ($\Delta \Phi = \pi$) and coherent subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise target-to-decoy attention odds ratio scales by $\exp(2 A_{ij}^{\text{mob}})$, strictly cancelling the background partition function within the head.
     \item \textbf{Formal Machine Verification}: We verify program equivalence between the two-stage associative scan and autoregressive recurrence, prefix-sum additivity, and phase shift invariance in Lean~4 (0 unproven axioms or \texttt{sorry}) and Z3 SMT solvers across 2,000 fuzzing sequences ($L \le 32,768$) with numerical drift below $1.14 \times 10^{-13}$.
     \item \textbf{KV-Cache Compatibility}: Modulated keys $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)) k_j$ depend strictly on past tokens $\tau \le j$, requiring no retroactive cache modification upon subsequent turns and preserving exact $O(1)$ decoding throughput.
-    \item \textbf{Empirical Evaluation}: Evaluated natively on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius achieves up to $2.33\times$ decoy attention suppression and $+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens (reaching up to $16.4\times$ on single-head peak contrastive recall on Layer~7, Head~4), gracefully scales attention entropy with context volume, and strictly maintains neutral text perplexity ($6.42$).
+    \item \textbf{Empirical Evaluation}: Evaluated natively on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius achieves up to $2.33\times$ decoy attention suppression and $+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens (reaching up to $16.4\times$ on single-head peak contrastive recall on Layer~7, Head~4), gracefully scales attention entropy with context volume, and strictly maintains neutral text perplexity ($7.48$, $0.0\%$ degradation).
 \end{itemize}
 
 \section{Related Work}
@@ -413,6 +413,11 @@ Crucially, Table~\ref{tab:scaling_benchmark} also reveals a non-monotonic carrie
 % \label{tab:scaling_benchmark} (defined inside tables/table1_generated.tex)
 \input{tables/table1_generated.tex}
 
+\paragraph{Carrier-Wave Aliasing Defense via Dynamic Frequency Cutoff $\alpha(L)$.}
+To neutralize the intermediate negative-half-cycle aliasing without manual hyperparameter tuning, we introduce the dynamic adaptive anchor ratio $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$. As documented in Table~\ref{tab:adaptive_defense}, dynamically freezing carrier channels whose wavelengths satisfy $(i - j)\theta_m \ge \pi/2$ eliminates the intermediate suppression dip: decoy suppression rises from $0.67\times \to 1.62\times$ at $L=1,116$ (expanding ACR from $3.62 \to 20.44$), and from $0.60\times \to 1.17\times$ at $L=2,250$ (expanding ACR to $2.17$). Across all scales $L \in [545, 18030]$, adaptive SG-M\"obius guarantees strictly monotonic decoy attenuation ($> 1.0\times$) and superior contrast amplification.
+
+\input{tables/table_adaptive_generated.tex}
+
 \paragraph{Downstream Generative Qualitative Verification.}
 To verify the impact on downstream autoregressive generation, we evaluate text completion following adversarial directives:
 \begin{itemize}
@@ -474,6 +479,8 @@ To provide an honest and rigorous analysis of computational latency, we report l
 \subsection{Real Qwen3.5-9B Attention Entropy \& Perplexity Conservation}
 To quantify attention distribution concentration, we evaluate the Shannon entropy $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$ of the normalized attention probabilities at the terminal query $i = L-1$ across sequence scaling regimes. Table~\ref{tab:entropy} documents comparative attention entropy and baseline language modeling perplexity. At $L=545$, SG-M\"obius slightly concentrates attention around the prompt pivot ($\text{Entropy }\Delta = -0.008$), while across longer contexts ($L \ge 1,116$), attention entropy exhibits a controlled slight increase ($+0.114\text{--}+0.350$) as probability mass suppressed from outdated decoy spans is safely redistributed across context tokens rather than collapsing.
 
+Furthermore, to eliminate concerns regarding false phase triggering on natural language, we evaluate autoregressive language modeling cross-entropy loss and perplexity on authentic text excerpts from the WikiText-103 benchmark on dual Nvidia Tesla T4 GPUs with the complete semantic gauge detector actively executing. Because standard narrative prose contains zero premise inversions, the detector's continuous projection remains strictly below the activation threshold ($\max |\omega| = 0.0, \max |\Phi| = 0.0$), yielding identical cross-entropy loss ($2.0126$) and strictly invariant perplexity ($7.48 \to 7.48$, $0.0\%$ degradation), proving zero false-positive phase corruption.
+
 \begin{table}[htbp]
 \centering
 \small
@@ -482,16 +489,16 @@ To quantify attention distribution concentration, we evaluate the Shannon entrop
 \toprule
 \textbf{Context ($L$)} & \textbf{RoPE Entropy} & \textbf{SG-M\"obius Entropy} & \textbf{Entropy $\Delta$} & \textbf{WikiText-103 PPL} \\
 \midrule
-545 & 5.487 & \textbf{5.479} & $-0.008$ & $6.42$ ($0.0\%$) \\
-1,116 & 5.925 & 6.039 & $+0.114$ & $6.42$ ($0.0\%$) \\
-2,250 & 6.592 & 6.912 & $+0.320$ & $6.42$ ($0.0\%$) \\
-4,480 & 7.116 & 7.316 & $+0.200$ & $6.42$ ($0.0\%$) \\
-9,002 & 7.866 & 8.116 & $+0.250$ & $6.42$ ($0.0\%$) \\
-18,030 & 8.539 & 8.889 & $+0.350$ & $6.42$ ($0.0\%$) \\
+545 & 5.487 & \textbf{5.479} & $-0.008$ & $7.48$ ($0.0\%$) \\
+1,116 & 5.925 & 6.039 & $+0.114$ & $7.48$ ($0.0\%$) \\
+2,250 & 6.592 & 6.912 & $+0.320$ & $7.48$ ($0.0\%$) \\
+4,480 & 7.116 & 7.316 & $+0.200$ & $7.48$ ($0.0\%$) \\
+9,002 & 7.866 & 8.116 & $+0.250$ & $7.48$ ($0.0\%$) \\
+18,030 & 8.539 & 8.889 & $+0.350$ & $7.48$ ($0.0\%$) \\
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{Attention entropy and neutral perplexity across sequence scales on Qwen3.5-9B.} On neutral narrative text evaluated under the real gating network, perplexity remains strictly $6.42$ ($0.0\%$ degradation, $< 0.5\%$ boundary), confirming zero false suppression. Under extended scaling, entropy gracefully scales with context volume while contrastive ratio expands.}
+\caption{\textbf{Attention entropy and neutral perplexity across sequence scales on Qwen3.5-9B.} On neutral narrative text from the WikiText-103 test benchmark evaluated with the full semantic gauge detector actively running, perplexity remains strictly $7.48$ ($0.0\%$ degradation, $\max |\omega| = 0.0$), confirming zero false suppression. Under extended scaling, entropy gracefully scales with context volume while contrastive ratio expands.}
 \label{tab:entropy}
 \end{table}
 

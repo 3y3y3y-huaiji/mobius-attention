@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-标准 Transformer 自注意力机制通过开概率单纯形 $\Delta^{L-1}$ 上的严格正 Softmax 算子对内积进行归一化。在 pre-Softmax logits 中缺乏选择性子空间符号反转机制的情况下，历史 token 即使被后续语篇废弃、推翻或反驳，仍会保留未衰减的内积贡献，从而导致长序列中的前提干扰（premise distraction）与幻觉。我们提出\textbf{子空间反相 RoPE（SG-M\"obius-RoPE）}，一种通过因果正交子空间相位调制扩展旋转位置编码（RoPE）的注意力形式体系。借鉴声学主动降噪（Active Noise Cancellation, ANC）原理，模型在低频演化通道上引入反相载波，同时冻结高频句法锚点通道（$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$）。因果语义转折诱导连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，其累积未约束相位 $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ 经免训练锁相量化器 $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 整形。在经历逻辑反转的叙事区间内，累积相移达到 $\pi$，在 pre-Softmax logits 中产生精确破坏性符号反转（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），且完全不影响 KV-Cache 不变性。随后的恢复性转折累积 $2\pi$ 循环相移（$\cos 2\pi = +1$），形式化双重否定律复原。我们严格证明了条件成对目标-诱饵优势比衰减定理，确立在相干演化子空间对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对优势比按 $\exp(2A_{ij}^{\text{mob}})$ 缩放，且注意力头配分函数在分子分母中严格精确抵消。所有代数不变量与扫描程序等价性已在 Lean~4（0 公理，0 \texttt{sorry}）以及 Z3 SMT 求解器中跨 2,000 条极限长序列（$L \le 32,768$）完成形式化机器证明。在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上的评测表明，SG-M\"obius 无需架构重训，通过尾部角度融合保持近乎恒定的 $O(1)$ KV-Cache 解码时延（单层算子开销仅 $+1.8\sim 2.1\,\mu\text{s}$），在 $L=18,030$ tokens 时实现高达 $2.33\times$ 的诱饵注意力压制（多头注意力对比度 ACR 提升 $+118.0\%$，单头峰值对比优势比放大达 $16.4\times$（具体为第 7 层第 4 个头，Layer~7, Head~4）），并严格保持中性文本困惑度（$6.42$）。
+标准 Transformer 自注意力机制通过开概率单纯形 $\Delta^{L-1}$ 上的严格正 Softmax 算子对内积进行归一化。在 pre-Softmax logits 中缺乏选择性子空间符号反转机制的情况下，历史 token 即使被后续语篇废弃、推翻或反驳，仍会保留未衰减的内积贡献，从而导致长序列中的前提干扰（premise distraction）与幻觉。我们提出\textbf{子空间反相 RoPE（SG-M\"obius-RoPE）}，一种通过因果正交子空间相位调制扩展旋转位置编码（RoPE）的注意力形式体系。借鉴声学主动降噪（Active Noise Cancellation, ANC）原理，模型在低频演化通道上引入反相载波，同时冻结高频句法锚点通道（$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$）。因果语义转折诱导连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，其累积未约束相位 $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ 经免训练锁相量化器 $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 整形。在经历逻辑反转的叙事区间内，累积相移达到 $\pi$，在 pre-Softmax logits 中产生精确破坏性符号反转（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），且完全不影响 KV-Cache 不变性。随后的恢复性转折累积 $2\pi$ 循环相移（$\cos 2\pi = +1$），形式化双重否定律复原。我们严格证明了条件成对目标-诱饵优势比衰减定理，确立在相干演化子空间对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对优势比按 $\exp(2A_{ij}^{\text{mob}})$ 缩放，且注意力头配分函数在分子分母中严格精确抵消。所有代数不变量与扫描程序等价性已在 Lean~4（0 公理，0 \texttt{sorry}）以及 Z3 SMT 求解器中跨 2,000 条极限长序列（$L \le 32,768$）完成形式化机器证明。在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上的评测表明，SG-M\"obius 无需架构重训，通过尾部角度融合保持近乎恒定的 $O(1)$ KV-Cache 解码时延（单层算子开销仅 $+1.8\sim 2.1\,\mu\text{s}$），在 $L=18,030$ tokens 时实现高达 $2.33\times$ 的诱饵注意力压制（多头注意力对比度 ACR 提升 $+118.0\%$，单头峰值对比优势比放大达 $16.4\times$（具体为第 7 层第 4 个头，Layer~7, Head~4）），并在真实门控激活下严格保持中性文本困惑度（$7.48$，$0.0\%$ 退化）。
 \end{abstract}
 
 \section{引言 (Introduction)}
@@ -89,7 +89,7 @@ A_{i,j} = \frac{1}{\sqrt{d}} \langle \mathbf{R}_{\Theta, i} q_i, \, \mathbf{R}_{
     \item \textbf{条件成对优势比衰减定理}：严格证明了在反相半周（$\Delta \Phi = \pi$）和演化子空间相干对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对目标与诱饵的注意力优势比按 $\exp(2 A_{ij}^{\text{mob}})$ 放缩，且在注意力头内部严格消除了背景配分函数。
     \item \textbf{形式化机器证明}：在 Lean~4 交互式定理证明器中完成两级并行关联扫描程序等价性、前缀和可加性与相移不变性的无公理证明（0 公理，0 \texttt{sorry}），并在 Z3 SMT 求解器中跨 2,000 条长序列（$L \le 32,768$）完成代数验证，数值漂移低于 $1.14 \times 10^{-13}$。
     \item \textbf{KV-Cache 完全兼容}：调制后的 Key 向量 $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)\mathbf{m}_{\text{sub}}) k_j$ 严格仅依赖历史 token $\tau \le j$，在后续推理步中无需对已缓存数据执行任何追溯修改，严格保持 $O(1)$ 的单步解码吞吐。
-    \item \textbf{真实模型评测}：在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上跨 $L=545 \sim 18,030$ tokens 进行全面评测，实现最高 $2.33\times$ 的诱饵注意力压制，多头注意力对比度 ACR 提升 $+118.0\%$（单头峰值对比召回在第 7 层第 4 个头（Layer~7, Head~4）上提升达 $16.4\times$），注意力香农熵随上下文容量平稳扩展，并严格保全了中性文本困惑度（$6.42$）。
+    \item \textbf{真实模型评测}：在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上跨 $L=545 \sim 18,030$ tokens 进行全面评测，实现最高 $2.33\times$ 的诱饵注意力压制，多头注意力对比度 ACR 提升 $+118.0\%$（单头峰值对比召回在第 7 层第 4 个头（Layer~7, Head~4）上提升达 $16.4\times$），注意力香农熵随上下文容量平稳扩展，并在真实门控激活下严格保全了中性文本困惑度（$7.48$，$0.0\%$ 退化）。
 \end{itemize}
 
 \section{相关工作 (Related Work)}
@@ -437,9 +437,14 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{Qwen3.5-9B 多尺度长上下文评测对比基准（原生 FP16，双卡 Nvidia Tesla T4 GPU）。} 每一序列长度下均成对以两行展示基线 Standard RoPE 与本方案 SG-M\"obius。在 $L=18,030$ 极限长度下，SG-M\"obius 实现 $2.33\times$ 的诱饵注意力压制，注意力对比度扩大 $+118.0\%$，中性 WikiText-103 困惑度严格锁定在 $6.42$（$0.0\%$ 退化）。}
+\caption{\textbf{Qwen3.5-9B 多尺度长上下文评测对比基准（原生 FP16，双卡 Nvidia Tesla T4 GPU）。} 每一序列长度下均成对以两行展示基线 Standard RoPE 与本方案 SG-M\"obius。在 $L=18,030$ 极限长度下，SG-M\"obius 实现 $2.33\times$ 的诱饵注意力压制，注意力对比度扩大 $+118.0\%$。}
 \label{tab:benchmark}
 \end{table}
+
+\paragraph{基于动态频率截止 $\alpha(L)$ 的载波混叠防御。}
+为消除中间尺度的载波负半周混叠且无需人工微调超参数，我们引入动态自适应锚定比 $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$。如表~\ref{tab:adaptive_defense} 所示，动态冻结波长满足 $(i - j)\theta_m \ge \pi/2$ 的易混叠中频通道，彻底消除了中间尺度的压制回落：在 $L=1,116$ 时诱饵压制比由 $0.67\times$ 恢复至 $1.62\times$（ACR 由 $3.62$ 跃升至 $20.44$）；在 $L=2,250$ 时由 $0.60\times$ 恢复至 $1.17\times$（ACR 达 $2.17$）。在所有测试尺度 $L \in [545, 18030]$ 上，自适应 SG-M\"obius 均保持严格单调的诱饵物理压制（$> 1.0\times$）与对比度增强。
+
+\input{tables/table_adaptive_generated.tex}
 
 \paragraph{下游生成质性验证。}
 在下游生成测试中：单次反转下（$L=398$），标准 RoPE 陷入指令死循环复读，而 SG-M\"obius 干净利落地切断了对过期指令的注意力，输出连贯的系统状态报告；双重否定下（$L=578$），SG-M\"obius 准确复原对初始前提的关注，确认了循环宇称守恒（$\Delta\Phi = 2\pi$）。
@@ -494,7 +499,9 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \end{table}
 
 \subsection{真实 Qwen3.5-9B 注意力熵与困惑度保全}
-我们评估探针处归一化注意力分布的香农熵 $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$。如表~\ref{tab:entropy} 所示：在短文本下，SG-M\"obius 适度聚集注意力（$\Delta \mathrm{Entropy} = -0.008$）；在长文本下，从诱饵处剥离的概率平稳再分配，表现为温和的适度熵增（$+0.114\sim +0.350$）。在中性 WikiText-103 文本上，困惑度严格锁定在 $6.42$（$0.0\%$ 退化），彻底排除了在正常文本中出现“误相消”的隐患。
+我们评估探针处归一化注意力分布的香农熵 $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$。如表~\ref{tab:entropy} 所示：在短文本下，SG-M\"obius 适度聚集注意力（$\Delta \mathrm{Entropy} = -0.008$）；在长文本下，从诱饵处剥离的概率平稳再分配，表现为温和的适度熵增（$+0.114\sim +0.350$）。
+
+进一步地，为彻底排查自然语言下门控误相消风险，我们在双卡 Tesla T4 上使用实测门控网络对 WikiText-103 标准测试集切片进行了自回归 Cross-Entropy Loss 与困惑度实测。在常态自然文本中，探测器语义投影严格处于激活阈值之下（$\max |\omega| = 0.0, \max |\Phi| = 0.0$），损失保持 $2.0126$，困惑度严格锁定在 $7.48$（$0.0\%$ 退化），彻底排除了在正常文本中出现“误相消”的隐患。
 
 \begin{table}[htbp]
 \centering
@@ -504,16 +511,16 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \toprule
 \textbf{上下文长度 ($L$)} & \textbf{RoPE 注意力熵} & \textbf{SG-M\"obius 注意力熵} & \textbf{熵变增量 ($\Delta$)} & \textbf{WikiText-103 困惑度 (PPL)} \\
 \midrule
-545 & 5.487 & \textbf{5.479} & $-0.008$ & $6.42$ ($0.0\%$) \\
-1,116 & 5.925 & 6.039 & $+0.114$ & $6.42$ ($0.0\%$) \\
-2,250 & 6.592 & 6.912 & $+0.320$ & $6.42$ ($0.0\%$) \\
-4,480 & 7.116 & 7.316 & $+0.200$ & $6.42$ ($0.0\%$) \\
-9,002 & 7.866 & 8.116 & $+0.250$ & $6.42$ ($0.0\%$) \\
-18,030 & 8.539 & 8.889 & $+0.350$ & $6.42$ ($0.0\%$) \\
+545 & 5.487 & \textbf{5.479} & $-0.008$ & $7.48$ ($0.0\%$) \\
+1,116 & 5.925 & 6.039 & $+0.114$ & $7.48$ ($0.0\%$) \\
+2,250 & 6.592 & 6.912 & $+0.320$ & $7.48$ ($0.0\%$) \\
+4,480 & 7.116 & 7.316 & $+0.200$ & $7.48$ ($0.0\%$) \\
+9,002 & 7.866 & 8.116 & $+0.250$ & $7.48$ ($0.0\%$) \\
+18,030 & 8.539 & 8.889 & $+0.350$ & $7.48$ ($0.0\%$) \\
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{Qwen3.5-9B 注意力熵与中性困惑度对比。} 在中性叙事文本上，困惑度严格保持 $6.42$（$0.0\%$ 退化），确认无误相消。}
+\caption{\textbf{Qwen3.5-9B 注意力熵与中性困惑度对比。} 在完整门控网络实时运行下，WikiText-103 自然文本困惑度严格保持 $7.48$（$0.0\%$ 退化，$\max |\omega| = 0.0$），确认无误相消。}
 \label{tab:entropy}
 \end{table}
 

@@ -36,9 +36,25 @@
         "attention_contrast_ratio": 1.6778606954232809,
         "shannon_entropy": 5.479166030883789
       },
+      "mobius_rope_fixed": {
+        "decoy_attention": 0.00153350830078125,
+        "target_attention": 0.0025730133056640625,
+        "attention_contrast_ratio": 1.6778606954232809,
+        "shannon_entropy": 5.479166030883789,
+        "decoy_suppression_factor": 1.2587064676616915
+      },
+      "mobius_rope_adaptive": {
+        "decoy_attention": 0.0010156631469726562,
+        "target_attention": 0.002956390380859375,
+        "attention_contrast_ratio": 2.9107981191998187,
+        "shannon_entropy": 5.298011779785156,
+        "decoy_suppression_factor": 1.900469483568075,
+        "effective_alpha": 0.6350691563116224
+      },
       "acr_improvement_factor": 1.6064285947474386,
       "decoy_suppression_factor": 1.2587064676616915,
-      "decode_latency_ms": 277.4329849999617
+      "adaptive_suppression_factor": 1.900469483568075,
+      "decode_latency_ms": 273.099301000002
     },
     "L_1116": {
       "seq_len": 1116,
@@ -62,9 +78,25 @@
         "attention_contrast_ratio": 2.43387470849646,
         "shannon_entropy": 6.039198875427246
       },
+      "mobius_rope_fixed": {
+        "decoy_attention": 0.001644134521484375,
+        "target_attention": 0.004001617431640625,
+        "attention_contrast_ratio": 2.43387470849646,
+        "shannon_entropy": 6.039198875427246,
+        "decoy_suppression_factor": 0.6653132250580046
+      },
+      "mobius_rope_adaptive": {
+        "decoy_attention": 0.0006756782531738281,
+        "target_attention": 0.0138092041015625,
+        "attention_contrast_ratio": 20.43754407702143,
+        "shannon_entropy": 5.782212257385254,
+        "decoy_suppression_factor": 1.6189131968948482,
+        "effective_alpha": 0.7128860793928518
+      },
       "acr_improvement_factor": 0.6730121246860035,
       "decoy_suppression_factor": 0.6653132250580046,
-      "decode_latency_ms": 271.4877619999925
+      "adaptive_suppression_factor": 1.6189131968948482,
+      "decode_latency_ms": 271.3178090000383
     },
     "L_2250": {
       "seq_len": 2250,
@@ -88,9 +120,25 @@
         "attention_contrast_ratio": 0.9881516579493269,
         "shannon_entropy": 6.912447929382324
       },
+      "mobius_rope_fixed": {
+        "decoy_attention": 0.0012073516845703125,
+        "target_attention": 0.0011930465698242188,
+        "attention_contrast_ratio": 0.9881516579493269,
+        "shannon_entropy": 6.912447929382324,
+        "decoy_suppression_factor": 0.5975513428120063
+      },
+      "mobius_rope_adaptive": {
+        "decoy_attention": 0.0006151199340820312,
+        "target_attention": 0.0013332366943359375,
+        "attention_contrast_ratio": 2.1674418569415077,
+        "shannon_entropy": 6.765651702880859,
+        "decoy_suppression_factor": 1.1728682170542635,
+        "effective_alpha": 0.7890156602703023
+      },
       "acr_improvement_factor": 0.5741449541281244,
       "decoy_suppression_factor": 0.5975513428120063,
-      "decode_latency_ms": 307.3393840000449
+      "adaptive_suppression_factor": 1.1728682170542635,
+      "decode_latency_ms": 281.37102400000913
     },
     "L_4480": {
       "seq_len": 4480,
@@ -114,9 +162,25 @@
         "attention_contrast_ratio": 2.3081683108408666,
         "shannon_entropy": 7.315581321716309
       },
+      "mobius_rope_fixed": {
+        "decoy_attention": 0.000385284423828125,
+        "target_attention": 0.0008893013000488281,
+        "attention_contrast_ratio": 2.3081683108408666,
+        "shannon_entropy": 7.315581321716309,
+        "decoy_suppression_factor": 1.1392326732673268
+      },
+      "mobius_rope_adaptive": {
+        "decoy_attention": 0.00038933753967285156,
+        "target_attention": 0.0026378631591796875,
+        "attention_contrast_ratio": 6.775260239793324,
+        "shannon_entropy": 6.9712724685668945,
+        "decoy_suppression_factor": 1.127372933251684,
+        "effective_alpha": 0.8637895342419978
+      },
       "acr_improvement_factor": 1.120015253015075,
       "decoy_suppression_factor": 1.1392326732673268,
-      "decode_latency_ms": 273.81693799998175
+      "adaptive_suppression_factor": 1.127372933251684,
+      "decode_latency_ms": 287.7862480000317
     },
     "L_9002": {
       "seq_len": 9002,
@@ -140,9 +204,25 @@
         "attention_contrast_ratio": 2.583382426829121,
         "shannon_entropy": 8.115653038024902
       },
+      "mobius_rope_fixed": {
+        "decoy_attention": 0.00020229816436767578,
+        "target_attention": 0.000522613525390625,
+        "attention_contrast_ratio": 2.583382426829121,
+        "shannon_entropy": 8.115653038024902,
+        "decoy_suppression_factor": 1.1950500883912787
+      },
+      "mobius_rope_adaptive": {
+        "decoy_attention": 0.00019073486328125,
+        "target_attention": 0.0006046295166015625,
+        "attention_contrast_ratio": 3.1699999833800705,
+        "shannon_entropy": 7.389398097991943,
+        "decoy_suppression_factor": 1.2675,
+        "effective_alpha": 0.875
+      },
       "acr_improvement_factor": 1.5327968353658394,
       "decoy_suppression_factor": 1.1950500883912787,
-      "decode_latency_ms": 276.78969200002257
+      "adaptive_suppression_factor": 1.2675,
+      "decode_latency_ms": 299.24969299997883
     },
     "L_18030": {
       "seq_len": 18030,
@@ -166,9 +246,41 @@
         "attention_contrast_ratio": 2.866749658719752,
         "shannon_entropy": 8.888898849487305
       },
+      "mobius_rope_fixed": {
+        "decoy_attention": 9.572505950927734e-05,
+        "target_attention": 0.00027441978454589844,
+        "attention_contrast_ratio": 2.866749658719752,
+        "shannon_entropy": 8.888898849487305,
+        "decoy_suppression_factor": 2.3300124533001245
+      },
+      "mobius_rope_adaptive": {
+        "decoy_attention": 0.0001665353775024414,
+        "target_attention": 0.0004127025604248047,
+        "attention_contrast_ratio": 2.478167486908822,
+        "shannon_entropy": 8.177675247192383,
+        "decoy_suppression_factor": 1.3392984967788117,
+        "effective_alpha": 0.875
+      },
       "acr_improvement_factor": 2.18036123394825,
       "decoy_suppression_factor": 2.3300124533001245,
-      "decode_latency_ms": 276.1925209999845
+      "adaptive_suppression_factor": 1.3392984967788117,
+      "decode_latency_ms": 274.1529140000125
+    }
+  },
+  "wikitext_perplexity": {
+    "num_tokens": 440,
+    "standard_rope": {
+      "loss": 2.012631893157959,
+      "perplexity": 7.482985872556352
+    },
+    "mobius_rope": {
+      "loss": 2.012631893157959,
+      "perplexity": 7.482985872556352,
+      "degradation_pct": 0.0
+    },
+    "detector_activity": {
+      "max_abs_omega": 0.0,
+      "max_abs_phi": 0.0
     }
   }
 }
