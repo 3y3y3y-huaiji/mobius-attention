@@ -116,34 +116,13 @@ jobs:
           working_directory: paper
           args: "-xelatex -file-line-error -interaction=nonstopmode"
 
-      - name: Package Paper Bundle & Chinese Documents into Zip
-        run: |
-          mkdir -p paper-bundle
-          cp paper/main.pdf paper-bundle/ 2>/dev/null || true
-          cp paper/main_zh.pdf paper-bundle/ 2>/dev/null || true
-          cp paper/main.tex paper-bundle/
-          cp paper/main_zh.tex paper-bundle/
-          cp paper/PAPER_ZH.md paper-bundle/
-          cp paper/references.bib paper-bundle/
-          cp README_zh.md paper-bundle/
-          cp -r paper/figures paper-bundle/
-          cd paper-bundle && zip -r ../paper-bundle.zip . && cd ..
-
-      - name: Archive Compiled Preprint PDF
+      - name: Archive Compiled Preprint PDFs (English & Chinese)
         uses: actions/upload-artifact@v6
         with:
           name: paper-pdf
-          path: paper/main.pdf
-
-      - name: Archive Paper Bundle & Chinese Documents
-        uses: actions/upload-artifact@v6
-        with:
-          name: paper-bundle
           path: |
-            paper-bundle.zip
-            paper/PAPER_ZH.md
-            paper/main_zh.tex
-            README_zh.md
+            paper/main.pdf
+            paper/main_zh.pdf
 
   tests:
     name: Test Suite & Formal Verification
