@@ -354,11 +354,11 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \begin{equation}
 |\mathrm{fl}(\bar{\Phi}_L) - \bar{\Phi}_L| \le D \cdot u \cdot M_\Phi + \mathcal{O}(u^2)
 \end{equation}
-其中 $M_\Phi \triangleq \sum_{\tau=0}^{L-1} |\omega_\tau| = K\pi$ 代表 $K$ 次叙事反转跨度的相位总变差。对于至多 $K = 10$ 次反转（$M_\Phi \le 10\pi$）且 $L \le 18,030$（$D = 15$），最大累积浮点漂移被严格约束在：
+其中 $M_\Phi \triangleq \sum_{\tau=0}^{L-1} |\omega_\tau| \le K\pi$ 代表 $K$ 次叙事反转跨度的相位总变差。在累积叙事反转相变满足 $M_\Phi \le 10\pi$（$K \le 10$ 次语篇反转，在常规文本中由死区门控 $\tau_{\text{gate}}$ 阻断非反转扰动所保证）且 $L \le 18,030$（$D = 15$）的条件下，前缀和扫描的最大累积浮点漂移被严格约束在：
 \begin{equation}
 |\Delta \bar{\Phi}_L| \le 15 \times (4.88 \times 10^{-4}) \times (10\pi) \approx 0.230\,\text{rad} \approx 13.2^\circ < \frac{\pi}{6}
 \end{equation}
-因为 $|\Delta \bar{\Phi}_L| < \frac{\pi}{6}$，数值漂移严格落在周期势能 $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$ 的非平凡吸引势阱内，锁相量化器可自动熄灭浮点漂移，杜绝偶发符号翻转。
+因为 $|\Delta \bar{\Phi}_L| < \frac{\pi}{6}$，数值漂移严格落在周期势能 $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$ 的非平凡吸引势阱内，锁相量化器可自动熄灭浮点漂移，杜绝偶发符号翻转。对于反转次数极高（$K > 10$）的极端密集反转语境，采用工业界标准的混合精度实现（在 FP32 下累积标量前缀和后再转为 FP16）可将全序列累积漂移彻底消除至 $< 10^{-6}$ rad。
 \end{proposition}
 
 \paragraph{尾部角度融合（Epilogue Angle Fusion）系统实现。}

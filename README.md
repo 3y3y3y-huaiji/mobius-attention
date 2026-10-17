@@ -7,7 +7,7 @@
 [![Formal Proof: Lean 4](https://img.shields.io/badge/Formal%20Proof-Lean%204%20(9%20Theorems)-purple.svg)](formal_verification/MobiusAttention.lean)
 [![SMT Proof: Z3](https://img.shields.io/badge/Z3%20SMT-Universal%20UNSAT-darkgreen.svg)](formal_verification/verify_properties.py)
 [![Invariant Fuzzing](https://img.shields.io/badge/Property%20Fuzzing-2%2C000%2F2%2C000%20(100%25)-success.svg)](formal_verification/verify_properties.py)
-[![Test Suite](https://img.shields.io/badge/Tests-404%2F404%20Passed-success.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-407%2F407%20Passed-success.svg)](tests/)
 [![Model Target: Qwen3.5-9B](https://img.shields.io/badge/Verified%20Model-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![Hardware: Dual Nvidia T4](https://img.shields.io/badge/Evaluated%20On-Dual%20Nvidia%20T4%20(FP16)-green.svg)](experiments/)
 [![Preprint: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
@@ -456,15 +456,15 @@ python formal_verification/verify_properties.py
 
 ```bash
 pytest -n auto -q
-# Output: 404 passed in 31s
+# Output: 407 passed in 25s
 ```
 
-The comprehensive 404-test suite covers:
+The comprehensive 407-test suite covers:
 - **Tier 1 (Features, 60 tests)**: `SGMobiusRotaryEmbedding`, `HysteresisSemanticGaugePredictor`, 2D planar rotation via angle addition, 50% anchor / 50% evolution subspace decoupling, 1D viscous EMA diffusion, phase-locking attractor, in-place patching, and mathematical parity.
 - **Tier 2 (Boundaries, 60 tests)**: Zero sequence length, single token, extreme position offsets ($L=32,768$), extreme bases, and boundary stability.
 - **Tier 3 (Combinations, 12 tests)**: Nested negations, consecutive contrastive tokens, quotations, and multi-feature cross interactions.
 - **Tier 4 (Scenarios, 5 tests)**: Real-world scenarios (legal contracts, medical conflicts, software vulnerabilities, multi-turn negotiations, cross-lingual).
-- **Adversarial, Numerical Robustness & Decoding Equivalence (267 tests)**: Cross-architecture compatibility (Qwen, Llama, Mistral), strict $\mathcal{O}(1)$ KV-cache linearity invariance, session-level $\alpha(L_{\max})$ budget immutability, long-context Inverted NIAH, Lipschitz gradient bounds, and machine-precision prefill/decoding equivalence ($< 10^{-14}$).
+- **Adversarial, Numerical Robustness & Decoding Equivalence (270 tests)**: Cross-architecture compatibility (Qwen, Llama, Mistral), strict $\mathcal{O}(1)$ KV-cache linearity invariance, session-level $\alpha(L_{\max})$ budget immutability, long-context Inverted NIAH, Lipschitz gradient bounds, Definition 1 gated softsign discourse dynamics, and machine-precision prefill/decoding equivalence ($< 10^{-12}$).
 
 ---
 
@@ -648,11 +648,11 @@ python experiments/run_comprehensive_benchmark.py
 # Theorem 3 (Lipschitz Bound), and Theorem 4 (Flatness Conservation).
 ```
 
-#### Path 2: Full 404-Test Regression & Robustness Suite
+#### Path 2: Full 407-Test Regression & Robustness Suite
 
 ```bash
 pytest -n auto -v
-# Executes all 404 unit and property tests across 4 tiers in under 35 seconds
+# Executes all 407 unit and property tests across 4 tiers in under 30 seconds
 ```
 
 #### Path 3: Formal Mathematical Verification (Lean 4 & Z3 SMT)

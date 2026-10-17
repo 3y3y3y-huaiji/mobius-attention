@@ -7,7 +7,7 @@
 [![形式化证明: Lean 4](https://img.shields.io/badge/形式化证明-Lean%204%20(9大核心定理)-purple.svg)](formal_verification/MobiusAttention.lean)
 [![SMT 验证: Z3](https://img.shields.io/badge/Z3%20SMT-全局普遍%20UNSAT-darkgreen.svg)](formal_verification/verify_properties.py)
 [![不变性模糊测试](https://img.shields.io/badge/性质模糊测试-2%2C000%2F2%2C000%20(100%25)-success.svg)](formal_verification/verify_properties.py)
-[![测试套件](https://img.shields.io/badge/测试-404%2F404%20全通过-success.svg)](tests/)
+[![测试套件](https://img.shields.io/badge/测试-407%2F407%20全通过-success.svg)](tests/)
 [![实测验证模型: Qwen3.5-9B](https://img.shields.io/badge/实测模型-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![实测硬件: 双路 Nvidia T4](https://img.shields.io/badge/实测硬件-双路%20Nvidia%20T4%20(原生%20FP16)-green.svg)](experiments/)
 [![预印本: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
@@ -450,15 +450,15 @@ python formal_verification/verify_properties.py
 
 ```bash
 pytest -n auto -q
-# 输出: 404 passed in 31s
+# 输出: 407 passed in 25s
 ```
 
-全方位 404 项测试套件严密覆盖：
+全方位 407 项测试套件严密覆盖：
 - **第一层 (核心功能特性，60 项测试)**：`SGMobiusRotaryEmbedding`、`HysteresisSemanticGaugePredictor`、基于三角和角公式的 2D 平面旋转、50% 结构锚点 / 50% 连续演化子空间解耦、1D 粘性 EMA 扩散平滑、锁相环自平衡吸引子、原地热替换注入与代数宇称等价性。
 - **第二层 (极端边界条件，60 项测试)**：零长度空序列、单 Token、超大位置偏移 ($L=32,768$)、极端基频底数与算子边界数值稳定性。
 - **第三层 (复杂组合对抗，12 项测试)**：多重嵌套逻辑否定、连续反转连词、引号内转折屏蔽与跨特性交叉复合测试。
 - **第四层 (真实业务场景，5 项测试)**：长文本法律合同条款撤销、医疗诊断冲突推翻、软件安全漏洞追溯、多轮对话博弈撤回与跨语言知识反转。
-- **底层架构鲁棒性与解码一致性认证 (267 项测试)**：跨架构兼容性（Qwen, Llama, Mistral）、严格 $\mathcal{O}(1)$ KV-Cache 增量解码线性时空不变性、会话级 $\alpha(L_{\max})$ 预算不可变性、极限 16k/32k 倒置大海捞针对抗检索、Lipschitz 梯度限幅与浮点机器精度等价（$< 10^{-14}$）。
+- **底层架构鲁棒性与解码一致性认证 (270 项测试)**：跨架构兼容性（Qwen, Llama, Mistral）、严格 $\mathcal{O}(1)$ KV-Cache 增量解码线性时空不变性、会话级 $\alpha(L_{\max})$ 预算不可变性、极限 16k/32k 倒置大海捞针对抗检索、Lipschitz 梯度限幅、Definition 1 门控 softsign 语义动力学与浮点机器精度等价（$< 10^{-12}$）。
 
 ---
 
@@ -642,11 +642,11 @@ python experiments/run_comprehensive_benchmark.py
 # 定理 3 (Lipschitz 算子平滑连续性) 与定理 4 (中性文本零损平坦性)。
 ```
 
-#### 复现路径 2：四层全方位 404 项单元与性质回归测试套件
+#### 复现路径 2：四层全方位 407 项单元与性质回归测试套件
 
 ```bash
 pytest -n auto -v
-# 35 秒内自动化执行覆盖功能特性、极端边界、组合对抗与长程业务的全部 404 项测试
+# 30 秒内自动化执行覆盖功能特性、极端边界、组合对抗与长程业务的全部 407 项测试
 ```
 
 #### 复现路径 3：形式化数学证明与 SMT 求解（Lean 4 & Z3）

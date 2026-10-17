@@ -340,34 +340,74 @@ class SemanticGaugeConnection(nn.Module):
             with torch.no_grad():
                 self.proj.weight.copy_(polar_direction.view(out_dim, -1))
                 if bias and self.proj.bias is not None:
-                    b_val = -self.tau_gate * float(polar_direction.norm(p=2)) if self.tau_gate > 0.0 else -0.5
-                    self.proj.bias.fill_(b_val)
+                    self.proj.bias.zero_()
 
         # Stateful buffers for token-by-token autoregressive decoding
         self.register_buffer("_last_omega", None, persistent=False)
         self.register_buffer("_last_phi", None, persistent=False)
 
+    def _compute_discourse_gate(self, z: torch.Tensor) -> torch.Tensor:
+        r"""
+        Computes discourse transition detector output according to Definition 1:
+            z_t = w_g^\top h_t + b_g
+            g(h_t) = \omega_{\max} \cdot \mathrm{softsign}\big(\mathrm{ReLU}(|z_t| - \tau_{\text{gate}})\mathrm{sgn}(z_t)\big)
+        where \mathrm{softsign}(u) = u / (1 + |u|).
+        """
+        if self.tau_gate > 0.0:
+            excess = F.relu(z.abs() - self.tau_gate) * torch.sign(z)
+            return self.omega_max * (excess / (1.0 + excess.abs()))
+        else:
+            return self.omega_max * (z / (1.0 + z.abs()))
+
     @classmethod
     def from_contrastive_embeddings(
         cls,
         hidden_dim: int,
-        contrast_embedding: torch.Tensor,
-        neutral_embedding: torch.Tensor,
+        contrast_embedding: Optional[torch.Tensor] = None,
+        neutral_embedding: Optional[torch.Tensor] = None,
+        reversal_embeddings: Optional[torch.Tensor] = None,
+        continuation_embeddings: Optional[torch.Tensor] = None,
         tau_gate: float = 0.50,
         omega_max: float = 0.05,
         nu: float = 0.5,
         eta: float = 0.0,
+        bias: bool = False,
         **kwargs
     ) -> "SemanticGaugeConnection":
         r"""
         Constructs a closed-form training-free discourse detector via contrastive representation
         subtraction (Definition 1 in paper):
-            w_g = (e_contrast - e_neutral) / ||e_contrast - e_neutral||_2
-            b_g = - tau_gate * ||w_g||_2
+            \mu_{rev} = (1/|\mathcal{V}_{rev}|) \sum_{t \in \mathcal{V}_{rev}} u_t
+            \mu_{cont} = (1/|\mathcal{V}_{cont}|) \sum_{t \in \mathcal{V}_{cont}} u_t
+            w_g = (\mu_{rev} - \mu_{cont}) / ||\mu_{rev} - \mu_{cont}||_2
+        
+        Args:
+            hidden_dim: Model hidden dimension d.
+            contrast_embedding: Alias for reversal_embeddings [N, d] or [d].
+            neutral_embedding: Alias for continuation_embeddings [N, d] or [d].
+            reversal_embeddings: Unembedding vectors of reversal tokens \mathcal{V}_{rev}.
+            continuation_embeddings: Unembedding vectors of neutral continuation tokens \mathcal{V}_{cont}.
+            tau_gate: Dead-zone barrier threshold \tau_{gate} on projection z (default: 0.50).
+            omega_max: Maximum phase velocity \omega_{max} (default: 0.05).
+            nu: Viscous smoothing coefficient (default: 0.5).
+            eta: Phase restoring potential stiffness (default: 0.0).
+            bias: Whether to include an affine bias term (default: False).
         """
-        diff = contrast_embedding.squeeze() - neutral_embedding.squeeze()
+        rev_t = reversal_embeddings if reversal_embeddings is not None else contrast_embedding
+        cont_t = continuation_embeddings if continuation_embeddings is not None else neutral_embedding
+        if rev_t is None or cont_t is None:
+            raise ValueError(
+                "Must provide either (reversal_embeddings, continuation_embeddings) "
+                "or (contrast_embedding, neutral_embedding)."
+            )
+
+        mu_rev = rev_t.mean(dim=0) if rev_t.dim() > 1 else rev_t.squeeze()
+        mu_cont = cont_t.mean(dim=0) if cont_t.dim() > 1 else cont_t.squeeze()
+
+        diff = mu_rev - mu_cont
         norm = diff.norm(p=2) + 1e-8
         w_g = diff / norm
+
         return cls(
             hidden_dim=hidden_dim,
             out_dim=1,
@@ -376,7 +416,7 @@ class SemanticGaugeConnection(nn.Module):
             eta=eta,
             tau_gate=tau_gate,
             polar_direction=w_g,
-            bias=True,
+            bias=bias,
             **kwargs
         )
 
@@ -408,10 +448,8 @@ class SemanticGaugeConnection(nn.Module):
 
         weight = self.proj.weight.to(dtype=x_norm.dtype)
         bias = self.proj.bias.to(dtype=x_norm.dtype) if self.proj.bias is not None else None
-        g_t = self.omega_max * torch.tanh(F.linear(x_norm, weight, bias))
-        if self.tau_gate > 0.0:
-            gate_mask = g_t.abs() >= self.tau_gate
-            g_t = torch.where(gate_mask, g_t, torch.zeros_like(g_t))
+        z_t = F.linear(x_norm, weight, bias)
+        g_t = self._compute_discourse_gate(z_t)
 
         if self._last_omega is not None:
             prev_omega = self._last_omega
@@ -458,13 +496,11 @@ class SemanticGaugeConnection(nn.Module):
         else:
             x_norm = x
 
-        # Raw continuous semantic projection g_{h,m}(h_t) = \omega_{\max} \tanh(W x + b)
+        # Definition 1: projection z_t = w_g^\top x + b_g followed by softsign gate
         weight = self.proj.weight.to(dtype=x_norm.dtype)
         bias = self.proj.bias.to(dtype=x_norm.dtype) if self.proj.bias is not None else None
-        raw_g = self.omega_max * torch.tanh(F.linear(x_norm, weight, bias))
-        if self.tau_gate > 0.0:
-            gate_mask = raw_g.abs() >= self.tau_gate
-            raw_g = torch.where(gate_mask, raw_g, torch.zeros_like(raw_g))
+        z = F.linear(x_norm, weight, bias)
+        raw_g = self._compute_discourse_gate(z)
 
         # Viscous flow EMA diffusion smoothing with optional phase attractor
         omega = causal_viscous_ema(
@@ -502,6 +538,7 @@ class HysteresisSemanticGaugePredictor(SemanticGaugeConnection):
         omega_max: float = 0.05,
         nu: float = 0.5,
         eta: float = 0.0,
+        tau_gate: float = 0.0,
         refractory_window: int = 16,
         normalize_input: bool = True,
         polar_direction: Optional[torch.Tensor] = None,
@@ -513,6 +550,7 @@ class HysteresisSemanticGaugePredictor(SemanticGaugeConnection):
             omega_max=omega_max,
             nu=nu,
             eta=eta,
+            tau_gate=tau_gate,
             normalize_input=normalize_input,
             polar_direction=polar_direction,
             bias=bias
