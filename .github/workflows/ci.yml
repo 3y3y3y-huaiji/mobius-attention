@@ -86,7 +86,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Paper Verification Tools
-        run: pip install arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate
+        run: pip install arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate sympy
 
       - name: Verify arXiv Cleaner Compliance (Google Research Tool)
         run: arxiv_latex_cleaner paper --keep_bib
@@ -97,6 +97,7 @@ jobs:
           python scripts/check_paper_integrity.py main.tex
           python scripts/check_paper_integrity.py main_zh.tex
           python scripts/verify_paper_claims.py
+          python scripts/verify_formula_with_sympy.py
 
       - name: Compile LaTeX Preprint with Strict Zero-Warning Enforcement
         uses: xu-cheng/latex-action@v3

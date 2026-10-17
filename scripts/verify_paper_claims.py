@@ -20,6 +20,32 @@ if sys.stdout.encoding != 'utf-8':
     except Exception:
         pass
 
+def read_tex_with_inputs(tex_path: str, visited: set = None) -> str:
+    r"""Recursively expand LaTeX \input{...} files to support modular SSOT tables and subdocuments."""
+    if visited is None:
+        visited = set()
+    tex_path = os.path.abspath(tex_path)
+    if tex_path in visited or not os.path.exists(tex_path):
+        return ""
+    visited.add(tex_path)
+
+    with open(tex_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    base_dir = os.path.dirname(tex_path)
+
+    def replacer(match):
+        rel = match.group(1).strip()
+        candidate = os.path.join(base_dir, rel if rel.endswith(".tex") else rel + ".tex")
+        if not os.path.exists(candidate):
+            candidate = os.path.join(base_dir, rel)
+        if os.path.exists(candidate):
+            return read_tex_with_inputs(candidate, visited)
+        return match.group(0)
+
+    expanded = re.sub(r"\\input\{([^}]+)\}", replacer, content)
+    return expanded
+
 def parse_scientific(val_str: str) -> float:
     """Parse scientific notation like '$1.93 \\times 10^{-3}$' or '$9.57 \\times 10^{-5}$'."""
     val_str = val_str.replace("$", "").replace("\\mathbf{", "").replace("}", "").strip()
@@ -127,8 +153,7 @@ def main() -> int:
         print(f"Error: {main_tex} does not exist.")
         return 1
 
-    with open(main_tex, "r", encoding="utf-8") as f:
-        content = f.read()
+    content = read_tex_with_inputs(main_tex)
 
     print("=" * 70)
     print("  ZERO-TRUST STATIC PAPER CLAIM & TABLE ARITHMETIC LINTER")
