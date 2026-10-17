@@ -61,7 +61,7 @@ def check_labels_and_refs(tex_path: str) -> tuple[set[str], set[str]]:
 
 
 def check_latex_syntax(tex_path: str) -> list[str]:
-    """Check for dangerous unescaped characters in text and headings (e.g., bare '&')."""
+    """Check for dangerous unescaped characters in text and headings (e.g., bare '&'), math delimiters, and text-mode math macros."""
     with open(tex_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
@@ -72,8 +72,10 @@ def check_latex_syntax(tex_path: str) -> list[str]:
         "align", "aligned", "split", "cases", "alignat", "gather"
     )
 
+    clean_lines = []
     for idx, line in enumerate(lines, 1):
-        stripped = line.split("%")[0].strip()
+        stripped = re.split(r"(?<!\\)%", line)[0].strip()
+        clean_lines.append(stripped)
         if not stripped:
             continue
 
@@ -89,12 +91,28 @@ def check_latex_syntax(tex_path: str) -> list[str]:
 
         if not in_tabular:
             # Check for bare '&' not preceded by '\'
-            # Also ignore if single-line \begin{pmatrix}...\end{pmatrix}
             has_single_line_env = any(f"\\begin{{{e}}}" in stripped and f"\\end{{{e}}}" in stripped for e in table_math_envs)
             if not has_single_line_env:
                 bare_amps = list(re.finditer(r"(?<!\\)&", stripped))
                 if bare_amps:
                     issues.append(f"Line {idx}: Unescaped '&' found in LaTeX text/heading: {stripped}")
+
+    # Global math delimiter pairing check
+    clean_text = "\n".join(clean_lines)
+    for env in ("equation", "align", "aligned", "gather", "alignat"):
+        clean_text = re.sub(rf"\\begin\{{{env}\*?\}}[\s\S]*?\\end\{{{env}\*?\}}", " ", clean_text)
+
+    parts = clean_text.split("$")
+    if (len(parts) - 1) % 2 != 0:
+        issues.append(f"Global: Odd count of dollar signs ({len(parts) - 1}), math mode unclosed!")
+
+    # Check for math-only commands appearing outside math mode
+    math_only_cmds = ("theta", "Delta", "Phi", "omega", "alpha", "beta", "pi", "eta", "nu", "times", "frac", "sqrt")
+    for i in range(0, len(parts), 2):
+        chunk = parts[i]
+        for cmd in math_only_cmds:
+            if re.search(rf"\\{cmd}\b", chunk):
+                issues.append(f"Text mode error: Math macro \\{cmd} found outside $...$: {chunk[:60]}")
 
     return issues
 

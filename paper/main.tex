@@ -180,10 +180,10 @@ For each 2D subspace $m \in \{1, \dots, d/2\}$ with base frequency $\theta_m$, t
 \tilde{q}_i^{(m)} \triangleq \mathbf{R}(i\theta_m + \Phi_m(i)) q_i^{(m)}, \qquad \tilde{k}_j^{(m)} \triangleq \mathbf{R}(j\theta_m + \Phi_m(j)) k_j^{(m)}
 \end{equation}
 where $\mathbf{R}(\theta) \in \mathrm{SO}(2)$ denotes the planar orthogonal rotation matrix. Let the baseline RoPE-rotated inner products on $\mathcal{S}_{\text{anchor}}$ and $\mathcal{S}_{\text{mob}}$ be denoted by:
-\begin{equation}
-\langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} \triangleq \sum_{m \in \mathcal{I}_{\text{anchor}}} (q_i^{(m)})^\top \mathbf{R}\big((j - i)\theta_m\big) k_j^{(m)}, \quad
-\langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{mob}}}^{\mathrm{RoPE}} \triangleq \sum_{m \in \mathcal{I}_{\text{mob}}} (q_i^{(m)})^\top \mathbf{R}\big((j - i)\theta_m\big) k_j^{(m)}
-\end{equation}
+\begin{align}
+\langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} &\triangleq \sum_{m \in \mathcal{I}_{\text{anchor}}} (q_i^{(m)})^\top \mathbf{R}\big((j - i)\theta_m\big) k_j^{(m)}, \\
+\langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{mob}}}^{\mathrm{RoPE}} &\triangleq \sum_{m \in \mathcal{I}_{\text{mob}}} (q_i^{(m)})^\top \mathbf{R}\big((j - i)\theta_m\big) k_j^{(m)}
+\end{align}
 \end{definition}
 
 \begin{theorem}[Preservation of Relative Position and Gauge Shift Invariance under Subspace Decomposition]
@@ -208,7 +208,7 @@ For all channels $m \in \mathcal{I}_{\text{anchor}}$, the phase flow is frozen (
 &= (q_i^{(m)})^\top \mathbf{R}(i\theta_m + \Phi_m(i))^\top \mathbf{R}(j\theta_m + \Phi_m(j)) k_j^{(m)} \nonumber \\
 &= (q_i^{(m)})^\top \mathbf{R}\Big( (j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big) \Big) k_j^{(m)}
 \end{align}
-Because $\Phi_m(i) - \Phi_m(j) = \Delta \Phi_{j \to i}^{(m)}$, the relative rotation angle is $(j - i)\theta_m + (\Phi_m(j) - \Phi_m(i)) = $(j - i)\theta_m - \Delta \Phi_{j \to i}^{(m)}$. When $\Delta \Phi_{j \to i}^{(m)} = \pi$:
+Because $\Phi_m(i) - \Phi_m(j) = \Delta \Phi_{j \to i}^{(m)}$, the relative rotation angle is $(j - i)\theta_m + (\Phi_m(j) - \Phi_m(i)) = (j - i)\theta_m - \Delta \Phi_{j \to i}^{(m)}$. When $\Delta \Phi_{j \to i}^{(m)} = \pi$:
 \begin{equation}
 \mathbf{R}((j - i)\theta_m - \pi) = \begin{pmatrix} \cos((j-i)\theta_m - \pi) & -\sin((j-i)\theta_m - \pi) \\ \sin((j-i)\theta_m - \pi) & \cos((j-i)\theta_m - \pi) \end{pmatrix} = -\mathbf{R}((j - i)\theta_m)
 \end{equation}
