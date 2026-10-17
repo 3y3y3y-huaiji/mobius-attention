@@ -95,6 +95,7 @@ jobs:
         run: |
           python scripts/check_paper_integrity.py main.tex
           python scripts/check_paper_integrity.py main_zh.tex
+          python scripts/verify_paper_claims.py
 
       - name: Compile LaTeX Preprint with Strict Zero-Warning Enforcement
         uses: xu-cheng/latex-action@v3
