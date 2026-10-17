@@ -206,12 +206,13 @@ def verify_arxiv_ids(bib_path: str) -> list[tuple[str, str, bool, str]]:
 
 def main() -> int:
     workspace = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    tex_path = os.path.join(workspace, "paper", "main.tex")
+    tex_filename = sys.argv[1] if len(sys.argv) > 1 else "main.tex"
+    tex_path = os.path.join(workspace, "paper", tex_filename) if not os.path.isabs(tex_filename) else tex_filename
     bib_path = os.path.join(workspace, "paper", "references.bib")
     paper_dir = os.path.join(workspace, "paper")
 
     print("=" * 70)
-    print("  AUTOMATED LATEX PAPER & BIBTEX INTEGRITY VERIFIER")
+    print(f"  AUTOMATED LATEX PAPER & BIBTEX INTEGRITY VERIFIER: {os.path.basename(tex_path)}")
     print("=" * 70)
 
     has_error = False
