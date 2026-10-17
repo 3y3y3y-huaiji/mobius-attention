@@ -35,6 +35,9 @@ paper/*.blg
 paper/*.log
 paper/*.out
 paper/*.toc
+paper/*.pdf
+downloaded_paper_pdf/
+*.zip
 
 # OS files
 .DS_Store
