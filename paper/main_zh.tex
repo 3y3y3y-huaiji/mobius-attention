@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-标准 Transformer 自注意力机制通过开概率单纯形 $\Delta^{L-1}$ 上的严格正 Softmax 算子对内积进行归一化。在 pre-Softmax logits 中缺乏选择性子空间符号反转机制的情况下，历史 token 即使被后续语篇废弃、推翻或反驳，仍会保留未衰减的内积贡献，从而导致长序列中的前提干扰（premise distraction）与幻觉。我们提出\textbf{子空间反相 RoPE（SG-M\"obius-RoPE）}，一种通过因果正交子空间相位调制扩展旋转位置编码（RoPE）的注意力形式体系。借鉴声学主动降噪（Active Noise Cancellation, ANC）原理，模型在低频演化通道上引入反相载波，同时冻结高频句法锚点通道（$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$）。因果语义转折诱导连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，其累积未约束相位 $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ 经免训练锁相量化器 $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 整形。在经历逻辑反转的叙事区间内，累积相移达到 $\pi$，在 pre-Softmax logits 中产生精确破坏性符号反转（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），且完全不影响 KV-Cache 不变性。随后的恢复性转折累积 $2\pi$ 循环相移（$\cos 2\pi = +1$），形式化双重否定律复原。我们严格证明了条件成对目标-诱饵优势比衰减定理，确立在相干演化子空间对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对优势比按 $\exp(2A_{ij}^{\text{mob}})$ 缩放，且注意力头配分函数在分子分母中严格精确抵消。所有代数不变量与扫描程序等价性已在 Lean~4（0 公理，0 \texttt{sorry}）以及 Z3 SMT 求解器中跨 2,000 条极限长序列（$L \le 32,768$）完成形式化机器证明。在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上的评测表明，SG-M\"obius 无需架构重训，通过尾部角度融合保持近乎恒定的 $O(1)$ KV-Cache 解码时延（单层算子开销仅 $+1.8\sim 2.1\,\mu\text{s}$），在多尺度上下文扩展中实现全尺度严格单调的失效诱饵注意力物理压制（$1.13\times\sim 1.90\times$），注意力对比度 ACR 最高提升 $+465.1\%$（$L=1,116$ 时自 $3.62\to 20.44$；$L=18,030$ 时压制比 $1.34\times$，ACR 提升 $+88.5\%$，单头峰值对比优势比放大达 $16.4\times$（具体为第 7 层第 4 个头，Layer~7, Head~4）），并在真实门控激活下严格保持中性文本困惑度（$7.48$，$0.0\%$ 退化）。
+标准 Transformer 自注意力机制通过开概率单纯形 $\Delta^{L-1}$ 上的严格正 Softmax 算子对内积进行归一化。在 pre-Softmax logits 中缺乏选择性子空间符号反转机制的情况下，历史 token 即使被后续语篇废弃、推翻或反驳，仍会保留未衰减的内积贡献，从而导致长序列中的前提干扰（premise distraction）与幻觉。我们提出\textbf{子空间反相 RoPE（SG-M\"obius-RoPE）}，一种通过因果正交子空间相位调制扩展旋转位置编码（RoPE）的注意力形式体系。借鉴声学主动降噪（Active Noise Cancellation, ANC）原理，模型在低频演化通道上引入反相载波，同时冻结高频句法锚点通道（$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$）。因果语义转折诱导连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，其累积未约束相位 $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ 经免训练锁相量化器 $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 整形。在经历逻辑反转的叙事区间内，累积相移达到 $\pi$，在 pre-Softmax logits 中产生精确破坏性符号反转（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），且完全不影响 KV-Cache 不变性。随后的恢复性转折累积 $2\pi$ 循环相移（$\cos 2\pi = +1$），形式化双重否定律复原。我们严格证明了条件成对目标-诱饵优势比衰减定理，确立在相干演化子空间对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对优势比按 $\exp(2A_{ij}^{\text{mob}})$ 缩放，且注意力头配分函数在分子分母中严格精确抵消。所有代数不变量与扫描程序等价性已在 Lean~4（0 公理，0 \texttt{sorry}）以及 Z3 SMT 求解器中跨 2,000 条极限长序列（$L \le 32,768$）完成形式化机器证明。在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上的评测表明，SG-M\"obius 无需架构重训，通过尾部角度融合保持近乎恒定的 $O(1)$ KV-Cache 解码时延（单层算子开销仅 $+1.8\sim 2.1\,\mu\text{s}$），在多尺度上下文扩展中实现全尺度稳定大于 1.0 倍的失效诱饵注意力物理压制（$1.13\times\sim 1.90\times$，全程大于 $1.0\times$），注意力对比度 ACR 最高提升 $+465.1\%$（$L=1,116$ 时自 $3.62\to 20.44$；$L=18,030$ 时压制比 $1.34\times$，ACR 提升 $+88.5\%$，单头峰值对比优势比放大达 $16.4\times$（具体为第 7 层第 4 个头，Layer~7, Head~4）），并在真实门控激活下严格保持中性文本困惑度（$7.48$，$0.0\%$ 退化）。
 \end{abstract}
 
 \section{引言 (Introduction)}
@@ -89,7 +89,7 @@ A_{i,j} = \frac{1}{\sqrt{d}} \langle \mathbf{R}_{\Theta, i} q_i, \, \mathbf{R}_{
     \item \textbf{条件成对优势比衰减定理}：严格证明了在反相半周（$\Delta \Phi = \pi$）和演化子空间相干对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对目标与诱饵的注意力优势比按 $\exp(2 A_{ij}^{\text{mob}})$ 放缩，且在注意力头内部严格消除了背景配分函数。
     \item \textbf{形式化机器证明}：在 Lean~4 交互式定理证明器中完成两级并行关联扫描程序等价性、前缀和可加性与相移不变性的无公理证明（0 公理，0 \texttt{sorry}），并在 Z3 SMT 求解器中跨 2,000 条长序列（$L \le 32,768$）完成代数验证，数值漂移低于 $1.14 \times 10^{-13}$。
     \item \textbf{KV-Cache 完全兼容}：调制后的 Key 向量 $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)\mathbf{m}_{\text{sub}}) k_j$ 严格仅依赖历史 token $\tau \le j$，在后续推理步中无需对已缓存数据执行任何追溯修改，严格保持 $O(1)$ 的单步解码吞吐。
-    \item \textbf{真实模型评测}：在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上跨 $L=545 \sim 18,030$ tokens 进行全面评测，实现全尺度严格单调的诱饵注意力物理压制（$1.13\times\sim 1.90\times$），多头注意力对比度 ACR 最高提升 $+465.1\%$（$L=1,116$ 时由 $3.62\to 20.44$；$L=18,030$ 时压制比 $1.34\times$，ACR 提升 $+88.5\%$，单头峰值优势比放大达 $16.4\times$），注意力香农熵随上下文容量平稳扩展，并在真实门控激活下严格保全了中性文本困惑度（$7.48$，$0.0\%$ 衰减）。
+    \item \textbf{真实模型评测}：在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上跨 $L=545 \sim 18,030$ tokens 进行全面评测，实现全尺度一致大于 1.0 倍的诱饵注意力物理压制（$1.13\times\sim 1.90\times$，全程大于 $1.0\times$），多头注意力对比度 ACR 最高提升 $+465.1\%$（$L=1,116$ 时由 $3.62\to 20.44$；$L=18,030$ 时压制比 $1.34\times$，ACR 提升 $+88.5\%$，单头峰值优势比放大达 $16.4\times$），注意力香农熵随上下文容量平稳扩展，并在真实门控激活下严格保全了中性文本困惑度（$7.48$，$0.0\%$ 衰减）。
 \end{itemize}
 
 \section{相关工作 (Related Work)}
@@ -140,12 +140,17 @@ A_{i,j} = \frac{1}{\sqrt{d}} \langle \mathbf{R}_{\Theta, i} q_i, \, \mathbf{R}_{
 其中 $\mathcal{S}_{\text{anchor}} = \bigoplus_{m \in \mathcal{I}_{\text{anchor}}} \mathbb{R}^2_{(m)}$，$\mathcal{S}_{\text{mob}} = \bigoplus_{m \in \mathcal{I}_{\text{mob}}} \mathbb{R}^2_{(m)}$。
 对于所有锚点通道 $m \in \mathcal{I}_{\text{anchor}}$，强制约束 $\omega_{h,m}(t) \equiv 0 \implies \Phi_{h,m}(t) \equiv 0$，保证句法绝对稳定性；相位流仅在演化子空间 $\mathcal{S}_{\text{mob}}$ 上累积。
 
-\begin{definition}[连续相位角速度与免训练锁相量化器]
+\begin{definition}[连续相位角速度、语篇语义探测器与免训练锁相量化器]
 对于注意力头 $h$ 与演化子空间通道 $m \in \mathcal{I}_{\text{mob}}$，因果连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ 遵循 1 维粘性平滑流：
 \begin{equation}
 \omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t), \quad \bar{\Phi}_{h,m}(t) \triangleq \sum_{\tau=1}^t \omega_{h,m}(\tau)
 \end{equation}
-其中 $\nu \in (0, 1]$ 为粘度系数，$g_{h,m}(h_t) = \omega_{\max}\tanh(W_g h_t + b_g)$ 为免训练的语义转折投影算子。为抑制在 $\pi$ 整数倍附近的局部微小抖动，同时在并行 Prefill 阶段保全前缀和的结合律，有效旋转相位 $\Phi_{h,m}(t)$ 采用由周期势能 $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$ 导出的逐点无记忆阶梯投影：
+其中 $\nu \in (0, 1]$ 为粘度系数。语义转折探测器 $g_{h,m}(h_t)$ 为完全免训练算子，由预训练反嵌入矩阵（Unembedding Matrix）$U \in \mathbb{R}^{V \times d}$ 中反转类语篇标记集合 $\mathcal{V}_{\text{rev}}$（如 \emph{however}, \emph{nevertheless}, \emph{revoke}）与顺承标记集合 $\mathcal{V}_{\text{cont}}$ 的均值差分正规化方向向量构造：$w_g \triangleq \frac{\mu_{\text{rev}} - \mu_{\text{cont}}}{\|\mu_{\text{rev}} - \mu_{\text{cont}}\|_2} \in \mathbb{R}^d$。为确保在中性常态语篇（如 WikiText-103）上零误触，探测器引入硬死区门限 $\tau_{\text{gate}} > 0$：
+\begin{equation}
+z_t \triangleq w_g^\top h_t + b_g, \qquad g_{h,m}(h_t) \triangleq \omega_{\max} \cdot \mathrm{softsign}\Big(\mathrm{ReLU}\big(|z_t| - \tau_{\text{gate}}\big) \cdot \mathrm{sgn}(z_t)\Big)
+\end{equation}
+在普通叙事文本中 $|z_t| < \tau_{\text{gate}}$，恒有 $g(h_t) \equiv 0 \implies \omega(t) \equiv 0$，从而在数学上恒等保全基线文本困惑度（$7.48$，$0.0\%$ 退化）。
+当经历明确的语义废止转折（$|z_t| \ge \tau_{\text{gate}}$）触发相移时，有效旋转相位 $\Phi_{h,m}(t)$ 采用周期势能 $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$（$\eta \in [0, \tfrac{1}{2}]$）导出的逐点无记忆阶梯投影：
 \begin{equation}
 \Phi_{h,m}(t) \triangleq \bar{\Phi}_{h,m}(t) - \eta\sin\!\big(2\bar{\Phi}_{h,m}(t)\big)
 \end{equation}
@@ -276,6 +281,20 @@ A_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_{m\in\mathcal{I}_{\text{mo
 取倒数即得诱饵衰减因子 $\exp(-2 A_{ij}^{\text{mob}})$，证毕。
 \end{proof}
 
+\begin{corollary}[前缀配分函数收缩与归一化概率质量虹吸推论]
+\label{cor:partition_siphoning}
+设 $t_2$ 为语篇语义反转触发位置，对所有前置失效历史 token $l < t_2$，相对相移满足 $\Delta\Phi_{l \to i} \in [\pi - \delta, \pi + \delta]$，容差界 $\delta \in [0, \pi/6]$。令 $Z_i^{\mathrm{std}} = \sum_{l \le i} \exp(A_{il}^{\mathrm{std}})$ 与 $\tilde{Z}_i = \sum_{l \le i} \exp(\tilde{A}_{il})$ 分别为调制前后的注意力头配分函数。
+若在前置失效区间 $\mathcal{P} \triangleq \{l \mid l < t_2\}$ 上演化子空间内积满足 $A_{il}^{\mathrm{mob}} > 0$，则全局配分函数发生严格收缩：
+\begin{equation}
+\tilde{Z}_i = Z_i^{\mathrm{std}} - \sum_{l \in \mathcal{P}} \exp(A_{il}^{\mathrm{std}})\left(1 - \exp\big(-2\cos\delta \cdot A_{il}^{\mathrm{mob}}\big)\right) \triangleq Z_i^{\mathrm{std}} - \Delta Z_{\mathcal{P}} < Z_i^{\mathrm{std}}
+\end{equation}
+因此，分配给下游有效目标指令 $k \ge t_2$ 的绝对 Softmax 注意力概率获得严格放大：
+\begin{equation}
+\tilde{A}_{ik} = \frac{\exp(A_{ik}^{\mathrm{std}})}{Z_i^{\mathrm{std}} - \Delta Z_{\mathcal{P}}} = A_{ik}^{\mathrm{std}} \cdot \left(\frac{1}{1 - \frac{\Delta Z_{\mathcal{P}}}{Z_i^{\mathrm{std}}}}\right) > A_{ik}^{\mathrm{std}}
+\end{equation}
+前置失效区间配分函数的收缩将大量归一化概率质量主动虹吸投射至有效新指令上，从理论上解释了为何在 $L=1,116$ 时，多头整体 ACR 增益高达 $+465.1\%$（$3.62 \to 20.44$），远超单点诱饵的物理衰减倍数（$1.62\times$）。
+\end{corollary}
+
 \begin{figure}[t!]
     \centering
     \begin{subfigure}[b]{\textwidth}
@@ -302,11 +321,11 @@ A_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_{m\in\mathcal{I}_{\text{mo
 
 \begin{proposition}[Prefill 并行计算与自回归 KV-Cache 解码等价性]
 \label{prop:kv_cache}
-设 $\mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}$ 为子空间掩码（$\mathbf{m}_{\text{sub}}[m] = \mathbb{I}(m \in \mathcal{I}_{\text{mob}})$），$\bar{\Phi}(t) = \sum_{\tau=0}^t \omega(\tau)$ 为平滑相位角速度的前缀和，$\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 为逐点量化相位。定义调制正交旋转算子直和：
+设 $L_{\max}$ 为会话全局上下文预算，参数化时不变锚定比 $\alpha(L_{\max}) \in [0.5, 0.875]$。设 $\mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}$ 为静态子空间掩码（$\mathbf{m}_{\text{sub}}[m] = \mathbb{I}(m \in \mathcal{I}_{\text{mob}})$），$\bar{\Phi}(t) = \sum_{\tau=0}^t \omega(\tau)$ 为平滑相位角速度的前缀和，$\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 为逐点量化相位。定义调制正交旋转算子直和：
 \begin{equation}
 \tilde{\mathbf{R}}(t) \triangleq \bigoplus_{m=1}^{d/2} \mathbf{R}\big(t\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi(t)\big) \in \mathrm{SO}(d)
 \end{equation}
-对于任意长度 $L$，在批处理并行 Prefill 阶段计算的注意力矩阵：
+由于演化子空间边界 $\mathcal{I}_{\text{mob}}$ 由全局预算 $L_{\max}$ 静态锚定，自回归生成过程中已缓存的键向量绝不会遭受子空间维度动态漂移。对于任意长度 $L \le L_{\max}$，在批处理并行 Prefill 阶段计算的注意力矩阵：
 \begin{align}
 A_{\mathrm{prefill}}[i, j] &= \frac{1}{\sqrt{d}} \sum_{m=1}^{d/2} \left( \mathbf{R}(i\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi(i)) q_{i,m} \right)^\top \left( \mathbf{R}(j\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi(j)) k_{j,m} \right) \nonumber \\
 &= \frac{1}{\sqrt{d}} \left( \tilde{\mathbf{R}}(i) q_i \right)^\top \left( \tilde{\mathbf{R}}(j) k_j \right)
@@ -318,22 +337,26 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 在代数上严格等价，最大数值漂移严格受浮点舍入约束（$< 10^{-12}$）。特别地，已缓存的历史键向量 $\mathbf{K}_{\mathrm{cache}}[j]$ 在未来的时间步 $i > j$ 保持\textbf{严格不可变}。
 \end{proposition}
 \begin{proof}
-缓存 Key $\mathbf{K}_{\mathrm{cache}}[j] = \tilde{\mathbf{R}}(j) k_j$ 仅严格依赖时间戳 $\tau \le j$ 的历史输入隐状态 $h_\tau$。因为前缀和与逐点投影完全满足因果性，未来的相位角速度 $\omega(\tau)$（$\tau > j$）绝不影响 $\Phi(j)$。在解码步 $i \ge j$ 时，Query 向量 $\tilde{q}_i = \tilde{\mathbf{R}}(i) q_i$ 直接与显存中不可变的已缓存向量 $\mathbf{K}_{\mathrm{cache}}[j]$ 执行点积。由矩阵乘法结合律，结果与 Prefill 阶段完全吻合，无需任何追溯性 Cache 重写。
+缓存 Key $\mathbf{K}_{\mathrm{cache}}[j] = \tilde{\mathbf{R}}(j) k_j$ 仅严格依赖时间戳 $\tau \le j$ 的历史输入隐状态 $h_\tau$ 与会话时不变截止比 $\alpha(L_{\max})$。因为前缀和与逐点投影完全满足因果性，未来的相位角速度 $\omega(\tau)$（$\tau > j$）绝不影响 $\Phi(j)$。在解码步 $i \ge j$ 时，Query 向量 $\tilde{q}_i = \tilde{\mathbf{R}}(i) q_i$ 直接与显存中不可变的已缓存向量 $\mathbf{K}_{\mathrm{cache}}[j]$ 执行点积。由矩阵乘法结合律，结果与 Prefill 阶段完全吻合，无需任何追溯性 Cache 重写。
 \end{proof}
 
-\begin{proposition}[两阶段并行关联扫描与 FP16 数值稳定性界]
+\begin{proposition}[两阶段并行关联扫描与 Higham FP16 数值稳定性界]
 \label{prop:associative_scan}
 设 $H = (h_0, h_1, \dots, h_{L-1}) \in \mathbb{R}^{L \times d}$ 为 Prefill 隐状态序列。因果相位流 $\Phi \in \mathbb{R}^L$ 通过两阶段并行关联扫描计算：
 \begin{enumerate}
-    \item \textbf{第一阶段（仿射 EMA 扫描）}：令 $g_t = \omega_{\max}\tanh(W_g h_t + b_g)$。带有初始边界 $\omega_{-1}=0$ 的 IIR 滤波器 $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ 等价于在结合二元算子 $(a_2, b_2) \otimes (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)$ 下对仿射变换元 $(a_t, b_t) = (1-\nu, \, \nu g_t)$ 求前缀规约，并行深度为 $\mathcal{O}(\log L)$。
+    \item \textbf{第一阶段（仿射 EMA 扫描）}：令 $g_t = \omega_{\max} \cdot \mathrm{softsign}(\mathrm{ReLU}(|z_t| - \tau_{\text{gate}})\mathrm{sgn}(z_t))$。带有初始边界 $\omega_{-1}=0$ 的 IIR 滤波器 $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ 等价于在结合二元算子 $(a_2, b_2) \otimes (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)$ 下对仿射变换元 $(a_t, b_t) = (1-\nu, \, \nu g_t)$ 求前缀规约，并行深度为 $\mathcal{O}(\log L)$。
     \item \textbf{第二阶段（加法前缀和扫描）}：以 $\bar{\Phi}_{-1}=0$ 为边界，累积未约束相位 $\bar{\Phi}_t = \sum_{\tau=0}^t \omega_\tau$ 通过标准实数加法群 $(\mathbb{R}, +)$ 下的并行前缀和求取。
     \item \textbf{第三阶段（逐点锁相量化）}：$\Phi_t = \bar{\Phi}_t - \eta\sin(2\bar{\Phi}_t)$ 以 $\mathcal{O}(1)$ 深度逐点执行。
 \end{enumerate}
-在 IEEE 754 半精度（FP16）浮点运算下（机器精度 $\epsilon_{\text{mach}} \approx 9.77 \times 10^{-4}$），树状扫描深度 $D = \lceil \log_2 L \rceil$ 累积的浮点舍入误差满足解析上界：
+在 IEEE 754 半精度（FP16）浮点运算下（机器单位舍入误差 $u = 2^{-11} \approx 4.88 \times 10^{-4}$），树状扫描深度 $D = \lceil \log_2 L \rceil$ 累积的前向浮点误差满足解析界：
 \begin{equation}
-|\Delta \Phi_L| \le 2 D \epsilon_{\text{mach}} + \mathcal{O}(\epsilon_{\text{mach}}^2) = \mathcal{O}(\epsilon_{\text{mach}} \log L)
+|\mathrm{fl}(\bar{\Phi}_L) - \bar{\Phi}_L| \le D \cdot u \cdot M_\Phi + \mathcal{O}(u^2)
 \end{equation}
-当 $L \le 18,030$（$D = 15$）时，$|\Delta \Phi_L| \le 0.029\,\text{rad} \approx 1.68^\circ$，严格位于锁相吸引势阱 $|\delta| < \frac{\pi}{6}$ 内部，势能项 $-\eta\sin(2\bar{\Phi})$ 将主动压制浮点漂移。
+其中 $M_\Phi \triangleq \sum_{\tau=0}^{L-1} |\omega_\tau| = K\pi$ 代表 $K$ 次叙事反转跨度的相位总变差。对于至多 $K = 10$ 次反转（$M_\Phi \le 10\pi$）且 $L \le 18,030$（$D = 15$），最大累积浮点漂移被严格约束在：
+\begin{equation}
+|\Delta \bar{\Phi}_L| \le 15 \times (4.88 \times 10^{-4}) \times (10\pi) \approx 0.230\,\text{rad} \approx 13.2^\circ < \frac{\pi}{6}
+\end{equation}
+因为 $|\Delta \bar{\Phi}_L| < \frac{\pi}{6}$，数值漂移严格落在周期势能 $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$ 的非平凡吸引势阱内，锁相量化器可自动熄灭浮点漂移，杜绝偶发符号翻转。
 \end{proposition}
 
 \paragraph{尾部角度融合（Epilogue Angle Fusion）系统实现。}
@@ -349,16 +372,16 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \begin{algorithmic}[1]
 \STATE \textbf{初始化：} 边界状态 $\omega_{-1} \gets 0$，累积未约束相位 $\bar{\Phi}_{-1} \gets 0$，子空间掩码 $\mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}$（$\mathbf{m}_{\text{sub}}[m] = \mathbb{I}(m \in \mathcal{I}_{\text{mob}})$），缓存 $\mathbf{K} \gets [], \mathbf{V} \gets []$。
 \FOR{每个解码步 $i = 0, 1, 2, \dots$}
-    \STATE 接收层隐状态 $h_i \in \mathbb{R}^d$，计算基底投影 $q_i, k_i, v_i$。
-    \STATE 计算连续相位角速度投影 $g_i \gets \omega_{\max}\tanh(W_g h_i + b_g) \in [-\omega_{\max}, \omega_{\max}]$。
-    \STATE 更新平滑角速度：$\omega_i \gets (1 - \nu)\omega_{i-1} + \nu g_i$。
-    \STATE 更新累积未约束相位：$\bar{\Phi}_i \gets \bar{\Phi}_{i-1} + \omega_i$。
-    \STATE 应用免训练锁相量化器：$\Phi_i \gets \bar{\Phi}_i - \eta \sin(2\bar{\Phi}_i)$。
-    \STATE 构造调制旋转矩阵：$\tilde{\mathbf{R}}(i) \triangleq \bigoplus_{m=1}^{d/2} \mathbf{R}(i\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi_i)$。
-    \STATE 调制 Key 向量：$\tilde{k}_i \gets \tilde{\mathbf{R}}(i) k_i$。
-    \STATE 追加至 KV-Cache：$\mathbf{K} \gets [\mathbf{K}; \, \tilde{k}_i]$，$\mathbf{V} \gets [\mathbf{V}; \, v_i]$ \COMMENT{历史缓存零追溯修改}
-    \STATE 调制 Query 向量：$\tilde{q}_i \gets \tilde{\mathbf{R}}(i) q_i$。
-    \STATE 计算因果注意力：$\mathbf{a}_i \gets \mathrm{Softmax}\left( \frac{\tilde{q}_i^\top \mathbf{K}}{\sqrt{d}} \right)$，$\mathbf{o}_i \gets \mathbf{a}_i \mathbf{V}$。
+     \STATE 接收层隐状态 $h_i \in \mathbb{R}^d$，计算基底投影 $q_i, k_i, v_i$。
+     \STATE 计算死区连续相位角速度投影 $g_i \gets \omega_{\max} \cdot \mathrm{softsign}\big(\mathrm{ReLU}(|w_g^\top h_i + b_g| - \tau_{\text{gate}})\mathrm{sgn}(w_g^\top h_i + b_g)\big)$。
+     \STATE 更新平滑角速度：$\omega_i \gets (1 - \nu)\omega_{i-1} + \nu g_i$。
+     \STATE 更新累积未约束相位：$\bar{\Phi}_i \gets \bar{\Phi}_{i-1} + \omega_i$。
+     \STATE 应用免训练锁相量化器：$\Phi_i \gets \bar{\Phi}_i - \eta \sin(2\bar{\Phi}_i)$。
+     \STATE 构造调制旋转矩阵：$\tilde{\mathbf{R}}(i) \triangleq \bigoplus_{m=1}^{d/2} \mathbf{R}(i\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi_i)$。
+     \STATE 调制 Key 向量：$\tilde{k}_i \gets \tilde{\mathbf{R}}(i) k_i$。
+     \STATE 追加至 KV-Cache：$\mathbf{K} \gets [\mathbf{K}; \, \tilde{k}_i]$，$\mathbf{V} \gets [\mathbf{V}; \, v_i]$ \COMMENT{历史缓存零追溯修改}
+     \STATE 调制 Query 向量：$\tilde{q}_i \gets \tilde{\mathbf{R}}(i) q_i$。
+     \STATE 计算因果注意力：$\mathbf{a}_i \gets \mathrm{Softmax}\left( \frac{\tilde{q}_i^\top \mathbf{K}}{\sqrt{d}} \right)$，$\mathbf{o}_i \gets \mathbf{a}_i \mathbf{V}$。
 \ENDFOR
 \end{algorithmic}
 \end{algorithm}
@@ -375,6 +398,7 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
     \item \emph{循环宇称守恒}（\texttt{cyclic\_parity\_conservation}）：$\Delta\Phi(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$（双重否定完全恢复同相旋转）。
     \item \emph{相移平移不变性}（\texttt{gauge\_translation\_invariance}）：$\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$（全局固定相移在相对成对内积计算中恒等消去）。
 \end{itemize}
+\emph{形式化证明边界披露}：为恪守学术严密性，我们在此明确形式化范畴的边界：Lean~4 机器证明所确立的是无界实数域 $\mathbb{R}$ 上的群论对称性与三角代数恒等式。与之互补，有限精度 FP16 浮点稳定性（命题~\ref{prop:associative_scan} 中的 $D \cdot u \cdot M_\Phi \le 0.230 < \pi/6$）以及自适应截止比 $\alpha(L_{\max})$ 的动态行为则通过 Z3 SMT 求解器、Hypothesis 属性测试与物理多 GPU 实验进行严格约束。
 
 \paragraph{Z3 SMT 求解器与极限长度模糊测试。}
 在 \texttt{formal\_verification/verify\_properties.py} 中，我们调用 Z3 SMT 求解器 \cite{de2008z3} 证明了在无界实数域上前缀和可加性、相移平移不变性与相位流因式分解的反命题均为严格的 \texttt{UNSAT}。此外，我们形式化验证了旋转算子的连续 Lipschitz 连续性上界（定理~\ref{thm:lipschitz}）以及 Prefill 与自回归 KV-Cache 解码的代数等价性（命题~\ref{prop:kv_cache}）。在 4 个长度区间（$L \in [10, 512]$、$[512, 2048]$、$ [2048, 8192]$、$[8192, 32768]$）并带有至多 50 层嵌套反转的 2,000 组极端随机序列模糊测试中：
@@ -399,13 +423,13 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \end{itemize}
 
 如表~\ref{tab:benchmark} 所示，标准 RoPE 在所有长度下均向失效前提持续泄漏注意力。
-而在我们提出的自适应截止防御 $\alpha(L)$ 机制下，SG-M\"obius 在所评测的所有上下文长度（$L \in [545, 18030]$）上均实现了对失效诱饵注意力的严格单调物理压制（压制比在 $1.13\times\sim 1.90\times$ 之间），并在全序列尺度上驱动了大幅度的注意力对比度（ACR）提升。特别是在 $L=1,116$ 时，多头 ACR 相对基线暴增 $+465.1\%$（由 $3.62\to 20.44$，诱饵注意力自 $1.09\times 10^{-3}$ 剧降至 $6.76\times 10^{-4}$）；在 $L=4,480$ 时 ACR 提升 $+228.8\%$（$2.06\to 6.78$）；在 $L=18,030$ 极限尺度下，诱饵注意力被有效压制 $1.34\times$（$2.23\times 10^{-4} \to 1.67\times 10^{-4}$），驱动多头 ACR 提升 $+88.5\%$（$1.31\to 2.48$），并在特定检索单头（Layer~7, Head~4）上达到了高达 $16.4\times$ 的峰值优势比放大。
+而在我们提出的自适应截止防御 $\alpha(L)$ 机制下，SG-M\"obius 在所评测的所有上下文长度（$L \in [545, 18030]$）上均实现了对失效诱饵注意力的一致严格物理压制（压制比在 $1.13\times\sim 1.90\times$ 之间，全程稳定高于 $1.0\times$ 基线），并在全序列尺度上驱动了大幅度的注意力对比度（ACR）提升。特别是在 $L=1,116$ 时，多头 ACR 相对基线暴增 $+465.1\%$（由 $3.62\to 20.44$，诱饵注意力自 $1.09\times 10^{-3}$ 剧降至 $6.76\times 10^{-4}$）；在 $L=4,480$ 时 ACR 提升 $+228.8\%$（$2.06\to 6.78$）；在 $L=18,030$ 极限尺度下，诱饵注意力被有效压制 $1.34\times$（$2.23\times 10^{-4} \to 1.67\times 10^{-4}$），驱动多头 ACR 提升 $+88.5\%$（$1.31\to 2.48$），并在特定检索单头（Layer~7, Head~4）上达到了高达 $16.4\times$ 的峰值优势比放大。
 
 % \label{tab:benchmark} (defined inside tables/table1_generated.tex)
 \input{tables/table1_generated.tex}
 
 \paragraph{固定锚定比（$\alpha=0.50$）消融分析与载波反向混叠理论验证。}
-为了实证检验定理~\ref{thm:odds_ratio} 预测的理论相位边界，我们进一步评估了采用固定静态截止 $\alpha=0.50$ 的未设防消融变体。在该基线消融中，在中间 token 距离 $i - j \in [10^3, 2.3 \times 10^3]$（$L=1,116$ 与 $L=2,250$）时，部分中频旋转通道相干进入第一负半周（$\pi/2 < (i-j)\theta_m < 3\pi/2$，$\cos((i-j)\theta_m) < 0$），导致演化子空间基底内积变为负值（$A_{ij}^{\text{mob}} < 0$）；此时施加 $\pi$ 相移将负内积反转为正值，使得未设防时的诱饵压制比一度回落至 $1.0$ 以下（$L=1,116$ 时为 $0.67\times$；$L=2,250$ 时为 $0.60\times$）。而在超长尺度（$L \ge 4,480$）下，中频通道沿通道索引 $m$ 发生剧烈相消退相干（$\sum_{m \in \mathcal{I}_{\text{mid}}} \cos((i-j)\theta_m) \approx 0$），压制效果自然恢复（$1.14\times\sim 2.33\times$）。动态自适应截止比 $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$ 通过将易混叠通道动态冻结至恒等句法锚点子空间，彻底消除了该局限性，在所有尺度上恢复了严格单调的诱饵物理压制（$1.62\times$ 与 $1.17\times$），证实了自适应频谱滤波对任意上下文尺度的全面防御能力。
+为了实证检验定理~\ref{thm:odds_ratio} 预测的理论相位边界，我们进一步评估了采用固定静态截止 $\alpha=0.50$ 的未设防消融变体。在该基线消融中，在中间 token 距离 $i - j \in [10^3, 2.3 \times 10^3]$（$L=1,116$ 与 $L=2,250$）时，部分中频旋转通道相干进入第一负半周（$\pi/2 < (i-j)\theta_m < 3\pi/2$，$\cos((i-j)\theta_m) < 0$），导致演化子空间基底内积变为负值（$A_{ij}^{\text{mob}} < 0$）；此时施加 $\pi$ 相移将负内积反转为正值，使得未设防时的诱饵压制比一度回落至 $1.0$ 以下（$L=1,116$ 时为 $0.67\times$；$L=2,250$ 时为 $0.60\times$）。而在超长尺度（$L \ge 4,480$）下，中频通道沿通道索引 $m$ 发生剧烈相消退相干（$\sum_{m \in \mathcal{I}_{\text{mid}}} \cos((i-j)\theta_m) \approx 0$），压制效果自然恢复（$1.14\times\sim 2.33\times$）。动态自适应截止比 $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$ 通过将易混叠通道动态冻结至恒等句法锚点子空间，彻底消除了该局限性，在所有尺度上彻底消除了低于 $1.0\times$ 的倒挂隐患，恢复了稳定大于 1.0 倍的诱饵物理压制（$1.62\times$ 与 $1.17\times$），证实了自适应频谱滤波对任意上下文尺度的全面防御能力。
 
 \paragraph{下游生成质性验证。}
 在下游生成测试中：单次反转下（$L=398$），标准 RoPE 陷入指令死循环复读，而 SG-M\"obius 干净利落地切断了对过期指令的注意力，输出连贯的系统状态报告；双重否定下（$L=578$），SG-M\"obius 准确复原对初始前提的关注，确认了循环宇称守恒（$\Delta\Phi = 2\pi$）。
@@ -426,7 +450,7 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
         \label{fig:attention_distribution}
     \end{subfigure}
     \caption{\textbf{Qwen3.5-9B 上的多尺度序列扩展与全序列注意力剖面。} 
-    (a) 序列长度从 545 扩展至 18,030 时的 ACR 与香农熵曲线。
+    (a) 序列长度从 545 扩展至 18,030 时的 ACR 与香农熵曲线。SG-M\"obius 在 $L=18,030$ 时实现 $1.34\times$ 诱饵注意力压制与 $+88.5\%$ 的 ACR 增益（在 $L=1,116$ 时高达 $1.90\times$ 压制与 $+465.1\%$ ACR 增益），香农熵保持平稳收敛。
     (b) $L=4,480$ 时的注意力能量剖面：标准 RoPE（蓝色）向废止的前提（$t_1=28$）持续泄漏正注意力；SG-M\"obius（红色）施加主动破坏性干涉（$\Delta\Phi = \pi$），并有效提高对新指令（$t_2=2,258$）的相对对比度。}
     \label{fig:scaling_and_distribution}
 \end{figure}
@@ -468,7 +492,7 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \input{tables/table_entropy_generated.tex}
 
 \section{结论与局限性 (Conclusion and Limitations)}
-本文提出了子空间反相注意力（Subspace Anti-Phase Attention, SG-M\"obius-RoPE），通过因果正交子空间分解 $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$ 扩展了旋转位置编码（RoPE）。其核心思想借鉴主动降噪（ANC）的声波反相相消原理：锚定子空间保留长程拓扑因果序，而演化子空间通过两阶段并行关联扫描累积连续相位角速度，并在否定处实施 $\pi$ 相移的主动反相相消干涉（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在双重否定处实现同相复原（$\Delta\Phi = 2\pi$）。核心代数性质在 Lean~4 与 Z3 SMT 中完成严格形式化机器证明。在真实 Qwen3.5-9B 模型（双卡 Tesla T4，FP16）的实测中，取得了全尺度严格单调的诱饵物理压制（$1.13\times\sim 1.90\times$）与最高 $+465.1\%$ 的多头 ACR 提升，单头（Layer~7, Head~4）最高实现 $16.4\times$ 优势比放大，且完全兼容尾部融合的 $\mathcal{O}(1)$ KV-Cache 增量解码与零困惑度退化。
+本文提出了子空间反相注意力（Subspace Anti-Phase Attention, SG-M\"obius-RoPE），通过因果正交子空间分解 $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$ 扩展了旋转位置编码（RoPE）。其核心思想借鉴主动降噪（ANC）的声波反相相消原理：锚定子空间保留长程拓扑因果序，而演化子空间通过两阶段并行关联扫描累积连续相位角速度，并在否定处实施 $\pi$ 相移的主动反相相消干涉（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在双重否定处实现同相复原（$\Delta\Phi = 2\pi$）。核心代数性质在 Lean~4 与 Z3 SMT 中完成严格形式化机器证明。在真实 Qwen3.5-9B 模型（双卡 Tesla T4，FP16）的实测中，取得了全尺度稳定大于 1.0 倍的诱饵物理压制（$1.13\times\sim 1.90\times$，全程大于 $1.0\times$）与最高 $+465.1\%$ 的多头 ACR 提升，单头（Layer~7, Head~4）最高实现 $16.4\times$ 优势比放大，且完全兼容尾部融合的 $\mathcal{O}(1)$ KV-Cache 增量解码与零困惑度退化。
 
 \paragraph{局限性与未来工作。}
 当前实现采用一维粘性平滑与有界连续相位角速度投影 $|\omega(t)| \le \omega_{\max}$。对于高度歧义或专业领域语料，语义投影头可能需要任务微调。未来极具潜力的研究方向包括：在基础模型预训练阶段进行端到端可微相位投影学习，使连续相位场在各注意力头间联合优化；以及将子空间反相调制动力学推广至多维视觉（2D ViT）与视频时空注意力架构。

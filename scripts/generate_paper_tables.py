@@ -138,7 +138,7 @@ def generate_table1_scaling(json_path: str, output_tex: str):
     caption_text = (
         f"\\caption{{\\textbf{{Multi-Scale Scaling Benchmark on Qwen3.5-9B (native FP16, dual Nvidia Tesla T4 GPUs).}} "
         f"All metrics are computed strictly from unrounded raw FP64 attention probabilities and formatted to 3 significant figures via the automated SSOT pipeline. "
-        f"Across all scales $L \\in [545, 18,030]$, SG-M\\\"obius with dynamic frequency cutoff $\\alpha(L)$ achieves strictly monotonic decoy suppression ($1.13\\times\\text{{--}}1.90\\times$) and expands ACR by up to $+464.6\\%$ ($3.62 \\to 20.44$ at $L=1,116$). "
+        f"Across all scales $L \\in [545, 18,030]$, SG-M\\\"obius with dynamic frequency cutoff $\\alpha(L)$ achieves consistent strictly-above-unity decoy suppression ($1.13\\times\\text{{--}}1.90\\times$, $> 1.0\\times$) and expands ACR by up to $+465.1\\%$ ($3.62 \\to 20.44$ at $L=1,116$). "
         f"At extreme context ($L = {last_L}$), decoy attention drops by ${last_supp:.2f}\\times$ and ACR expands by {sign}{last_gain_pct:.1f}\\% "
         f"(${last_std_acr:.2f} \\to {last_mob_acr:.2f}$).}}"
     )

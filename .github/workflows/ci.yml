@@ -26,13 +26,14 @@ jobs:
       - name: Verify with mdmathlint (Official GitHub Math Linter)
         run: npx --yes mdmathlint --profile github README.md README_zh.md
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: "3.11"
 
       - name: Install Lint Dependencies
-        run: pip install markdown-it-py pytest
+        run: uv pip install --system markdown-it-py pytest
 
       - name: Run Markdown AST Integrity & GFM LaTeX Tests
         run: |
@@ -73,25 +74,26 @@ jobs:
         with:
           inputs: requirements.txt
 
-  latex:
-    name: Build & Validate LaTeX Paper
+  paper-audit:
+    name: Paper Integrity, Claims & Formula Audits
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: "3.11"
 
       - name: Install Paper Verification Tools
-        run: pip install arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate sympy
+        run: uv pip install --system arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate sympy
 
       - name: Verify arXiv Cleaner Compliance (Google Research Tool)
         run: arxiv_latex_cleaner paper --keep_bib
 
-      - name: Verify LaTeX Citations & Anti-Hallucination Audit
+      - name: Verify LaTeX Citations, Terminology & Claims Audit
         run: |
           python scripts/generate_paper_tables.py
           python scripts/check_paper_integrity.py main.tex
@@ -99,33 +101,49 @@ jobs:
           python scripts/verify_paper_claims.py
           python scripts/verify_formula_with_sympy.py
 
-      - name: Compile LaTeX Preprint with Strict Zero-Warning Enforcement
+  compile-latex:
+    name: Compile Preprint (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: "English"
+            file: "main.tex"
+            engine: "-pdf -file-line-error -halt-on-error -interaction=nonstopmode"
+            check_warnings: true
+            allow_failure: false
+          - target: "Chinese"
+            file: "main_zh.tex"
+            engine: "-xelatex -file-line-error -interaction=nonstopmode"
+            check_warnings: false
+            allow_failure: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Compile Preprint PDF
         uses: xu-cheng/latex-action@v3
+        continue-on-error: ${{ matrix.allow_failure }}
         with:
-          root_file: main.tex
+          root_file: ${{ matrix.file }}
           working_directory: paper
-          args: "-pdf -file-line-error -halt-on-error -interaction=nonstopmode"
+          args: ${{ matrix.engine }}
           post_compile: |
-            if grep -E "LaTeX Warning: (Citation .* undefined|Reference .* undefined|There were undefined references)" main.log; then
-              echo "::error::Undefined citations or references detected in LaTeX log!"
-              exit 1
+            if [ "${{ matrix.check_warnings }}" = "true" ]; then
+              if grep -E "LaTeX Warning: (Citation .* undefined|Reference .* undefined|There were undefined references)" main.log; then
+                echo "::error::Undefined citations or references detected in LaTeX log!"
+                exit 1
+              fi
             fi
 
-      - name: Compile Chinese LaTeX Paper (Best Effort with XeLaTeX)
-        uses: xu-cheng/latex-action@v3
-        continue-on-error: true
-        with:
-          root_file: main_zh.tex
-          working_directory: paper
-          args: "-xelatex -file-line-error -interaction=nonstopmode"
-
-      - name: Archive Compiled Preprint PDFs (English & Chinese)
+      - name: Archive Compiled PDF
+        if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: paper-pdf
-          path: |
-            paper/main.pdf
-            paper/main_zh.pdf
+          name: paper-${{ matrix.target }}-pdf
+          path: paper/${{ matrix.file == 'main.tex' && 'main.pdf' || 'main_zh.pdf' }}
+          if-no-files-found: ignore
 
   tests:
     name: Test Suite & Formal Verification
@@ -134,19 +152,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          uv pip install --system --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
-      - name: Run Pytest Test Suite
-        run: pytest tests/ -v
+      - name: Run Pytest Test Suite (Parallelized via pytest-xdist)
+        run: pytest tests/ -n auto -v
 
       - name: Run Formal Verification & Property Fuzzing
         run: python formal_verification/verify_properties.py

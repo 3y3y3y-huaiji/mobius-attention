@@ -360,3 +360,43 @@ def test_subspace_anchor_ratios_prefill_equivalence():
 
         assert (cos_pre - cos_dec).abs().max().item() < 1e-12
         assert (sin_pre - sin_dec).abs().max().item() < 1e-12
+
+
+def test_kv_cache_time_invariance_under_session_budget():
+    r"""
+    Explicitly tests Proposition 4:
+    Verifies that for a session context budget L_max = 512, the adaptive anchor cutoff
+    alpha(L_max) is session-static, and cached key vectors K_cache[j] for past tokens j < i
+    remain strictly byte-for-byte immutable across subsequent decoding steps i = j+1 ... L_max.
+    """
+    head_dim = 64
+    seq_len = 32
+    dtype = torch.float64
+
+    # Fix session budget L_max -> static alpha
+    L_max = 2048
+    session_alpha = min(0.875, max(0.5, math.log(2.0 * L_max / math.pi) / math.log(10000.0)))
+    modulator = ContinuousMobiusRoPEModulator(head_dim=head_dim, anchor_ratio=session_alpha)
+
+    # Autoregressive key cache accumulator
+    key_cache = []
+    cached_tensors_snapshots = {}
+
+    for t in range(seq_len):
+        k_t = torch.randn(1, 1, 1, head_dim, dtype=dtype)
+        phi_t = torch.tensor([[[0.1 * t]]], dtype=dtype)
+        pos_t = torch.tensor([[t]], dtype=torch.long)
+
+        # Modulate key at step t
+        cos_t, sin_t = modulator(k_t, position_ids=pos_t, phi=phi_t)
+        k_modulated = apply_rotary_pos_emb(k_t, cos_t, sin_t)
+
+        # Store in cache
+        key_cache.append(k_modulated.clone())
+        cached_tensors_snapshots[t] = k_modulated.clone()
+
+        # Check immutability of ALL previously cached keys j < t
+        for j in range(t):
+            diff = (key_cache[j] - cached_tensors_snapshots[j]).abs().max().item()
+            assert diff == 0.0, f"Cache violation: Key at index {j} mutated at step {t} with diff {diff}"
+

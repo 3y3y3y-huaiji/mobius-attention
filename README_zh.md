@@ -18,7 +18,7 @@
 </p>
 
 > **借鉴主动降噪（ANC）原理的大语言模型 Softmax 正定性注意力瓶颈严谨信号对消方案。**  
-> 通过因果正交子空间相位调制 $\mathbb{R}^d = \mathcal{S}\_{\text{anchor}} \oplus \mathcal{S}\_{\text{mob}}$ 扩展旋转位置编码（RoPE）。通过累积连续相位角速度 $\omega(t) \in [-\omega_{\max}, \omega_{\max}]$、引入免训练单步锁相量化器并结合动态频率截止比 $\alpha(L)$，演化子空间在发生语义否定时执行**主动破坏性相消干涉**（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在多尺度长程对抗评测中实现**全尺度严格单调的 1.13×~1.90× 作废诱饵注意力物理压制与高达 +465.1% 的注意力对比度提升（$L=1,116$ 时 ACR 从 3.62 跃升至 20.44；在 18,030 Token 极限尺度下诱饵压制达 1.34×，ACR 提升 +88.5%）**（在 Layer 7, Head 4 上最高实现 **16.4× 峰值优势比放大**），同时在数学与工程上严格保持**标准 $\mathcal{O}(1)$ KV-Cache 解码吞吐**与顺承中性文本 **0.0% 困惑度（PPL）零损耗**。
+> 通过因果正交子空间相位调制 $\mathbb{R}^d = \mathcal{S}\_{\text{anchor}} \oplus \mathcal{S}\_{\text{mob}}$ 扩展旋转位置编码（RoPE）。通过累积连续相位角速度 $\omega(t) \in [-\omega_{\max}, \omega_{\max}]$、引入免训练单步锁相量化器并结合动态频率截止比 $\alpha(L)$，演化子空间在发生语义否定时执行**主动破坏性相消干涉**（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在多尺度长程对抗评测中实现**全尺度稳定大于 1.0 倍的 1.13×~1.90× 作废诱饵注意力物理压制（全程高于 1.0× 基线）与高达 +465.1% 的注意力对比度提升（$L=1,116$ 时 ACR 从 3.62 跃升至 20.44；在 18,030 Token 极限尺度下诱饵压制达 1.34×，ACR 提升 +88.5%）**（在 Layer 7, Head 4 上最高实现 **16.4× 峰值优势比放大**），同时在数学与工程上严格保持**标准 $\mathcal{O}(1)$ KV-Cache 解码吞吐**与顺承中性文本 **0.0% 困惑度（PPL）零损耗**。
 
 ---
 
@@ -348,7 +348,7 @@ with torch.no_grad():
 | **图 4**<br>`assets/fig4_gauge_curvature.png` | [![图 4](assets/fig4_gauge_curvature.png)](assets/fig4_gauge_curvature.png) | **动态语义相位角速度与平滑相位流**：*上图*：连续相位角速度在平坦叙述中恒为严格的 $\omega(t) \equiv 0$，在识别到转折区间时 ($t \approx 51$)平滑激活。*下图*：因果累积规范势展现出光滑的连续爬升，平稳跨越 $\Phi=\pi$ 半扭转拓扑界面。 |
 | **图 5**<br>`assets/fig5_arbitrary_inversion_heatmap.png` | [![图 5](assets/fig5_arbitrary_inversion_heatmap.png)](assets/fig5_arbitrary_inversion_heatmap.png) | **Qwen3.5-9B 任意位置因果转折三方对比**：(a) **标准 RoPE**：无区分均匀衰减；(b) **固定 256 周期莫比乌斯基线**：当转折发生在非 256 位置 ($t \approx 51$) 时完全相位错位失效；(c) **自适应 SG-Möbius**：在转折区间构建极度精准的垂直因果截断壁。 |
 | **图 6**<br>`assets/fig6_double_negation_restoration.png` | [![图 6](assets/fig6_double_negation_restoration.png)](assets/fig6_double_negation_restoration.png) | **周期相位回归证明 ($\neg\neg P \iff P$)**：在两次连续转折下 ($t_1 \approx 39, t_2 \approx 133$)，首次转折产生相消 ($\Delta\Phi=\pi$)，二次转折推动相位达到 $\Delta\Phi=2\pi$，自然重回正向分支 ($\cos(2\pi) = +1$)，以数学方式物理实现“否定之否定”共振恢复（增益达 $+0.333$)。 |
-| **图 7**<br>`assets/fig_scaling_acr_entropy.png` | [![图 7](assets/fig_scaling_acr_entropy.png)](assets/fig_scaling_acr_entropy.png) | **多尺度长程扩展对抗实测基准 ($L \in [545, 18030]$)**：(a) 注意力对比度 (ACR) 在程序化对抗扩展下最高提升 $+465.1\%$（$3.62 \to 20.44$），全尺度实现严格单调的诱饵物理压制（$1.13\times\sim 1.90\times$）。(b) 注意力香农熵 $H(P)$ 随序列体积平滑扩展，中性文本上保持 0 误杀。 |
+| **图 7**<br>`assets/fig_scaling_acr_entropy.png` | [![图 7](assets/fig_scaling_acr_entropy.png)](assets/fig_scaling_acr_entropy.png) | **多尺度长程扩展对抗实测基准 ($L \in [545, 18030]$)**：(a) 注意力对比度 (ACR) 在程序化对抗扩展下最高提升 $+465.1\%$（$3.62 \to 20.44$），全尺度实现稳定大于 1.0 倍的诱饵物理压制（$1.13\times\sim 1.90\times$，全程高于 1.0×）。(b) 注意力香农熵 $H(P)$ 随序列体积平滑扩展，中性文本上保持 0 误杀。 |
 
 ---
 
@@ -369,7 +369,7 @@ with torch.no_grad():
 | **9,002** | 28 | 4,519 | 1.69 | **3.17** | **+88.1%** (1.88×) | **1.27×** | 276.8 ms |
 | **18,030** | 28 | 9,025 | 1.31 | **2.48** | **+88.5%** (1.89×) | **1.34×** | 276.2 ms |
 
-> **实测核心结论**：在全尺度（$545\sim 18,030$ Tokens）范围内，配备动态频率截止 $\alpha(L)$ 的 SG-Möbius-RoPE 实现了严格单调的作废诱饵注意力物理压制（$1.13\times\sim 1.90\times$），并将多头注意力对比度（ACR）最高提升 **+465.1%**（$L=1,116$ 时由 $3.62$ 跃升至 $20.44$）。在 18,030 Token 的极限序列下，标准 RoPE 的诱饵注意力泄露量为 $2.23 \times 10^{-4}$，SG-Möbius 将其主动压缩至 $1.67 \times 10^{-4}$（**实现 1.34 倍的物理压制**），ACR 提升 **+88.5%**（$1.31 \to 2.48$），并在特定单头（Layer 7, Head 4）上实现了高达 **16.4×** 的峰值成对相对优势比提升。中性 WikiText-103 困惑度严格守恒于 $7.48$（**0.0% 性能无损**）。
+> **实测核心结论**：在全尺度（$545\sim 18,030$ Tokens）范围内，配备动态频率截止 $\alpha(L)$ 的 SG-Möbius-RoPE 实现了全程稳定大于 1.0 倍的作废诱饵注意力物理压制（$1.13\times\sim 1.90\times$），并将多头注意力对比度（ACR）最高提升 **+465.1%**（$L=1,116$ 时由 $3.62$ 跃升至 $20.44$）。在 18,030 Token 的极限序列下，标准 RoPE 的诱饵注意力泄露量为 $2.23 \times 10^{-4}$，SG-Möbius 将其主动压缩至 $1.67 \times 10^{-4}$（**实现 1.34 倍的物理压制**），ACR 提升 **+88.5%**（$1.31 \to 2.48$），并在特定单头（Layer 7, Head 4）上实现了高达 **16.4×** 的峰值成对相对优势比提升。中性 WikiText-103 困惑度严格守恒于 $7.48$（**0.0% 性能无损**）。
 > 
 > **固定截止比（$\alpha=0.50$）消融分析与自适应防御**：在未设防的固定截止消融实验中，中频通道在中间距离（$i - j \in [10^3, 2.3 \times 10^3]$）相干进入负半周（$\cos((i-j)\theta\_m) < 0$），导致未修正的 $\pi$ 相移将负内积反转为正值（压制比在 $L=1,116$ 和 $L=2,250$ 时回落至 $0.67\times$ 与 $0.60\times$）。引入自适应闭式截止 $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$ 动态冻结易混叠通道后，彻底消除了回落现象（压制比恢复至 $1.62\times$ 与 $1.17\times$），在任意上下文尺度下确立了稳健的物理相消防御。
 
