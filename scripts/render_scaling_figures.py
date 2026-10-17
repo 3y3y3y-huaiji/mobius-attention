@@ -38,7 +38,7 @@ def render():
 
     # Panel 1: Attention Contrast Ratio
     ax1.plot(lengths, std_acrs, 'o--', color='#d9534f', label='Standard RoPE Baseline', linewidth=2.0, markersize=7)
-    ax1.plot(lengths, mob_acrs, 's-', color='#2e6da4', label='SG-Möbius-RoPE (Ours, +118.0% at 18k)', linewidth=2.5, markersize=8)
+    ax1.plot(lengths, mob_acrs, 's-', color='#2e6da4', label='SG-Möbius-RoPE (Ours, +88.5% at 18k)', linewidth=2.5, markersize=8)
     ax1.set_xscale('log', base=2)
     ax1.set_xlabel('Context Sequence Length (Tokens)', fontweight='bold')
     ax1.set_ylabel('Attention Contrast Ratio (ACR)', fontweight='bold')

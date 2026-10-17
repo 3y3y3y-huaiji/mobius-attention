@@ -455,16 +455,16 @@ python formal_verification/verify_properties.py
 ### Four-Tier End-to-End Pytest Suite
 
 ```bash
-pytest -q
-# Output: 367 passed in 61.85s
+pytest -n auto -q
+# Output: 404 passed in 31s
 ```
 
-The comprehensive 367-test suite covers:
+The comprehensive 404-test suite covers:
 - **Tier 1 (Features, 60 tests)**: `SGMobiusRotaryEmbedding`, `HysteresisSemanticGaugePredictor`, 2D planar rotation via angle addition, 50% anchor / 50% evolution subspace decoupling, 1D viscous EMA diffusion, phase-locking attractor, in-place patching, and mathematical parity.
 - **Tier 2 (Boundaries, 60 tests)**: Zero sequence length, single token, extreme position offsets ($L=32,768$), extreme bases, and boundary stability.
 - **Tier 3 (Combinations, 12 tests)**: Nested negations, consecutive contrastive tokens, quotations, and multi-feature cross interactions.
 - **Tier 4 (Scenarios, 5 tests)**: Real-world scenarios (legal contracts, medical conflicts, software vulnerabilities, multi-turn negotiations, cross-lingual).
-- **Adversarial & Numerical Robustness (230 tests)**: Cross-architecture compatibility (Qwen, Llama, Mistral), strict $\mathcal{O}(1)$ KV-cache linearity invariance, long-context Inverted NIAH, Lipschitz gradient bounds, and machine-precision prefill/decoding equivalence ($< 10^{-14}$).
+- **Adversarial, Numerical Robustness & Decoding Equivalence (267 tests)**: Cross-architecture compatibility (Qwen, Llama, Mistral), strict $\mathcal{O}(1)$ KV-cache linearity invariance, session-level $\alpha(L_{\max})$ budget immutability, long-context Inverted NIAH, Lipschitz gradient bounds, and machine-precision prefill/decoding equivalence ($< 10^{-14}$).
 
 ---
 
@@ -648,11 +648,11 @@ python experiments/run_comprehensive_benchmark.py
 # Theorem 3 (Lipschitz Bound), and Theorem 4 (Flatness Conservation).
 ```
 
-#### Path 2: Full 367-Test Regression & Robustness Suite
+#### Path 2: Full 404-Test Regression & Robustness Suite
 
 ```bash
-pytest -v
-# Executes all 367 unit and property tests across 4 tiers in under 65 seconds
+pytest -n auto -v
+# Executes all 404 unit and property tests across 4 tiers in under 35 seconds
 ```
 
 #### Path 3: Formal Mathematical Verification (Lean 4 & Z3 SMT)

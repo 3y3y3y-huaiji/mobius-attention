@@ -284,16 +284,17 @@ A_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_{m\in\mathcal{I}_{\text{mo
 
 \begin{corollary}[前缀配分函数收缩与归一化概率质量虹吸推论]
 \label{cor:partition_siphoning}
-设 $t_2$ 为语篇语义反转触发位置，对所有前置失效历史 token $l < t_2$，相对相移满足 $\Delta\Phi_{l \to i} \in [\pi - \delta, \pi + \delta]$，容差界 $\delta \in [0, \pi/6]$。令 $Z_i^{\mathrm{std}} = \sum_{l \le i} \exp(A_{il}^{\mathrm{std}})$ 与 $\tilde{Z}_i = \sum_{l \le i} \exp(\tilde{A}_{il})$ 分别为调制前后的注意力头配分函数。
-若在前置失效区间 $\mathcal{P} \triangleq \{l \mid l < t_2\}$ 上演化子空间内积满足 $A_{il}^{\mathrm{mob}} > 0$，则全局配分函数发生严格收缩：
+设 $t_2$ 为语篇语义反转触发位置，对所有前置失效历史 token $l \in \mathcal{P} \triangleq \{l \mid l < t_2\}$，在标称锁相下相对相移满足 $\Delta\Phi_{l \to i} \equiv \pi \pmod{2\pi}$，而后续有效目标指令 $k \ge t_2$ 保持同相（$\Delta\Phi_{k \to i} \equiv 0 \pmod{2\pi}$）。令 $Z_i^{\mathrm{std}} = \sum_{l \le i} \exp(A_{il}^{\mathrm{std}})$ 与 $\tilde{Z}_i = \sum_{l \le i} \exp(\tilde{A}_{il})$ 分别为调制前后的注意力头配分函数。
+若在前置失效区间 $\mathcal{P}$ 上演化子空间内积满足 $A_{il}^{\mathrm{mob}} > 0$，则前缀 token logit 变换为 $\tilde{A}_{il} = A_{il}^{\mathrm{std}} - 2A_{il}^{\mathrm{mob}} < A_{il}^{\mathrm{std}}$，全局配分函数发生严格收缩：
 \begin{equation}
-\tilde{Z}_i = Z_i^{\mathrm{std}} - \sum_{l \in \mathcal{P}} \exp(A_{il}^{\mathrm{std}})\left(1 - \exp\big(-2\cos\delta \cdot A_{il}^{\mathrm{mob}}\big)\right) \triangleq Z_i^{\mathrm{std}} - \Delta Z_{\mathcal{P}} < Z_i^{\mathrm{std}}
+\tilde{Z}_i = Z_i^{\mathrm{std}} - \sum_{l \in \mathcal{P}} \exp(A_{il}^{\mathrm{std}})\left(1 - \exp\big(-2 A_{il}^{\mathrm{mob}}\big)\right) \triangleq Z_i^{\mathrm{std}} - \Delta Z_{\mathcal{P}} < Z_i^{\mathrm{std}}
 \end{equation}
-因此，分配给下游有效目标指令 $k \ge t_2$ 的绝对 Softmax 注意力概率获得严格放大：
+因此，对于任意有效目标指令 $k \ge t_2$（其未调制 logit 满足 $\tilde{A}_{ik} = A_{ik}^{\mathrm{std}}$），其归一化 post-Softmax 注意力概率 $P_{\mathrm{mob}}(k \mid i) \triangleq \exp(\tilde{A}_{ik})/\tilde{Z}_i$ 严格高于基线 $P_{\mathrm{std}}(k \mid i)$：
 \begin{equation}
-\tilde{A}_{ik} = \frac{\exp(A_{ik}^{\mathrm{std}})}{Z_i^{\mathrm{std}} - \Delta Z_{\mathcal{P}}} = A_{ik}^{\mathrm{std}} \cdot \left(\frac{1}{1 - \frac{\Delta Z_{\mathcal{P}}}{Z_i^{\mathrm{std}}}}\right) > A_{ik}^{\mathrm{std}}
+P_{\mathrm{mob}}(k \mid i) = \frac{\exp(A_{ik}^{\mathrm{std}})}{Z_i^{\mathrm{std}} - \Delta Z_{\mathcal{P}}} = P_{\mathrm{std}}(k \mid i) \cdot \left(\frac{1}{1 - \frac{\Delta Z_{\mathcal{P}}}{Z_i^{\mathrm{std}}}}\right) > P_{\mathrm{std}}(k \mid i)
 \end{equation}
-前置失效区间配分函数的收缩将大量归一化概率质量主动虹吸投射至有效新指令上，从理论上解释了为何在 $L=1,116$ 时，多头整体 ACR 增益高达 $+465.1\%$（$3.62 \to 20.44$），远超单点诱饵的物理衰减倍数（$1.62\times$）。
+更一般地，在存在有界扰动 $\Delta\Phi_{l \to i} = \pi \pm \delta_l$（$|\delta_l| \le \pi/6$）时，平面旋转诱导 $\tilde{A}_{il} = A_{il}^{\mathrm{std}} - (1 + \cos\delta_l)A_{il}^{\mathrm{mob}} \pm \sin\delta_l B_{il}^{\mathrm{mob}}$，其中正交耦合项 $B_{il}^{\mathrm{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_m (q_i^{(m)})^\top \mathbf{J} \mathbf{R}((l-i)\theta_m) k_l^{(m)}$，$\mathbf{J} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$。由于 $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$，只要 $(1+\cos\delta_l)A_{il}^{\mathrm{mob}} > |\sin\delta_l B_{il}^{\mathrm{mob}}|$，收缩条件 $\Delta Z_{\mathcal{P}} > 0$ 恒成立。
+关键在于：在长程推理中（$L=1,116$），前置失效区间 $\mathcal{P}$ 包含了整整 576 个历史 token（包含占据极大权重的句首 Attention Sink $l=0$）。整个前缀区间的集体反相使得配分函数分母收缩约 $Z_i^{\mathrm{std}}/\tilde{Z}_i \approx 3.48\times$，将原本沉淀于前缀与 Attention Sink 中的庞大概率质量强力虹吸注入目标指令（使 $P(\text{target})$ 放大 $3.49\times$），同时分母的收缩部分抵消了诱饵 token 表观概率的降幅，严密自洽地解释了为何单点诱饵表观注意力仅下降 $1.62\times$，而多头对比度 ACR 却整体跃升 $+465.1\%$（$3.62 \to 20.44$）。
 \end{corollary}
 
 \begin{figure}[t!]
@@ -485,7 +486,7 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \end{table}
 
 \subsection{真实 Qwen3.5-9B 注意力熵与困惑度保全}
-我们评估探针处归一化注意力分布的香农熵 $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$。如表~\ref{tab:entropy} 所示：在自适应截止防御下，失效诱饵处的无效注意力被主动剥离并集中投射至有效目标证据上，整体注意力分布呈现收敛聚焦态（$L=545$ 时香农熵由 $5.487\to 5.298$；$L=18,030$ 时由 $8.539\to 8.178$），印证了注意力权重并未向无关噪声涣散，而是清晰地凝聚于关键证据跨度上。
+我们评估探针处归一化注意力分布的香农熵 $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$。如表~\ref{tab:entropy} 所示：在自适应截止防御下，失效诱饵处的无效注意力被主动剥离并集中投射至有效目标证据上，整体注意力分布在六个评测尺度中的五个尺度上均呈现收敛聚焦态（$L=545$ 时香农熵由 $5.487\to 5.298$；$L=18,030$ 时由 $8.539\to 8.178$，仅在 $L=2,250$ 载波过渡边界处出现微弱的 $+0.174$ 瞬态波动），印证了注意力权重并未向无关噪声涣散，而是清晰地凝聚于关键证据跨度上。
 
 进一步地，为彻底排查自然语言下门控误相消风险，我们在双卡 Tesla T4 上使用实测门控网络对 WikiText-103 标准测试集切片进行了自回归 Cross-Entropy Loss 与困惑度实测。在常态自然文本中，探测器语义投影严格处于激活阈值之下（$\max |\omega| = 0.0, \max |\Phi| = 0.0$），损失保持 $2.0126$，困惑度严格锁定在 $7.48$（$0.0\%$ 退化），彻底排除了在正常文本中出现“误相消”的隐患。
 

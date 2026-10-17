@@ -321,6 +321,7 @@ class SemanticGaugeConnection(nn.Module):
         omega_max: float = 0.05,
         nu: float = 0.5,
         eta: float = 0.0,
+        tau_gate: float = 0.0,
         normalize_input: bool = True,
         polar_direction: Optional[torch.Tensor] = None,
         bias: bool = True
@@ -331,6 +332,7 @@ class SemanticGaugeConnection(nn.Module):
         self.omega_max = float(omega_max)
         self.nu = float(nu)
         self.eta = float(eta)
+        self.tau_gate = float(tau_gate)
         self.normalize_input = normalize_input
 
         self.proj = nn.Linear(hidden_dim, out_dim, bias=bias)
@@ -338,7 +340,41 @@ class SemanticGaugeConnection(nn.Module):
             with torch.no_grad():
                 self.proj.weight.copy_(polar_direction.view(out_dim, -1))
                 if bias and self.proj.bias is not None:
-                    self.proj.bias.fill_(-0.5)
+                    b_val = -self.tau_gate * float(polar_direction.norm(p=2)) if self.tau_gate > 0.0 else -0.5
+                    self.proj.bias.fill_(b_val)
+
+    @classmethod
+    def from_contrastive_embeddings(
+        cls,
+        hidden_dim: int,
+        contrast_embedding: torch.Tensor,
+        neutral_embedding: torch.Tensor,
+        tau_gate: float = 0.50,
+        omega_max: float = 0.05,
+        nu: float = 0.5,
+        eta: float = 0.0,
+        **kwargs
+    ) -> "SemanticGaugeConnection":
+        r"""
+        Constructs a closed-form training-free discourse detector via contrastive representation
+        subtraction (Definition 1 in paper):
+            w_g = (e_contrast - e_neutral) / ||e_contrast - e_neutral||_2
+            b_g = - tau_gate * ||w_g||_2
+        """
+        diff = contrast_embedding.squeeze() - neutral_embedding.squeeze()
+        norm = diff.norm(p=2) + 1e-8
+        w_g = diff / norm
+        return cls(
+            hidden_dim=hidden_dim,
+            out_dim=1,
+            omega_max=omega_max,
+            nu=nu,
+            eta=eta,
+            tau_gate=tau_gate,
+            polar_direction=w_g,
+            bias=True,
+            **kwargs
+        )
 
         # Stateful buffers for token-by-token autoregressive decoding
         self.register_buffer("_last_omega", None, persistent=False)
@@ -373,6 +409,9 @@ class SemanticGaugeConnection(nn.Module):
         weight = self.proj.weight.to(dtype=x_norm.dtype)
         bias = self.proj.bias.to(dtype=x_norm.dtype) if self.proj.bias is not None else None
         g_t = self.omega_max * torch.tanh(F.linear(x_norm, weight, bias))
+        if self.tau_gate > 0.0:
+            gate_mask = g_t.abs() >= self.tau_gate
+            g_t = torch.where(gate_mask, g_t, torch.zeros_like(g_t))
 
         if self._last_omega is not None:
             prev_omega = self._last_omega
@@ -423,6 +462,9 @@ class SemanticGaugeConnection(nn.Module):
         weight = self.proj.weight.to(dtype=x_norm.dtype)
         bias = self.proj.bias.to(dtype=x_norm.dtype) if self.proj.bias is not None else None
         raw_g = self.omega_max * torch.tanh(F.linear(x_norm, weight, bias))
+        if self.tau_gate > 0.0:
+            gate_mask = raw_g.abs() >= self.tau_gate
+            raw_g = torch.where(gate_mask, raw_g, torch.zeros_like(raw_g))
 
         # Viscous flow EMA diffusion smoothing with optional phase attractor
         omega = causal_viscous_ema(

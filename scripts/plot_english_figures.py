@@ -49,7 +49,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5.2), dpi=300)
 
 # Panel 1: Attention Contrast Ratio
 ax1.plot(lengths, std_acrs, 'o--', color='#d9534f', label='Standard RoPE Baseline', linewidth=2.0, markersize=7)
-ax1.plot(lengths, mob_acrs, 's-', color='#2e6da4', label='SG-Möbius-RoPE (Ours, +118.0% at 18k)', linewidth=2.5, markersize=8)
+ax1.plot(lengths, mob_acrs, 's-', color='#2e6da4', label='SG-Möbius-RoPE (Ours, +88.5% at 18k)', linewidth=2.5, markersize=8)
 ax1.set_xscale('log', base=2)
 ax1.set_xlabel('Context Sequence Length (Tokens)', fontweight='bold')
 ax1.set_ylabel('Attention Contrast Ratio (ACR)', fontweight='bold')
@@ -115,7 +115,7 @@ vmax = np.percentile(np.abs(diff_matrix), 99.5)
 
 fig, ax = plt.subplots(figsize=(9, 7.5), dpi=300)
 im = ax.imshow(diff_matrix, cmap="coolwarm", aspect="auto", origin="upper", vmin=-vmax, vmax=vmax)
-ax.set_title("Figure 3: Differential Attention Map (SG-Möbius minus Standard RoPE)\n[Blue = Destructive Cancellation, Red = Enhanced Focal Attention]", fontweight='bold', pad=12)
+ax.set_title("Differential Attention Map (SG-Möbius minus Standard RoPE)\n[Blue = Destructive Cancellation, Red = Enhanced Focal Attention]", fontweight='bold', pad=12)
 ax.set_xlabel("Key Token Index (j)", fontweight='bold')
 ax.set_ylabel("Query Token Index (i)", fontweight='bold')
 cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
@@ -127,16 +127,16 @@ plt.savefig(os.path.join(assets_dir, "fig3_differential_heatmap.png"), bbox_inch
 plt.close()
 
 # -----------------------------------------------------------------------------
-# FIGURE 4: Continuous Torsion Rate omega(t) and Smooth Möbius Phase Flow Phi(t)
+# FIGURE 4: Continuous Phase Velocity omega(t) and Smooth Phase Flow Phi(t)
 # -----------------------------------------------------------------------------
-print("[4/6] Rendering Figure 4: Dynamic Gauge Profile...")
+print("[4/6] Rendering Figure 4: Dynamic Phase Velocity Profile...")
 # Real Qwen sequence length for arbitrary inversion scenario (298 tokens)
 raw_omega = data["arb_omega"]
 tokens = np.arange(len(raw_omega))
 pivot_center = 51.0
 tau_flow = 8.0
 
-# Smooth continuous torsion rate omega(t) in [-omega_max, omega_max] via sech^2 profile
+# Smooth continuous phase velocity omega(t) in [-omega_max, omega_max] via sech^2 profile
 # satisfies integral = pi, max_omega = pi / (4 * tau) approx 0.0982 rad/token << pi
 omega_continuous = (np.pi / (4.0 * tau_flow)) * (1.0 / np.cosh((tokens - pivot_center) / (2.0 * tau_flow)))**2
 
@@ -146,11 +146,11 @@ phi_continuous = np.pi / (1.0 + np.exp(-(tokens - pivot_center) / tau_flow))
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 7.5), sharex=True, dpi=300)
 
 ax1.plot(tokens, omega_continuous, color="#D9381E", linewidth=2.5,
-         label=r"Continuous Torsion Rate $\omega(t) \in [-\omega_{\max}, \omega_{\max}]$ ($\omega_{\max} \approx 0.098 \ll \pi$)")
+         label=r"Continuous Phase Velocity $\omega(t) \in [-\omega_{\max}, \omega_{\max}]$ ($\omega_{\max} \approx 0.098 \ll \pi$)")
 ax1.axvline(x=int(pivot_center), color="#8B0000", linestyle="--", linewidth=1.5, alpha=0.8,
             label=f"Semantic Inversion Center ($t \\approx {int(pivot_center)}$)")
-ax1.set_ylabel(r"Torsion Rate $\omega(t)$ (rad/token)", fontweight='bold')
-ax1.set_title("Figure 4: Continuous Semantic Torsion Rate and Smooth Möbius Phase Flow", fontweight='bold', pad=12)
+ax1.set_ylabel(r"Phase Velocity $\omega(t)$ (rad/token)", fontweight='bold')
+ax1.set_title("Continuous Semantic Phase Velocity and Smooth Phase Flow", fontweight='bold', pad=12)
 ax1.set_ylim(-0.01, 0.12)
 ax1.grid(True, linestyle="--", alpha=0.3)
 ax1.legend(loc="upper right", frameon=True, framealpha=0.92)
