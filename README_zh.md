@@ -11,9 +11,10 @@
 [![实测验证模型: Qwen3.5-9B](https://img.shields.io/badge/实测模型-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![实测硬件: 双路 Nvidia T4](https://img.shields.io/badge/实测硬件-双路%20Nvidia%20T4%20(原生%20FP16)-green.svg)](experiments/)
 [![预印本: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
+[![CI 论文与全量包构建](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml)
 
 <p align="center">
-  <b>中文说明文档</b> | <a href="README.md"><b>English Documentation (英文)</b></a> | <a href="paper/PAPER_ZH.md"><b>中文完整论文</b></a>
+  <b>中文说明文档</b> | <a href="README.md"><b>English Documentation (英文)</b></a> | <a href="https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml"><b>📦 CI 编译论文包下载 (ZIP)</b></a>
 </p>
 
 > **基于双重覆盖规范几何的大语言模型正定性 Softmax 瓶颈严谨解决方案。**  
@@ -668,6 +669,13 @@ python scripts/monitor_kaggle.py
 python scripts/plot_english_figures.py
 # 重新生成 assets/ 与 paper/figures/ 下的全部 6 幅 300 DPI 高清科研图表
 ```
+
+---
+
+## 📦 论文与全量成果包下载 (CI Artifacts)
+
+本项目论文与全套中英文技术文档已接入 GitHub Actions CI 自动化构建流水线。每次代码提交后，CI 会自动编译并打包：
+- **[GitHub Actions CI 论文成果包下载](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml)**：点击最新一次成功的构建记录，在页面下方的 **Artifacts** 区域即可一键下载 **`paper-bundle.zip`**（包含英文预印本 PDF、中文预印本源文件、中文技术文档、高分辨率图表及 BibTeX 引用数据库）。
 
 ---
 

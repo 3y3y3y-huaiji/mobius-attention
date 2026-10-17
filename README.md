@@ -11,9 +11,10 @@
 [![Model Target: Qwen3.5-9B](https://img.shields.io/badge/Verified%20Model-Qwen3.5--9B-blueviolet.svg)](https://huggingface.co/Qwen/Qwen3.5-9B)
 [![Hardware: Dual Nvidia T4](https://img.shields.io/badge/Evaluated%20On-Dual%20Nvidia%20T4%20(FP16)-green.svg)](experiments/)
 [![Preprint: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
+[![CI: Build & Paper Bundle](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml)
 
 <p align="center">
-  <b>English</b> | <a href="README_zh.md"><b>中文说明文档 (Chinese)</b></a> | <a href="paper/PAPER_ZH.md"><b>中文论文 (Chinese Paper)</b></a>
+  <b>English</b> | <a href="README_zh.md"><b>中文说明文档 (Chinese)</b></a> | <a href="https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml"><b>📦 Download Paper Bundle (ZIP from CI)</b></a>
 </p>
 
 > **A Rigorous Geometric Solution to the Positive-Definite Softmax Bottleneck in Large Language Models.**  
@@ -668,6 +669,13 @@ python scripts/monitor_kaggle.py
 python scripts/plot_english_figures.py
 # Generates all 6 publication figures (300 DPI) in assets/ and paper/figures/
 ```
+
+---
+
+## 📦 Paper & Documentation Bundle Downloads (CI Artifacts)
+
+Preprints and complete technical documentation are built automatically via GitHub Actions CI on every commit:
+- **[GitHub Actions CI Paper Artifacts Page](https://github.com/3y3y3y-huaiji/mobius-attention/actions/workflows/ci.yml)**: Click on the latest green run to download **`paper-bundle.zip`** under the **Artifacts** section (includes compiled preprint PDF, Chinese documentation, LaTeX sources, figures, and BibTeX database).
 
 ---
 
