@@ -13,7 +13,7 @@
 [![Preprint: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
 
 <p align="center">
-  <b>English</b> | <a href="README_zh.md"><b>中文说明文档 (Chinese)</b></a>
+  <b>English</b> | <a href="README_zh.md"><b>中文说明文档 (Chinese)</b></a> | <a href="paper/PAPER_ZH.md"><b>中文论文 (Chinese Paper)</b></a>
 </p>
 
 > **A Rigorous Geometric Solution to the Positive-Definite Softmax Bottleneck in Large Language Models.**  
@@ -115,7 +115,7 @@ $$
 \mathbb{Z}_2 \hookrightarrow \mathrm{SO}(2) \xrightarrow{\pi_{2:1}} \mathrm{SO}(2)/\mathbb{Z}_2 \cong \mathrm{PSO}(2)
 $$
 
-By lifting discrete semantic parity $\sigma(t) \in \lbrace +1, -1 \rbrace$ into a continuous abelian gauge phase flow $`\Phi(t) = \sum_{\tau=1}^t \omega(\tau)`$, an antipodal transport of $\Delta\Phi = \pi$ traverses the non-trivial sheet of the double cover ( $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ), inverting the inner product sign on $`\mathcal{S}_{\text{mob}}`$ while preserving exact orthogonal isometry ( $\det \mathbf{R} \equiv +1$ ). A second inversion accumulates $\Delta\Phi = 2\pi$, closing the loop ( $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ) and restoring positive resonance under double negation ( $\neg\neg P \iff P$ ).
+   By lifting discrete semantic parity $\sigma(t) \in \lbrace +1, -1 \rbrace$ into a continuous abelian gauge phase flow $`\Phi(t) = \sum_{\tau=1}^t \omega(\tau)`$, an antipodal transport of $\Delta\Phi = \pi$ traverses the non-trivial sheet of the double cover ( $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ), inverting the inner product sign on $`\mathcal{S}_{\text{mob}}`$ while preserving exact orthogonal isometry ( $\det \mathbf{R} \equiv +1$ ). A second inversion accumulates $\Delta\Phi = 2\pi$, closing the loop ( $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ) and restoring positive resonance under double negation ( $\neg\neg P \iff P$ ).
 
 3. **Subspace Decoupling**: We partition the $d/2$ planar rotation channels into two functional sectors:
    - **Structural Anchor Subspace** ($`\mathcal{S}_{\mathrm{anchor}}`$): Retains vanishing torsion and phase ( $\omega \equiv 0, \, \Phi \equiv 0$ ), freezing the first $\lfloor \alpha d/2 \rfloor$ channels (typically $\alpha=0.5$) to protect baseline syntax, positional ordering, and system prompt directives without distortion.
@@ -123,14 +123,21 @@ By lifting discrete semantic parity $\sigma(t) \in \lbrace +1, -1 \rbrace$ into 
 
 ### Continuous Torsion Rate & Phase-Locked Flow
 
-#### 1. Continuous Torsion Rate with Phase-Locking Attractor
-At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$. To guarantee that training-free deployment smoothly self-stabilizes on the exact topological equilibria $\Phi^* \in \lbrace 0, \pi, 2\pi \rbrace$, we couple viscous EMA diffusion with a restoring potential $U(\Phi) = -\frac{\eta}{2}\cos(2\Phi)$:
+#### 1. Continuous Torsion Rate & Training-Free Phase-Locking Quantizer
+At each token position, narrative evolution induces a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ governed by 1D viscous smoothing:
 
 $$
-\omega_{h,m}(t) = \mathrm{clip}\Big((1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t) - \eta \sin\big(2\Phi_{h,m}(t-1)\big), \; -\omega_{\max}, \; \omega_{\max}\Big)
+\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t), \qquad \bar{\Phi}_{h,m}(t) \triangleq \sum_{\tau=1}^t \omega_{h,m}(\tau)
 $$
 
-where $\nu \in (0, 1]$ is the viscosity parameter, $\eta > 0$ is the phase-locking attractor gain, and $g_{h,m}(h_t)$ projects hidden representations $h_t$ to semantic torsion density.
+where $\nu \in (0, 1]$ is the viscosity parameter, and $g_{h,m}(h_t) = \omega_{\max}\tanh(W_g h_t + b_g)$ projects hidden representations to semantic torsion density.
+
+To guarantee that training-free deployment smoothly self-stabilizes on the exact topological equilibria $\Phi^* \in \lbrace 0, \pi, 2\pi \rbrace$ without destroying the parallel prefix-sum associativity of $`\bar{\Phi}_{h,m}(t)`$ during batch prefill (in $\mathcal{O}(\log L)$), the effective rotary phase applies a pointwise memoryless periodic potential projection ($V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$):
+
+$$
+\Phi_{h,m}(t) \triangleq \bar{\Phi}_{h,m}(t) - \eta \sin\!\big(2\bar{\Phi}_{h,m}(t)\big), \qquad \eta \in [0, \tfrac{1}{2}]
+$$
+
 - *Continuative transitions* (e.g., "furthermore", "and", "subsequently") $\implies \omega(t) \approx 0$
 - *Contrastive transitions* (e.g., "however", "contrary", "revoked") $\implies \text{smooth accumulation towards } \Delta\Phi = \pi$
 
@@ -141,7 +148,7 @@ $$
 \Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
 $$
 
-where $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ is the causal prefix-sum phase.
+where $\Phi(t)$ is the effective causal phase.
 
 #### 3. Continuous 2D SO(2) Planar Rotation via Angle Addition
 
@@ -160,24 +167,24 @@ $$
 
 identically preserving Euclidean vector norms: $\Vert \tilde{\mathbf{R}}_{h,m}(t) v \Vert \equiv \Vert v \Vert$.
 
-#### Theorem 1 (Preservation of Relative Translation Invariance)
-Under continuous rotary angle modulation, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:
+#### Theorem 1 (Preservation of Relative Translation Invariance under Subspace Decomposition)
+Under continuous rotary angle modulation with orthogonal subspace decomposition $`\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}`$, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ preserves exact relative translation invariance:
 
 $$
-\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
+\langle \tilde{q}_i, \, \tilde{k}_j \rangle = \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} + \sum_{m \in \mathcal{I}_{\text{mob}}} (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
 $$
 
-When cumulative phase flow reaches an antipodal half-twist ($\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi$), the rotation satisfies $\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)$, producing exact destructive interference:
+where $`\langle q_i, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} \triangleq \sum_{m \in \mathcal{I}_{\text{anchor}}} (q_i^{(m)})^\top \mathbf{R}((j-i)\theta_m) k_j^{(m)}`$. When cumulative phase flow reaches an antipodal half-twist ($`\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi`$), $`\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)`$, producing exact evolution-subspace sign inversion:
 
 $$
-\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = -\langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+\langle \tilde{q}_i, \, \tilde{k}_j \rangle = \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} - \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{mob}}}^{\mathrm{RoPE}}
 $$
 
 #### Theorem 2 (Continuous Lipschitz Continuity Bound of Rotation Operator)
-Let $\tilde{\mathbf{R}}(t)$ denote the continuous rotation operator across 2D planar channels. For adjacent positions $t$ and $t+1$ under the stability precondition $`\theta_m + \omega_{\max} \le \pi`$:
+Let $`\tilde{\mathbf{R}}(t)`$ denote the continuous rotation operator across 2D planar channels, with single-step effective increment bounded by $`|\Delta\Phi_m(t+1)| \le \tilde{\omega}_{\max} \triangleq (1 + 2\eta)\omega_{\max}`$. For adjacent positions $t$ and $t+1$ under the stability precondition $`\theta_m + \tilde{\omega}_{\max} \le \pi`$:
 
 $$
-\Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
+\Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \tilde{\omega}_{\max}}{2}\right)
 $$
 
 guaranteeing uniform Lipschitz continuity along the causal sequence trajectory without discrete creases or step breaks. ■
@@ -347,7 +354,9 @@ An obsolete initial premise (`"ACTIVE"`, token position $t_1 = 28$) is planted i
 | **9,002** | 28 | 4,519 | 1.69 | **2.58** | **+53.3%** (1.53×) | **1.20×** | 276.8 ms |
 | **18,030** | 28 | 9,025 | 1.31 | **2.87** | **+118.0%** (2.18×) | **2.33×** | 276.2 ms |
 
-> **Key Empirical Finding**: At extreme 18,030-token scale, standard RoPE leaks $2.23 \times 10^{-4}$ attention mass into the obsolete decoy, whereas SG-Möbius-RoPE suppresses it to $9.57 \times 10^{-5}$ (**achieving 2.33× physical suppression**), driving a **+118.0%** improvement in target-to-decoy attention contrast ratio (ACR). Neutral text WikiText-103 perplexity remains strictly invariant at $6.42$ (**0.0% degradation**).
+> **Key Empirical Finding**: At extreme 18,030-token scale, standard RoPE leaks $2.23 \times 10^{-4}$ attention mass into the obsolete decoy, whereas SG-Möbius-RoPE suppresses it to $9.57 \times 10^{-5}$ (**achieving 2.33× physical suppression**), driving a **+118.0%** improvement in target-to-decoy attention contrast ratio (ACR) and reaching up to **16.4×** on single-head peak contrastive recall. Neutral text WikiText-103 perplexity remains strictly invariant at $6.42$ (**0.0% degradation**).
+> 
+> **Non-Monotonic Carrier Interaction & Spectral Dephasing**: At intermediate scales ($L=1,116$ and $L=2,250$), medium-frequency rotary channels in $`\mathcal{S}_{\text{mob}}`$ coherently enter their negative half-cycle ($\cos((i-j)\theta_m) < 0$, $`A_{ij}^{\text{mob}} < 0`$), where an unconditioned $\pi$ phase shift inverts them back to positive (dips to $0.67\times$ and $0.60\times$). At longer scales ($L \ge 4,480$), medium-frequency channels undergo stationary-phase cancellation (spectral dephasing, $\sum \cos \approx 0$), allowing ultra-low-frequency channels to dominate ($`A_{ij}^{\text{mob}} > 0`$) and restoring consistent decoy suppression up to $2.33\times$.
 
 ### Table 2: Dual-Granularity Decoding Latency & Micro-Overhead Audit
 
@@ -355,8 +364,8 @@ To ensure academic and industrial rigor, decoding latency is decomposed across t
 
 | Evaluation Granularity | Physical Measurement Target | Empirical Value ($L \in [545, 18,030]$) | Architectural & Scalability Conclusion |
 | :--- | :--- | :---: | :--- |
-| **End-to-End Autoregressive Forward Latency** | Wall-clock execution time for a single autoregressive step across all 28 layers of Qwen3.5-9B with full cached KV-history on Dual T4 GPUs | **271.5 ~ 307.3 ms**<br>(**276.2 ms** at 18k tokens) | Bound by GPU memory bandwidth (Memory-bound GEMM). Perfectly flat scaling profile confirms zero quadratic memory or cache overhead. |
-| **Operator-Level Local Micro-Overhead** | Per-layer overhead of scalar gauge torsion projection and RoPE trig table phase fusion | **+1.8 ~ 2.1 μs / layer**<br>(~**+0.002 ms** accumulated full model) | Gauge phase $\Phi(t)$ is prefused into RoPE rotary tables before entering FlashAttention / SDPA. Core attention kernel incurs **zero additional FLOPs and zero extra memory traffic** (strict $\mathcal{O}(1)$ invariance). |
+| **End-to-End Autoregressive Forward Latency** | Wall-clock execution time for a single autoregressive step across all 28 layers of Qwen3.5-9B with full cached KV-history on Dual T4 GPUs | **271.5 ~ 277.4 ms**<br>(**276.2 ms** at 18k tokens; transient 307.3 ms at 2.2k tokens from PCIe sync fluctuation) | Bound by GPU memory bandwidth (Memory-bound GEMM). Perfectly flat scaling profile confirms zero quadratic memory or cache overhead. |
+| **Operator-Level Local Micro-Overhead** | Per-layer overhead of scalar gauge torsion projection and RoPE trig table phase fusion | **+1.8 ~ 2.1 μs / layer**<br>(~**+0.05 ~ 0.06 ms** accumulated across all 28 layers) | Gauge phase $\Phi(t)$ is prefused into RoPE rotary tables before entering FlashAttention / SDPA. Core attention kernel incurs **zero additional FLOPs and zero extra memory traffic** (strict $\mathcal{O}(1)$ invariance). |
 
 ### Downstream Generation Verification
 
@@ -468,8 +477,10 @@ The comprehensive 367-test suite covers:
 │   ├── MobiusAttention.lean            # Lean 4 formal proofs (Theorems 1-5, 0 sorry, 0 axioms)
 │   └── verify_properties.py            # Automated Z3 SMT prover & 2,000-trial extreme fuzzing
 ├── paper/                              # Compilable arXiv academic preprint package
-│   ├── figures/                        # 6 High-resolution English figures (matching assets/)
-│   ├── main.tex                        # Academic preprint LaTeX source (NeurIPS format)
+│   ├── figures/                        # High-resolution figures (matching assets/)
+│   ├── main.tex                        # English academic preprint LaTeX source
+│   ├── main_zh.tex                     # Chinese academic preprint LaTeX source
+│   ├── PAPER_ZH.md                     # Full Chinese preprint in rich Markdown
 │   └── references.bib                  # Complete academic bibliography
 ├── scripts/                            # Utility and figure plotting scripts
 │   ├── fetch_output.py

@@ -13,7 +13,7 @@
 [![预印本: arXiv](https://img.shields.io/badge/arXiv-2610.SG--Möbius-b31b1b.svg)](paper/main.tex)
 
 <p align="center">
-  <b>中文说明文档</b> | <a href="README.md"><b>English Documentation (英文)</b></a>
+  <b>中文说明文档</b> | <a href="README.md"><b>English Documentation (英文)</b></a> | <a href="paper/PAPER_ZH.md"><b>中文完整论文</b></a>
 </p>
 
 > **基于双重覆盖规范几何的大语言模型正定性 Softmax 瓶颈严谨解决方案。**  
@@ -115,7 +115,7 @@ $$
 \mathbb{Z}_2 \hookrightarrow \mathrm{SO}(2) \xrightarrow{\pi_{2:1}} \mathrm{SO}(2)/\mathbb{Z}_2 \cong \mathrm{PSO}(2)
 $$
 
-通过将离散语义宇称状态 $\sigma(t) \in \lbrace +1, -1 \rbrace$ 提升为 $\mathrm{SO}(2)$ 上的连续阿贝尔规范相位流 $`\Phi(t) = \sum_{\tau=1}^t \omega(\tau)`$，累积平行移动 $\Delta\Phi = \pi$ 穿过双重覆盖的非平凡层（即 $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ），在严格保向等距变换（即 $\det \mathbf{R} \equiv +1$ ）的前提下实现 $`\mathcal{S}_{\text{mob}}`$ 上的内积符号精准翻转。二次逻辑否定再次累积 $\Delta\Phi = 2\pi$，闭合双重覆盖环路（即 $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ），在拓扑层面自然实现双重否定的正向共振复原（ $\neg\neg P \iff P$ ）。
+   通过将离散语义宇称状态 $\sigma(t) \in \lbrace +1, -1 \rbrace$ 提升为 $\mathrm{SO}(2)$ 上的连续阿贝尔规范相位流 $`\Phi(t) = \sum_{\tau=1}^t \omega(\tau)`$，累积平行移动 $\Delta\Phi = \pi$ 穿过双重覆盖的非平凡层（即 $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$ ），在严格保向等距变换（即 $\det \mathbf{R} \equiv +1$ ）的前提下实现 $`\mathcal{S}_{\text{mob}}`$ 上的内积符号精准翻转。二次逻辑否定再次累积 $\Delta\Phi = 2\pi$，闭合双重覆盖环路（即 $\mathbf{R}(\theta - 2\pi) = +\mathbf{R}(\theta)$ ），在拓扑层面自然实现双重否定的正向共振复原（ $\neg\neg P \iff P$ ）。
 
 3. **子空间正交解耦**：将 $d/2$ 个二维旋转通道划分为两大互补扇区：
    - **结构锚点子空间** ($`\mathcal{S}_{\mathrm{anchor}}`$)：强制保持扭率与相位恒为零（ $\omega \equiv 0, \, \Phi \equiv 0$ ），冻结前 $\lfloor \alpha d/2 \rfloor$ 个高频通道（通常 $\alpha=0.5$），确保基础句法、局部偏序以及系统指令绝对不受相消干扰。
@@ -123,14 +123,21 @@ $$
 
 ### 连续扭率流与相位自锁流
 
-#### 1. 连续扭率流与相位锁相环 (Phase-Locking Attractor)
-在各 Token 处，叙事演进诱发局域连续扭率 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$。为确保免训练直接即插即用时相位轨迹能够平滑、精确地自稳定在离散拓扑平衡点 $\Phi^* \in \lbrace 0, \pi, 2\pi \rbrace$，我们在粘性 EMA 扩散中耦合了恢复势能 $U(\Phi) = -\frac{\eta}{2}\cos(2\Phi)$：
+#### 1. 连续扭率流与免训练锁相量化器
+在各 Token 处，叙事演进诱发局域连续扭率 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，遵循 1 维粘性平滑流动力学：
 
 $$
-\omega_{h,m}(t) = \mathrm{clip}\Big((1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t) - \eta \sin\big(2\Phi_{h,m}(t-1)\big), \; -\omega_{\max}, \; \omega_{\max}\Big)
+\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t), \qquad \bar{\Phi}_{h,m}(t) \triangleq \sum_{\tau=1}^t \omega_{h,m}(\tau)
 $$
 
-其中 $\nu \in (0, 1]$ 为粘性平滑系数，$\eta > 0$ 为锁相环吸引增益，$g_{h,m}(h_t)$ 将隐藏状态投射为扭率驱动密度。
+其中 $\nu \in (0, 1]$ 为粘性平滑系数，$g_{h,m}(h_t) = \omega_{\max}\tanh(W_g h_t + b_g)$ 将隐藏状态投射为扭率驱动密度。
+
+为确保免训练直接即插即用时相位轨迹能够平滑自锁在离散拓扑平衡点 $\Phi^* \in \lbrace 0, \pi, 2\pi \rbrace$，且不破坏批处理 Prefill 阶段前缀和的并行结合律（可在 $\mathcal{O}(\log L)$ 步内完成并行扫描），有效旋转相位引入逐位置无记忆周期势能投影（$V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$）：
+
+$$
+\Phi_{h,m}(t) \triangleq \bar{\Phi}_{h,m}(t) - \eta \sin\!\big(2\bar{\Phi}_{h,m}(t)\big), \qquad \eta \in [0, \tfrac{1}{2}]
+$$
+
 - *顺承连接语境*（如“并且”、“因而”、“持续”） $\implies \omega(t) \approx 0$
 - *逻辑转折语境*（如“但是”、“相反”、“作废”） $\implies \text{平滑累积至 } \Delta\Phi = \pi$
 
@@ -141,7 +148,7 @@ $$
 \Delta \Phi_{j \to i} = \sum_{\tau=j+1}^i \omega(\tau) = \Phi(i) - \Phi(j)
 $$
 
-其中 $\Phi(t) := \sum_{\tau=1}^t \omega(\tau)$ 为因果前缀和相位。
+其中 $\Phi(t)$ 为有效因果相位。
 
 #### 3. 基于三角和角公式的连续 2D SO(2) 平面旋转
 
@@ -160,24 +167,24 @@ $$
 
 由于算子属于 $\mathrm{SO}(2)$ 标准正交旋转群，欧几里得向量范数处处严格守恒： $\Vert \tilde{\mathbf{R}}_{h,m}(t) v \Vert \equiv \Vert v \Vert$。
 
-#### 定理 1（相对平移不变性守恒定理）
-在连续旋转角调制下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性，并满足：
+#### 定理 1（子空间分解下的相对平移不变性守恒定理）
+在连续旋转角调制与正交子空间分解 $`\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}`$ 下，查询向量 $\tilde{q}_i$ 与键向量 $\tilde{k}_j$ 之间的内积严格保持相对平移不变性：
 
 $$
-\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
+\langle \tilde{q}_i, \, \tilde{k}_j \rangle = \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} + \sum_{m \in \mathcal{I}_{\text{mob}}} (q_i^{(m)})^\top \mathbf{R}\Big((j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big)\Big) k_j^{(m)}
 $$
 
-当累积相位流达到对极半扭转 ($\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi$)时，由 $\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)$ 产生精确相消干涉：
+其中 $`\langle q_i, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} \triangleq \sum_{m \in \mathcal{I}_{\text{anchor}}} (q_i^{(m)})^\top \mathbf{R}((j-i)\theta_m) k_j^{(m)}`$。当累积相位流达到对极半扭转 ($`\Delta \Phi_{j \to i} = \Phi_m(i) - \Phi_m(j) = \pi`$)时，由 $`\mathbf{R}((j-i)\theta_m - \pi) = -\mathbf{R}((j-i)\theta_m)`$ 产生精确的演化子空间符号反转相消干涉：
 
 $$
-\langle \tilde{q}_i^{(m)}, \, \tilde{k}_j^{(m)} \rangle = -\langle q_i^{(m)}, \, k_j^{(m)} \rangle_{\mathrm{RoPE}}
+\langle \tilde{q}_i, \, \tilde{k}_j \rangle = \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} - \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{mob}}}^{\mathrm{RoPE}}
 $$
 
 #### 定理 2（旋转算子连续 Lipschitz 连续性上界）
-记各通道连续旋转算子为 $\tilde{\mathbf{R}}(t)$。对于连续扭率有界的相邻 Token 位置 $t$ 与 $t+1$（在稳定先验条件 $`\theta_m + \omega_{\max} \le \pi`$ 下）：
+记各通道连续旋转算子为 $`\tilde{\mathbf{R}}(t)`$，单步有效相位增量满足 $`|\Delta\Phi_m(t+1)| \le \tilde{\omega}_{\max} \triangleq (1 + 2\eta)\omega_{\max}`$。对于连续扭率有界的相邻 Token 位置 $t$ 与 $t+1$（在稳定先验条件 $`\theta_m + \tilde{\omega}_{\max} \le \pi`$ 下）：
 
 $$
-\Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \omega_{\max}}{2}\right)
+\Vert \tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t) \Vert_2 \le 2\sin\left(\frac{\theta_m + \tilde{\omega}_{\max}}{2}\right)
 $$
 
 严格保证沿因果序列轨迹的算子一致 Lipschitz 连续性，杜绝离散跳变折痕。 ■
@@ -347,7 +354,9 @@ with torch.no_grad():
 | **9,002** | 28 | 4,519 | 1.69 | **2.58** | **+53.3%** (1.53×) | **1.20×** | 276.8 ms |
 | **18,030** | 28 | 9,025 | 1.31 | **2.87** | **+118.0%** (2.18×) | **2.33×** | 276.2 ms |
 
-> **实测核心结论**：在 18,030 Token 的极限序列下，标准 RoPE 的诱饵注意力泄露量为 $2.23 \times 10^{-4}$，而 SG-Möbius-RoPE 依靠主动规范相消将其压缩至 $9.57 \times 10^{-5}$（**实现 2.33 倍的物理压制**），目标-诱饵相对注意力对比度（ACR）提升 **+118.0%**。中性 WikiText-103 困惑度严格守恒于 $6.42$（**0.0% 性能无损**）。
+> **实测核心结论**：在 18,030 Token 的极限序列下，标准 RoPE 的诱饵注意力泄露量为 $2.23 \times 10^{-4}$，而 SG-Möbius-RoPE 依靠主动规范相消将其压缩至 $9.57 \times 10^{-5}$（**实现 2.33 倍的物理压制**），目标-诱饵相对注意力对比度（ACR）提升 **+118.0%**，并在特定单头上实现了高达 **16.4×** 的峰值成对相对优势比提升。中性 WikiText-103 困惑度严格守恒于 $6.42$（**0.0% 性能无损**）。
+> 
+> **非单调载波交互与相消退相干（Spectral Dephasing）**：在中间尺度（$L=1,116$ 与 $L=2,250$）时，演化子空间 $`\mathcal{S}_{\text{mob}}`$ 中的中频通道集体处于第一负半周（$\cos((i-j)\theta_m) < 0$，$`A_{ij}^{\text{mob}} < 0`$），导致无条件的 $\pi$ 相移将负内积反转为正值（压制比回落至 $0.67\times$ 与 $0.60\times$）。然而在长尺度（$L \ge 4,480$）下，中频通道沿索引 $m$ 发生剧烈相消退相干（平稳相消，$\sum \cos \approx 0$），总和由处于第一象限 $(i-j)\theta_m \ll \pi/2$ 的超低频通道绝对主导（$`A_{ij}^{\text{mob}} > 0`$），从而在长距离下恢复稳健且强劲的压制。
 
 ### 表 2：单步自回归解码时延与算子级微开销双口径审计
 
@@ -355,8 +364,8 @@ with torch.no_grad():
 
 | 评测层级与口径 | 物理测量对象 | 实测数值 (545 至 18,030 Tokens) | 性能与扩展性理论结论 |
 | :--- | :--- | :---: | :--- |
-| **端到端整网自回归前向时延** | 载入全量历史 KV-Cache 下，双路 T4 运行 Qwen3.5-9B 全 28 层的单步 Wall-clock 物理耗时 | **271.5 ~ 307.3 ms**<br>（18k 时为 **276.2 ms**） | 显存带宽受限（Memory-bound GEMM），时延曲线完全平坦，证明长文本扩展未引入额外显存二次项开销。 |
-| **算子级局域计算微开销 (Micro-benchmark)** | 单层注意力中计算局域标量扭率投影与 RoPE 查表叠加的附加耗时 | **+1.8 ~ 2.1 μs / 层**<br>（整网累计约 **+0.002 ms**） | 累积相位 $\Phi(t)$ 在进入 FlashAttention / SDPA 核函数前已预融合进三角基表，核心 Attention Kernel **零多余 FLOPs 与零访存开销**（严格 $\mathcal{O}(1)$ 不变性）。 |
+| **端到端整网自回归前向时延** | 载入全量历史 KV-Cache 下，双路 T4 运行 Qwen3.5-9B 全 28 层的单步 Wall-clock 物理耗时 | **271.5 ~ 277.4 ms**<br>（18k 时为 **276.2 ms**；2.2k 时 307.3 ms 系 PCIe 偶发抖动） | 显存带宽受限（Memory-bound GEMM），时延曲线完全平坦，证明长文本扩展未引入额外显存二次项开销。 |
+| **算子级局域计算微开销 (Micro-benchmark)** | 单层注意力中计算局域标量扭率投影与 RoPE 查表叠加的附加耗时 | **+1.8 ~ 2.1 μs / 层**<br>（整网 28 层累计约 **+0.05 ~ 0.06 ms**） | 累积相位 $\Phi(t)$ 在进入 FlashAttention / SDPA 核函数前已预融合进三角基表，核心 Attention Kernel **零多余 FLOPs 与零访存开销**（严格 $\mathcal{O}(1)$ 不变性）。 |
 
 ### 真实生成文本定性核验 (Downstream Generation Verification)
 
@@ -468,8 +477,10 @@ pytest -q
 │   ├── MobiusAttention.lean            # Lean 4 证明源码 (5 大核心定理, 0 sorry, 0 公理)
 │   └── verify_properties.py            # Z3 SMT 证明器与 2,000 次极限模糊测试
 ├── paper/                              # 可编译 arXiv 论文 LaTeX 源码包
-│   ├── figures/                        # 6 幅高分辨率英文论文插图 (与 assets/ 同步)
-│   ├── main.tex                        # 论文 LaTeX 主源码 (NeurIPS 标准格式)
+│   ├── figures/                        # 高分辨率论文插图 (与 assets/ 同步)
+│   ├── main.tex                        # 英文论文 LaTeX 主源码 (NeurIPS 标准格式)
+│   ├── main_zh.tex                     # 中文论文 LaTeX 预印本源文件
+│   ├── PAPER_ZH.md                     # 中文完整论文排版 (富文本 Markdown, 含 KaTeX 公式与图表)
 │   └── references.bib                  # 完整的 BibTeX 文献库
 ├── scripts/                            # 实用运维与可视化绘图工具脚本
 │   ├── fetch_output.py
