@@ -46,12 +46,16 @@ def test_definition1_gate_deadzone_and_activation():
 
     # 2. Super-threshold positive input: z = 1.0 > 0.50 -> excess = 0.50
     # softsign(0.50) = 0.50 / 1.50 = 1/3
-    # Expected raw_g = 0.05 * (1/3) approx 0.01667
+    # Expected raw gate: g(h_t) = 0.05 * (1/3) = 0.016667 rad/step
+    # Smoothed velocity at initial step (nu = 0.5): omega_t = nu * g(h_t) = 0.008333 rad/step
+    raw_g_val = gauge._compute_discourse_gate(torch.tensor([1.0]))
+    assert abs(raw_g_val.item() - (0.05 / 3.0)) < 1e-5, f"Raw gate mismatch: {raw_g_val.item()}"
+
     x_super = torch.zeros(1, 1, hidden_dim)
     x_super[0, 0, 0] = 1.0
     gauge.reset_state()
     o_step, p_step = gauge.step(x_super[0, 0])
-    assert o_step.item() > 0.0, f"Expected active velocity, got {o_step.item()}"
+    assert abs(o_step.item() - (0.05 / 6.0)) < 1e-5, f"Smoothed velocity mismatch: {o_step.item()}"
     assert o_step.item() <= omega_max
 
     # 3. Super-threshold negative input: z = -1.2 < -0.50 -> excess = -0.70

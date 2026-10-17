@@ -360,11 +360,11 @@ In IEEE 754 half-precision (FP16) arithmetic with unit roundoff $u = 2^{-11} \ap
 \begin{equation}
 |\mathrm{fl}(\bar{\Phi}_L) - \bar{\Phi}_L| \le D \cdot u \cdot M_\Phi + \mathcal{O}(u^2)
 \end{equation}
-where $M_\Phi \triangleq \sum_{\tau=0}^{L-1} |\omega_\tau| \le K\pi$ represents the total variation of phase velocity across $K$ narrative reversal turns. Under the condition that cumulative narrative reversal phase change satisfies $M_\Phi \le 10\pi$ ($K \le 10$ discourse turns, guaranteed on standard prose by the dead-zone barrier $\tau_{\text{gate}}$ suppressing non-discourse activation) across $L \le 18,030$ ($D = 15$), the maximum accumulated roundoff error in the prefix summation is bounded by:
+where $M_\Phi \triangleq \sum_{\tau=0}^{L-1} |\omega_\tau| \le K\pi$ represents the total variation of phase velocity across $K$ narrative reversal turns. Under the operational benchmark regime of up to $K \le 10$ discourse turns ($M_\Phi \le 10\pi$, with spurious activation on expository text quenched by the dead-zone barrier $\tau_{\text{gate}}$) across sequence lengths $L \le 18,030$ ($D = 15$), the maximum accumulated roundoff error in the prefix summation is analytically bounded by:
 \begin{equation}
 |\Delta \bar{\Phi}_L| \le 15 \times (4.88 \times 10^{-4}) \times (10\pi) \approx 0.230\,\text{rad} \approx 13.2^\circ < \frac{\pi}{6}
 \end{equation}
-Because $|\Delta \bar{\Phi}_L| < \frac{\pi}{6}$, the accumulated numerical drift resides strictly inside the non-trivial attractor basin of the periodic potential $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$, ensuring that the phase-locking quantizer continuously quenches numerical drift without spurious sign flips. For extreme contexts exceeding $K > 10$ dense narrative turns, standard mixed precision (accumulating the scalar prefix phase sum in FP32 before casting to FP16) eliminates cumulative prefix drift to $< 10^{-6}$ rad across arbitrary sequence lengths.
+Because $|\Delta \bar{\Phi}_L| < \frac{\pi}{6}$, the accumulated numerical drift resides strictly inside the non-trivial attractor basin of the periodic potential $V(\bar{\Phi}) = -\frac{\eta}{2}\cos(2\bar{\Phi})$, ensuring that the phase-locking quantizer continuously quenches numerical drift without spurious sign flips. For extreme contexts exceeding $K > 10$ dense narrative turns, standard mixed precision (accumulating the scalar prefix phase sum in FP32 before casting to FP16) bounds cumulative prefix drift to $< 10^{-5}$ rad across ultra-long contexts up to $L = 10^6$ tokens.
 \end{proposition}
 
 \paragraph{System Implementation via Epilogue Angle Fusion.}
