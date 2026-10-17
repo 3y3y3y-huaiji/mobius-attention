@@ -129,6 +129,7 @@ def generate_table1_scaling(json_path: str, output_tex: str):
         "\\end{tabular}",
         "\\caption{\\textbf{Multi-Scale Scaling Benchmark on Qwen3.5-9B (native FP16, dual Nvidia Tesla T4 GPUs).} All metrics are computed strictly from unrounded raw FP64 attention probabilities and formatted to 3 significant figures via the automated SSOT pipeline. At extreme context ($L = 18,030$), SG-M\\\"obius achieves a $2.33\\times$ physical suppression of obsolete decoy attention and expands Attention Contrast Ratio (ACR) by $+118.0\\%$ ($1.31 \\to 2.86$).}",
         "\\label{tab:scaling_benchmark}",
+        "\\label{tab:benchmark}",
         "\\end{table}"
     ])
 

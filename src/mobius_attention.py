@@ -14,6 +14,7 @@ Implements:
 3. Non-negative feature mapping and O(1) causal KV-cache invariance.
 """
 
+import math
 from typing import Optional, Tuple
 
 import torch
@@ -24,6 +25,8 @@ from .gauge_predictor import (
     HysteresisSemanticGaugePredictor,
     SemanticGaugeConnection,
     causal_viscous_ema,
+    parallel_affine_scan,
+    two_stage_associative_scan,
 )
 
 __all__ = [
@@ -38,6 +41,8 @@ __all__ = [
     "HysteresisSemanticGaugePredictor",
     "SemanticGaugeConnection",
     "causal_viscous_ema",
+    "parallel_affine_scan",
+    "two_stage_associative_scan",
 ]
 
 
@@ -114,7 +119,10 @@ class SGMobiusRotaryEmbedding(nn.Module):
         enable_nonnegative_map: bool = False,
         base: float = 10000.0,
         max_position_embeddings: int = 32768,
-        pre_fuse_angles: bool = True
+        pre_fuse_angles: bool = True,
+        adaptive_alpha: bool = False,
+        alpha_min: float = 0.5,
+        alpha_max: float = 0.875
     ):
         super().__init__()
         self.orig_rotary = original_rotary_emb
@@ -128,6 +136,9 @@ class SGMobiusRotaryEmbedding(nn.Module):
         self.base = float(base)
         self.max_position_embeddings = int(max_position_embeddings)
         self.pre_fuse_angles = pre_fuse_angles
+        self.adaptive_alpha = bool(adaptive_alpha)
+        self.alpha_min = float(alpha_min)
+        self.alpha_max = float(alpha_max)
 
         # Determine effective dimension and initialize inv_freq
         dim = self.head_dim or 64
@@ -162,6 +173,19 @@ class SGMobiusRotaryEmbedding(nn.Module):
                         return val
         return None
 
+    def compute_adaptive_alpha(self, seq_len: int) -> float:
+        r"""
+        Computes dynamic adaptive frequency band anchor ratio:
+            \alpha(L) = \min(0.875, \max(0.5, \frac{\ln(2L/\pi)}{\ln \theta_{\text{base}}}))
+        Guarantees that carrier angle (i - j)\theta_m < \pi/2 for all active evolution channels
+        and distances i - j \le L, completely eliminating carrier negative-half-cycle aliasing
+        and restoring decoy suppression factor > 1.0 at intermediate scales (L=1,116 and L=2,250).
+        """
+        if seq_len <= 1:
+            return self.anchor_ratio
+        val = math.log(2.0 * float(seq_len) / math.pi) / math.log(float(self.base))
+        return float(min(self.alpha_max, max(self.alpha_min, val)))
+
     def set_holonomy_phase(self, phi: Optional[torch.Tensor]):
         """Sets the active continuous phase flow tensor."""
         self._current_phi = phi
@@ -174,10 +198,16 @@ class SGMobiusRotaryEmbedding(nn.Module):
         """Clears active continuous phase flow tensor, reverting to standard RoPE."""
         self._current_phi = None
 
-    def get_subspace_mask(self, num_subspaces: int, device: torch.device) -> torch.Tensor:
+    def get_subspace_mask(
+        self,
+        num_subspaces: int,
+        device: torch.device,
+        seq_len: Optional[int] = None
+    ) -> torch.Tensor:
         r"""
         Constructs boolean mask over 2D rotation subspaces m \in {0, ..., num_subspaces - 1}.
         Returns True (1) for evolution subspaces \mathcal{S}_{\text{mob}}, False (0) for anchor \mathcal{S}_{\text{anchor}}.
+        When adaptive_alpha=True and seq_len is provided, dynamically calculates \alpha(L).
         """
         if self.subspace_mask is not None:
             if self.subspace_mask.numel() == num_subspaces:
@@ -185,18 +215,21 @@ class SGMobiusRotaryEmbedding(nn.Module):
             elif self.subspace_mask.numel() == num_subspaces * 2:
                 return self.subspace_mask[:num_subspaces].to(device=device)
 
+        if self.adaptive_alpha and seq_len is not None and seq_len > 1:
+            effective_alpha = self.compute_adaptive_alpha(seq_len)
+        else:
+            effective_alpha = self.anchor_ratio
+
         mask = torch.ones(num_subspaces, dtype=torch.bool, device=device)
-        num_anchor = int(round(num_subspaces * self.anchor_ratio))
+        num_anchor = int(round(num_subspaces * effective_alpha))
         num_anchor = max(0, min(num_anchor, num_subspaces))
 
-        if self.anchor_strategy == "high_freq":
+        if self.anchor_strategy in ("high_freq", "first_half"):
             # Higher frequencies (lower indices 0..num_anchor-1) are preserved as anchor
             mask[:num_anchor] = False
         elif self.anchor_strategy == "low_freq":
             # Lower frequencies (higher indices) are preserved as anchor
             mask[num_subspaces - num_anchor:] = False
-        elif self.anchor_strategy == "first_half":
-            mask[:num_anchor] = False
         elif self.anchor_strategy == "none":
             pass
         return mask
@@ -207,7 +240,8 @@ class SGMobiusRotaryEmbedding(nn.Module):
         head_dim: int,
         device: torch.device,
         dtype: torch.dtype,
-        return_half: bool = False
+        return_half: bool = False,
+        seq_len: Optional[int] = None
     ) -> torch.Tensor:
         r"""
         Expands arbitrary phase input to match head_dim via subspace decoupling:
@@ -215,7 +249,8 @@ class SGMobiusRotaryEmbedding(nn.Module):
         If return_half=True, returns [..., num_subspaces] for direct angle addition table pre-fusion.
         """
         num_subspaces = head_dim // 2
-        mask = self.get_subspace_mask(num_subspaces, device=device)
+        effective_seq_len = seq_len if seq_len is not None else (phi.shape[-2] if phi.dim() >= 2 else None)
+        mask = self.get_subspace_mask(num_subspaces, device=device, seq_len=effective_seq_len)
         num_mob = int(mask.sum().item())
 
         phi = phi.to(device=device, dtype=dtype)
@@ -265,8 +300,15 @@ class SGMobiusRotaryEmbedding(nn.Module):
         r"""
         Aligns and broadcasts continuous phase flow with target tensor shape and position ids.
         """
+        effective_seq_len = target_shape[-2] if len(target_shape) >= 2 else None
+        if position_ids is not None:
+            try:
+                effective_seq_len = max(effective_seq_len or 0, int(position_ids.max().item()) + 1)
+            except Exception:
+                pass
+
         phi_sub = self.expand_subspace_phase(
-            phi, head_dim=head_dim, device=device, dtype=dtype, return_half=return_half
+            phi, head_dim=head_dim, device=device, dtype=dtype, return_half=return_half, seq_len=effective_seq_len
         )
         phi_seq_len = phi_sub.shape[-2]
         target_seq_len = target_shape[-2]
@@ -364,7 +406,8 @@ class SGMobiusRotaryEmbedding(nn.Module):
 
         head_dim = q.shape[-1]
         num_subspaces = head_dim // 2
-        mask = self.get_subspace_mask(num_subspaces, device=q.device)
+        seq_len = q.shape[-2] if q.dim() >= 2 else None
+        mask = self.get_subspace_mask(num_subspaces, device=q.device, seq_len=seq_len)
 
         full_mask = torch.cat([mask, mask], dim=-1)
         q_out = q.clone()
@@ -461,6 +504,7 @@ def inject_mobius_attention(
     anchor_strategy: str = "high_freq",
     subspace_mask: Optional[torch.Tensor] = None,
     enable_nonnegative_map: bool = False,
+    adaptive_alpha: bool = False,
     **kwargs
 ) -> int:
     r"""
@@ -481,6 +525,7 @@ def inject_mobius_attention(
                     anchor_strategy=anchor_strategy,
                     subspace_mask=subspace_mask,
                     enable_nonnegative_map=enable_nonnegative_map,
+                    adaptive_alpha=adaptive_alpha,
                     **kwargs
                 )
                 patched_count += 1

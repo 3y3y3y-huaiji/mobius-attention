@@ -8,7 +8,10 @@ from .gauge_predictor import (
     HysteresisSemanticGaugePredictor,
     SemanticGaugeConnection,
     causal_viscous_ema,
+    parallel_affine_scan,
+    two_stage_associative_scan,
 )
+from .kv_cache import SGMobiusKVCache
 from .mobius_attention import (
     ContinuousMobiusRoPEModulator,
     SemanticGaugeMobiusRoPE,
@@ -27,6 +30,9 @@ __all__ = [
     "SemanticGaugeConnection",
     "HysteresisSemanticGaugePredictor",
     "causal_viscous_ema",
+    "parallel_affine_scan",
+    "two_stage_associative_scan",
+    "SGMobiusKVCache",
     "nonnegative_feature_map",
     "apply_rotary_angle_addition",
     "inject_mobius_attention",

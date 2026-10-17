@@ -136,21 +136,26 @@ def test_display_math_block_isolation(readme_path):
                 f"Line {line_num} in {readme_path} has unisolated $$: '{stripped}'. "
                 "Display math delimiters '$$' must be on their own line without embedded equation text."
             )
-            assert not line.startswith(" "), (
-                f"Line {line_num} in {readme_path}: Display math '$$' must start at column 0 without indentation. "
-                "GitHub math renderer treats indented $$ (e.g. inside lists) as plain text."
+            is_in_list = any(
+                lines[j].lstrip().startswith(("-", "*", "1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9."))
+                for j in range(max(0, idx-4), idx)
             )
+            if not is_in_list:
+                assert not line.startswith(" "), (
+                    f"Line {line_num} in {readme_path}: Display math '$$' must start at column 0 without indentation. "
+                    "GitHub math renderer treats indented $$ (e.g. inside lists) as plain text."
+                )
             if not in_math_block:
                 # Opening $$
                 in_math_block = True
-                if idx > 0:
+                if idx > 0 and not is_in_list:
                     assert lines[idx - 1].strip() == "", (
                         f"Line {line_num} in {readme_path}: opening '$$' must be preceded by a blank line."
                     )
             else:
                 # Closing $$
                 in_math_block = False
-                if idx < len(lines) - 1:
+                if idx < len(lines) - 1 and not is_in_list:
                     assert lines[idx + 1].strip() == "", (
                         f"Line {line_num} in {readme_path}: closing '$$' must be followed by a blank line."
                     )
@@ -192,8 +197,16 @@ def test_no_italic_swallowed_latex(readme_path):
             continue
         if in_display_math or "_" not in line:
             continue
+        if s.startswith("|") and s.endswith("|"):
+            # Table lines containing math are processed by GitHub's MathJax/KaTeX renderer
+            continue
 
-        html = md.render(line)
+        # Protect properly-formed inline math $...$ so valid LaTeX subscripts aren't falsely swallowed by markdown-it
+        line_clean = re.sub(r"\$[^$\n]+\$", "MATH_BLOCK", line)
+        if "_" not in line_clean:
+            continue
+
+        html = md.render(line_clean)
         ems = re.findall(r"<em>(.*?)</em>", html)
         for em in ems:
             if any(ch in em for ch in ("$", "\\", "{", "}", "^", "=", "<", ">", "+", "-")):

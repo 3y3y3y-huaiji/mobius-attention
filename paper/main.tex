@@ -34,7 +34,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 
-\title{\textbf{Semantic Gauge M\"obius Attention: Mitigating Strictly Positive Softmax Leakage via $\mathrm{SO}(2)$ Antipodal Lift and Subspace Phase Flow}}
+\title{\textbf{Subspace Anti-Phase Attention: Mitigating Strictly Positive Softmax Leakage via Orthogonal Subspace Phase Inversion}}
 
 \author{
   \textbf{Huaiji Team}\thanks{Open-source repository and dual-licensed implementation available at \url{https://github.com/3y3y3y-huaiji/mobius-attention}.} \\
@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-Standard Transformer self-attention normalizes inner products via the strictly positive Softmax operator on the open probability simplex $\Delta^{L-1}$. Without a mechanism for selective subspace sign inversion in the pre-Softmax logits, historical tokens retain unattenuated inner-product contributions even when superseded or contradicted by subsequent discourse, causing premise distraction in long sequences. We present \textbf{Semantic Gauge M\"obius Attention (SG-M\"obius-RoPE)}, a geometric formulation extending Rotary Position Embedding (RoPE) via a causal $\mathrm{SO}(2)$ gauge field over a 1D discrete causal lattice. We establish an orthogonal subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$, freezing high-frequency syntactic anchor channels ($\alpha$ ratio) while accumulating smooth M\"obius phase flow $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ shaped by a phase-locking projection $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ on low-frequency evolution channels. Causal semantic transitions induce a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ stabilized by this training-free phase-locking quantizer. Over narrative intervals undergoing logical inversion, cumulative phase advection produces destructive interference ($\Delta \Phi = \pi$, $\cos\pi = -1$) via the central element $-I_2 \in Z(\mathrm{SO}(2))$, exploiting the canonical $2:1$ double covering $\mathbb{Z}_2 \hookrightarrow \mathrm{SO}(2) \to \mathrm{PSO}(2)$. Successive restorative turns accumulate a $2\pi$ cyclic phase shift ($\Delta \Phi = 2\pi$, $\cos 2\pi = +1$), formalizing double negation. We prove the Conditional Pairwise Target-to-Decoy Odds Ratio Attenuation Theorem, establishing that under coherent evolution-subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise odds ratio scales by $\exp(2A_{ij}^{\text{mob}})$ with exact cancellation of the head partition function. Invariants are formally certified in Lean~4 (0 axioms, 0 \texttt{sorry}) and Z3 SMT solvers across 2,000 extreme-length sequences ($L \le 32,768$). Evaluated on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius requires zero architecture retraining, maintains near-identical $O(1)$ KV-cache decoding latency via epilogue angle fusion ($1.8\text{--}2.1\,\mu\text{s}$ per-layer operator overhead), achieves up to $2.33\times$ decoy attention suppression ($+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens, reaching up to $16.4\times$ on single-head peak contrastive recall), and strictly preserves neutral text perplexity ($6.42$).
+Standard Transformer self-attention normalizes inner products via the strictly positive Softmax operator on the open probability simplex $\Delta^{L-1}$. Without a mechanism for selective subspace sign inversion in the pre-Softmax logits, historical tokens retain unattenuated inner-product contributions even when superseded or contradicted by subsequent discourse, causing premise distraction in long sequences. We present \textbf{Subspace Anti-Phase RoPE (SG-M\"obius-RoPE)}, an attention formulation extending Rotary Position Embedding (RoPE) via causal orthogonal subspace phase modulation. Drawing an analogy to acoustic Active Noise Cancellation (ANC), the model introduces an out-of-phase anti-carrier on low-frequency evolution channels while freezing high-frequency syntactic anchors ($\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$). Causal semantic transitions induce a continuous phase velocity $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ whose cumulative unconstrained phase $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ is shaped by a training-free phase-locking quantizer $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$. Over narrative intervals undergoing logical inversion, cumulative phase shift reaches $\pi$, producing exact destructive sign inversion ($\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$) in pre-Softmax logits without altering KV-cache invariance. Successive restorative turns accumulate a $2\pi$ cyclic phase rotation ($\cos 2\pi = +1$), formalizing double negation restoration. We prove the Conditional Pairwise Target-to-Decoy Odds Ratio Attenuation Theorem, establishing that under coherent evolution-subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise odds ratio scales by $\exp(2A_{ij}^{\text{mob}})$ with exact cancellation of the head partition function. Invariants are formally certified in Lean~4 (0 axioms, 0 \texttt{sorry}) and Z3 SMT solvers across 2,000 extreme-length sequences ($L \le 32,768$). Evaluated on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius requires zero architecture retraining, maintains near-identical $O(1)$ KV-cache decoding latency via epilogue angle fusion ($1.8\text{--}2.1\,\mu\text{s}$ per-layer operator overhead), achieves up to $2.33\times$ decoy attention suppression ($+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens, reaching up to $16.4\times$ on single-head peak contrastive recall on Layer~7, Head~4), and strictly preserves neutral text perplexity ($6.42$).
 \end{abstract}
 
 \section{Introduction}
@@ -65,7 +65,7 @@ Because the Softmax operator maps real logits to strictly positive values on $\D
     \begin{subfigure}[b]{0.96\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/fig4_gauge_curvature.png}
-        \caption{Continuous Torsion Rate $\omega(t)$ and Smooth M\"obius Phase Flow $\Phi(t)$.}
+        \caption{Continuous Phase Velocity $\omega(t)$ and Smooth Phase Flow $\Phi(t)$.}
         \label{fig:curvature}
     \end{subfigure}
     \\[0.9em]
@@ -76,38 +76,38 @@ Because the Softmax operator maps real logits to strictly positive values on $\D
         \label{fig:arbitrary_heatmap}
     \end{subfigure}
     \caption{\textbf{Mechanism and attention response of SG-M\"obius-RoPE.} 
-    (a) The continuous torsion rate $\omega(t)$ vanishes on continuative narrative and smoothly activates across semantic transition spans, advancing the smooth M\"obius phase flow $\Phi(t) = \sum_{\tau \le t} \omega(\tau)$ across the $\pi$ half-twist boundary. 
-    (b) Attention matrices on Qwen3.5-9B under arbitrary-position inversion: standard RoPE (\emph{left}) exhibits background leakage; a fixed-period M\"obius baseline ($T=256$, \emph{middle}) fails when the reversal coordinate is out of phase; SG-M\"obius (\emph{right}) aligns phase advection with the semantic transition, attenuating obsolete keys.}
+    (a) The continuous phase velocity $\omega(t)$ vanishes on continuative narrative and smoothly activates across semantic transition spans, advancing the smooth phase flow $\Phi(t) = \sum_{\tau \le t} \omega(\tau)$ across the $\pi$ phase reversal boundary. 
+    (b) Attention matrices on Qwen3.5-9B under arbitrary-position inversion: standard RoPE (\emph{left}) exhibits background leakage; a fixed-period M\"obius baseline ($T=256$, \emph{middle}) fails when the reversal coordinate is out of phase; SG-M\"obius (\emph{right}) aligns phase shift with the semantic transition, attenuating obsolete keys.}
     \label{fig:intro_teaser}
 \end{figure}
 
-To address this structural constraint without retraining pretrained foundation weights or degrading inference latency, we introduce \textbf{Semantic Gauge M\"obius Attention (SG-M\"obius-RoPE)}, as illustrated in Figure~\ref{fig:intro_teaser}. We treat token sequences as causal paths on a discrete 1D causal lattice governed by an $\mathrm{SO}(2)$ gauge field with orthogonal subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$. Semantic contrastive transitions induce a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ with viscous smoothing and a phase-locking potential projection $-\eta\sin(2\bar{\Phi})$, whose cumulative M\"obius phase flow $\Phi(t)$ smoothly modulates 2D rotary angles on evolution channels (Figure~\ref{fig:curvature}). Over narrative intervals undergoing logical inversion, cumulative phase advection produces destructive interference ($\Delta \Phi = \pi$, $\cos\pi = -1$) via the planar rotation center $-I_2 \in Z(\mathrm{SO}(2))$. Because $\cos(\pi) = -1$, the modulated inner product becomes negative, attenuating the Softmax probability allocated to the invalidated premise at arbitrary reversal coordinates (Figure~\ref{fig:arbitrary_heatmap}).
+To address this structural constraint without retraining pretrained foundation weights or degrading inference latency, we introduce \textbf{Subspace Anti-Phase RoPE (SG-M\"obius-RoPE)}, as illustrated in Figure~\ref{fig:intro_teaser}. Drawing inspiration from Active Noise Cancellation (ANC), we decompose the embedding space into an orthogonal direct sum $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$. Semantic contrastive transitions induce a continuous phase velocity $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ with viscous smoothing and a phase-locking potential projection $-\eta\sin(2\bar{\Phi})$, whose cumulative phase flow $\Phi(t)$ smoothly modulates 2D rotary angles on evolution channels (Figure~\ref{fig:curvature}). Over narrative intervals undergoing logical inversion, cumulative phase shift produces destructive interference ($\Delta \Phi = \pi$, $\cos\pi = -1$) via planar rotation sign reversal $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$. Because $\cos(\pi) = -1$, the modulated inner product becomes negative, attenuating the Softmax probability allocated to the invalidated premise at arbitrary reversal coordinates (Figure~\ref{fig:arbitrary_heatmap}).
 
 \paragraph{Key Contributions.}
 \begin{itemize}
-    \item \textbf{Geometric Formulation}: We formalize attention modulation on a 1D causal lattice via an $\mathrm{SO}(2)$ double covering $\mathbb{Z}_2 \hookrightarrow \mathrm{SO}(2) \to \mathrm{PSO}(2)$ and orthogonal subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$. Continuous M\"obius phase flow $\Phi(t)$ modulates rotary angles $\tilde{\theta}(t) = t\theta + \Phi(t)$ on evolution channels while high-frequency syntactic anchor channels remain frozen ($\alpha$ ratio). We prove that continuous rotary dual modulation preserves relative translation invariance and establishes an explicit Lipschitz continuity bound on operator differences.
-    \item \textbf{Conditional Pairwise Odds Ratio Attenuation Theorem}: We prove that under an antipodal twist ($\Delta \Phi = \pi$) and coherent subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise target-to-decoy attention odds ratio scales by $\exp(2 A_{ij}^{\text{mob}})$, strictly cancelling the background partition function within the head.
-    \item \textbf{Formal Machine Verification}: We verify bundle invariants, path-integral additivity, and translation invariance in Lean~4 (0 unproven axioms or \texttt{sorry}) and Z3 SMT solvers across 2,000 fuzzing sequences ($L \le 32,768$) with numerical drift below $1.14 \times 10^{-13}$.
+    \item \textbf{Subspace Anti-Phase Formulation}: We formalize attention modulation via orthogonal subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$ and planar anti-phase rotation $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$. Continuous phase flow $\Phi(t)$ modulates rotary angles $\tilde{\theta}(t) = t\theta + \Phi(t)$ on evolution channels while high-frequency syntactic anchor channels remain frozen ($\alpha$ ratio). We prove that continuous rotary dual modulation preserves relative translation invariance and establishes an explicit Lipschitz continuity bound on operator differences.
+    \item \textbf{Conditional Pairwise Odds Ratio Attenuation Theorem}: We prove that under an anti-phase half-turn ($\Delta \Phi = \pi$) and coherent subspace alignment ($A_{ij}^{\text{mob}} > 0$), the single-head pairwise target-to-decoy attention odds ratio scales by $\exp(2 A_{ij}^{\text{mob}})$, strictly cancelling the background partition function within the head.
+    \item \textbf{Formal Machine Verification}: We verify program equivalence between the two-stage associative scan and autoregressive recurrence, prefix-sum additivity, and phase shift invariance in Lean~4 (0 unproven axioms or \texttt{sorry}) and Z3 SMT solvers across 2,000 fuzzing sequences ($L \le 32,768$) with numerical drift below $1.14 \times 10^{-13}$.
     \item \textbf{KV-Cache Compatibility}: Modulated keys $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)) k_j$ depend strictly on past tokens $\tau \le j$, requiring no retroactive cache modification upon subsequent turns and preserving exact $O(1)$ decoding throughput.
-    \item \textbf{Empirical Evaluation}: Evaluated natively on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius achieves up to $2.33\times$ decoy attention suppression and $+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens (reaching up to $16.4\times$ on single-head peak contrastive recall), gracefully scales attention entropy with context volume, and strictly maintains neutral text perplexity ($6.42$).
+    \item \textbf{Empirical Evaluation}: Evaluated natively on Qwen3.5-9B (dual Nvidia Tesla T4 GPUs, FP16), SG-M\"obius achieves up to $2.33\times$ decoy attention suppression and $+118.0\%$ multi-head Attention Contrast Ratio gain at $L=18,030$ tokens (reaching up to $16.4\times$ on single-head peak contrastive recall on Layer~7, Head~4), gracefully scales attention entropy with context volume, and strictly maintains neutral text perplexity ($6.42$).
 \end{itemize}
 
 \section{Related Work}
 \paragraph{Rotary Position Embeddings and Context Extension.}
 Rotary Position Embedding (RoPE) \cite{su2024roformer} encodes relative token positions through 2D block-diagonal rotation matrices $\mathbf{R}_{\Theta, m}$, ensuring that query-key inner products depend purely on relative coordinate displacements $j - i$. Subsequent extensions such as ALiBi \cite{press2021train}, Position Interpolation \cite{chen2023extending}, and YaRN \cite{peng2023yarn} extend effective context windows by modifying frequency bases or applying linear distance penalties. However, all existing RoPE variants operate with fixed positional frequencies where relative inner products cannot perform selective subspace sign inversion in pre-Softmax logits.
 
-\paragraph{Geometric Deep Learning and Gauge Equivariance.}
-Geometric deep learning \cite{bronstein2021geometric} provides a unified framework for incorporating physical and geometric symmetries into neural networks. In particular, gauge equivariant convolutional networks \cite{cohen2019gauge} introduce local frame transformations and gauge connections on Riemannian manifolds to maintain equivariance under coordinate reparameterizations. Classical differential geometry and fiber bundle theory \cite{steenrod1951topology, kobayashi1963foundations, milnor1974characteristic} study principal bundles, characteristic classes, and covering spaces. In this work, we leverage $\mathrm{SO}(2)$ double covering and dynamic gauge holonomies to modulate attention phase across semantic transitions.
+\paragraph{Phase Modulation and Subspace Geometry in Attention.}
+Geometric deep learning \cite{bronstein2021geometric} provides a unified framework for incorporating physical and geometric symmetries into neural networks. In signal processing, Active Noise Cancellation (ANC) attenuates unwanted interference by generating an anti-phase replica of the carrier signal. While conventional RoPE extensions \cite{press2021train, chen2023extending, peng2023yarn} modify frequency bases or distance decays, they lack mechanisms for destructive sign inversion. In this work, we introduce causal orthogonal phase modulation into 2D rotary embedding subspaces, enabling selective destructive cancellation in pre-Softmax attention logits across semantic transitions.
 
 \paragraph{Context Interference and Premise Invalidation.}
 Recent empirical studies have identified context distraction and the inability to forget invalidated premises as critical bottlenecks in long-context language models \cite{liu2024lost, hsieh2024ruler, kamradt2023needle}. When an adversarial or conflicting premise is presented, models frequently suffer from premise hallucination because strictly positive Softmax attention cannot actively cancel historical tokens. Previous attempts to address this issue rely on prompt-based instruction tuning or auxiliary suppression losses, which do not address the architectural lack of pre-Softmax destructive subspace cancellation mechanisms.
 
 \paragraph{KV-Cache Compression vs. Phase-Modulated Retention.}
-To mitigate memory and latency bottlenecks in extended contexts, recent methods explore token eviction or KV-cache compression \cite{dao2022flashattention, xiao2023streamingllm, zhang2023h2o}. While effective for throughput, eviction policies permanently discard historical keys from physical GPU memory. Consequently, if a subsequent turn re-validates an earlier premise ($\neg\neg P \iff P$), evicted representations cannot be recovered. In contrast, SG-M\"obius preserves the intact KV-cache in GPU memory and achieves selective premise cancellation purely through antipodal phase modulation, naturally supporting topological recovery under cyclic parity conservation.
+To mitigate memory and latency bottlenecks in extended contexts, recent methods explore token eviction or KV-cache compression \cite{dao2022flashattention, xiao2023streamingllm, zhang2023h2o}. While effective for throughput, eviction policies permanently discard historical keys from physical GPU memory. Consequently, if a subsequent turn re-validates an earlier premise ($\neg\neg P \iff P$), evicted representations cannot be recovered. In contrast, SG-M\"obius preserves the intact KV-cache in GPU memory and achieves selective premise cancellation purely through anti-phase modulation, naturally supporting topological recovery under $2\pi$ cyclic phase restoration.
 
 \section{Methodology}
-\subsection{Causal Gauge Holonomy, $\mathrm{SO}(2)$ Double Covering, and Subspace Decomposition}
-Let the input sequence of length $L \in \mathbb{N}$ be defined over a 1D discrete causal lattice:
+\subsection{Causal Phase Flow, Active Noise Cancellation Analogy, and Subspace Decomposition}
+Let the input sequence of length $L \in \mathbb{N}$ be defined over a 1D discrete causal index set:
 \begin{equation}
 \mathcal{M} = \left( \{0, 1, \dots, L-1\}, \, \le \right)
 \end{equation}
@@ -117,20 +117,16 @@ where $\le$ denotes the standard causal ordering ($j \le i$ means key token $j$ 
 \end{equation}
 Each plane $\mathbb{R}^2_{(m)} \cong \mathbb{C}$ is acted upon by the continuous planar rotation group $\mathrm{SO}(2) \cong \mathrm{U}(1)$ parameterized by relative positional shifts $\theta_m (j - i)$.
 
-\paragraph{$\mathrm{SO}(2)$ Center and Double Covering Space.}
-In contrast to higher-dimensional orthogonal groups where inversion matrices may have determinant $-1$, planar rotation by $\pi$ satisfies:
+\paragraph{Planar Rotation Inversion and Active Noise Cancellation Analogy.}
+Standard RoPE applies 2D planar rotation matrices $\mathbf{R}(\theta) \in \mathrm{SO}(2)$ to query and key components. Crucially, a rotation by $\pi$ achieves exact sign inversion in the 2D plane:
 \begin{equation}
 \mathbf{R}(\pi) = \begin{pmatrix} \cos\pi & -\sin\pi \\ \sin\pi & \cos\pi \end{pmatrix} = \begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix} = -I_2
 \end{equation}
-with $\det(-I_2) = (-1)^2 = +1$. Thus, $-I_2$ lies strictly within $\mathrm{SO}(2)$ and forms the center of the planar rotation group:
+Notice that $\det(-I_2) = (-1)^2 = +1$, so $-I_2$ is an orientation-preserving planar rotation. By superimposing a cumulative phase shift $\Delta\Phi = \pi$ onto the positional carrier $(j - i)\theta_m$, we obtain:
 \begin{equation}
-Z(\mathrm{SO}(2)) = \{+I_2, -I_2\} \cong \mathbb{Z}_2
+\mathbf{R}\big((j - i)\theta_m - \pi\big) = -\mathbf{R}\big((j - i)\theta_m\big)
 \end{equation}
-Considering the projective special orthogonal group $\mathrm{PSO}(2) \triangleq \mathrm{SO}(2) / Z(\mathrm{SO}(2))$, we obtain the canonical short exact sequence:
-\begin{equation}
-1 \longrightarrow \mathbb{Z}_2 \overset{\iota}{\longrightarrow} \mathrm{SO}(2) \overset{p}{\longrightarrow} \mathrm{PSO}(2) \longrightarrow 1
-\end{equation}
-which defines a smooth $2:1$ double covering space $p: \mathrm{SO}(2) \to \mathrm{PSO}(2)$. In the unoriented projective quotient $\mathrm{PSO}(2)$, a rotation by $\pi$ maps to the identity $[I_2]$, preserving the unoriented semantic topic axis. In the covering group $\mathrm{SO}(2)$, however, $\mathbf{R}(\pi) = -I_2$ acts as an antipodal sign reversal on vector representations ($v \mapsto -v$). Double negation accumulates a $2\pi$ cyclic loop, returning to $+I_2 \in \mathrm{SO}(2)$ without disrupting metric coordinate ordering.
+This mechanism functions in direct analogy to acoustic \emph{Active Noise Cancellation (ANC)}: by generating an out-of-phase anti-carrier ($\pi$ phase offset) on the relevant semantic frequency channels, the inner product undergoes destructive sign reversal. In the pre-Softmax logit space, this converts a large positive dot product into a negative logit, causing the Softmax probability mass to drop exponentially. Furthermore, a subsequent negation-of-negation turn introduces an additional $\pi$ shift ($\Delta\Phi = 2\pi$), where $\mathbf{R}\big((j - i)\theta_m - 2\pi\big) = +\mathbf{R}\big((j - i)\theta_m\big)$, seamlessly restoring nominal attention resonance without retroactive modifications to the KV-cache.
 
 \paragraph{Subspace Decomposition and High-Frequency Freezing.}
 To prevent semantic phase accumulation from destabilizing local syntactic dependencies and sentence structure, we introduce an orthogonal subspace decomposition:
@@ -144,8 +140,8 @@ Let $\mathcal{I} = \{1, \dots, d/2\}$ denote the set of 2D subspace indices. In 
 where $\mathcal{S}_{\text{anchor}} = \bigoplus_{m \in \mathcal{I}_{\text{anchor}}} \mathbb{R}^2_{(m)}$ and $\mathcal{S}_{\text{mob}} = \bigoplus_{m \in \mathcal{I}_{\text{mob}}} \mathbb{R}^2_{(m)}$.
 For all channels $m \in \mathcal{I}_{\text{anchor}}$, we enforce $\omega_{h,m}(t) \equiv 0 \implies \Phi_{h,m}(t) \equiv 0$, guaranteeing strict syntactic stability. Semantic phase flow is accumulated exclusively on $\mathcal{S}_{\text{mob}}$.
 
-\begin{definition}[Continuous Torsion Rate and Phase-Locking Quantizer]
-For attention head $h$ and evolution subspace $m \in \mathcal{I}_{\text{mob}}$, the raw causal torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ is governed by 1D viscous smoothing:
+\begin{definition}[Continuous Phase Velocity and Phase-Locking Quantizer]
+For attention head $h$ and evolution subspace $m \in \mathcal{I}_{\text{mob}}$, the raw causal phase velocity $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ is governed by 1D viscous smoothing:
 \begin{equation}
 \omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t), \quad \bar{\Phi}_{h,m}(t) \triangleq \sum_{\tau=1}^t \omega_{h,m}(\tau)
 \end{equation}
@@ -153,7 +149,7 @@ where $\nu \in (0, 1]$ is the viscosity coefficient and $g_{h,m}(h_t) = \omega_{
 \begin{equation}
 \Phi_{h,m}(t) \triangleq \bar{\Phi}_{h,m}(t) - \eta\sin\!\big(2\bar{\Phi}_{h,m}(t)\big)
 \end{equation}
-In our default head-coherent configuration, all evolution channels $m \in \mathcal{I}_{\text{mob}}$ within head $h$ share a common head-level torsion trajectory $\omega_h(t)$ and phase $\Phi_h(t)$. Discrete parallel transport along the 1D causal path $[j, i]$ under the abelian $\mathfrak{so}(2)$ connection yields the relative phase holonomy lift:
+In our default head-coherent configuration, all evolution channels $m \in \mathcal{I}_{\text{mob}}$ within head $h$ share a common head-level phase velocity trajectory $\omega_h(t)$ and phase $\Phi_h(t)$. The relative causal phase shift between key $j$ and query $i$ is defined as:
 \begin{equation}
 \Delta\Phi_{j\to i}^{(m)} \triangleq \Phi_m(i) - \Phi_m(j)
 \end{equation}
@@ -162,17 +158,17 @@ In our default head-coherent configuration, all evolution channels $m \in \mathc
 \begin{figure}[t!]
     \centering
     \includegraphics[width=\textwidth]{figures/fig6_double_negation_restoration.png}
-    \caption{\textbf{M\"obius cyclic phase restoration under negation-of-negation on Qwen3.5-9B.} 
+    \caption{\textbf{Cyclic phase restoration under negation-of-negation on Qwen3.5-9B.} 
     (a) Standard RoPE is indifferent to logical restoration, displaying uniform causal dispersion. 
     (b) SG-M\"obius attention matrices under two successive contrastive turns ($t_1 \approx 39$, $t_2 \approx 133$). The first invalidation shifts the phase to $\pi$ (destructive cancellation), while the second invalidation advances the total phase to $2\pi$, returning the phase flow to positive alignment ($\cos(2\pi) = +1$) and restoring attention resonance to the original premise. 
     (c) Differential attention map $\Delta A$ verifying that active nullification is confined strictly to the temporary invalidation interval $[t_1, t_2]$, followed by robust positive recovery downstream of $t_2$ (up to $+0.333$).}
     \label{fig:double_covering}
 \end{figure}
 
-As demonstrated in Figure~\ref{fig:double_covering}, the continuous M\"obius phase flow naturally accounts for nested logical reversals: a single contrastive statement induces destructive interference ($\Delta \Phi = \pi$), while a subsequent negation-of-negation advances the phase accumulation to $2\pi$, fully restoring attention resonance without requiring cache invalidation.
+As demonstrated in Figure~\ref{fig:double_covering}, the continuous phase flow naturally accounts for nested logical reversals: a single contrastive statement induces destructive interference ($\Delta \Phi = \pi$), while a subsequent negation-of-negation advances the phase accumulation to $2\pi$, fully restoring attention resonance without requiring cache invalidation.
 
 \subsection{Continuous Rotary Dual Modulation}
-In SG-M\"obius-RoPE, the smooth M\"obius phase flow $\Phi(t)$ directly modulates the 2D rotary angle $\tilde{\theta}_m(t) \triangleq t\theta_m + \Phi_m(t)$ in each subspace.
+In SG-M\"obius-RoPE, the smooth phase flow $\Phi(t)$ directly modulates the 2D rotary angle $\tilde{\theta}_m(t) \triangleq t\theta_m + \Phi_m(t)$ in each subspace.
 
 \begin{definition}[Continuous Rotary Dual Modulation]
 For each 2D subspace $m \in \{1, \dots, d/2\}$ with base frequency $\theta_m$, the modulated query and key representations at positions $i$ and $j$ are defined as:
@@ -186,13 +182,13 @@ where $\mathbf{R}(\theta) \in \mathrm{SO}(2)$ denotes the planar orthogonal rota
 \end{align}
 \end{definition}
 
-\begin{theorem}[Preservation of Relative Position and Gauge Shift Invariance under Subspace Decomposition]
+\begin{theorem}[Preservation of Relative Position and Phase Shift Invariance under Subspace Decomposition]
 \label{thm:trans_inv}
-Under continuous rotary dual modulation with subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ depends purely on relative positional displacement $j - i$ and relative phase holonomy $\Delta \Phi_{j \to i}^{(m)} = \Phi_m(i) - \Phi_m(j)$:
+Under continuous rotary dual modulation with subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$, the inner product between query $\tilde{q}_i$ and key $\tilde{k}_j$ depends purely on relative positional displacement $j - i$ and relative phase shift $\Delta \Phi_{j \to i}^{(m)} = \Phi_m(i) - \Phi_m(j)$:
 \begin{equation}
 \langle \tilde{q}_i, \, \tilde{k}_j \rangle = \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} + \sum_{m \in \mathcal{I}_{\text{mob}}} (q_i^{(m)})^\top \mathbf{R}\Big( (j - i)\theta_m + \big(\Phi_m(j) - \Phi_m(i)\big) \Big) k_j^{(m)}
 \end{equation}
-When the cumulative phase flow across evolution channels reaches an antipodal half-twist ($\Delta \Phi_{j \to i}^{(m)} = \Phi_m(i) - \Phi_m(j) = \pi$), $\mathbf{R}((j - i)\theta_m - \pi) = -\mathbf{R}((j - i)\theta_m)$, yielding exact evolution-subspace sign inversion:
+When the cumulative phase flow across evolution channels reaches an anti-phase half-turn ($\Delta \Phi_{j \to i}^{(m)} = \Phi_m(i) - \Phi_m(j) = \pi$), $\mathbf{R}((j - i)\theta_m - \pi) = -\mathbf{R}((j - i)\theta_m)$, yielding exact evolution-subspace sign inversion:
 \begin{equation}
 \langle \tilde{q}_i, \, \tilde{k}_j \rangle = \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{anchor}}}^{\mathrm{RoPE}} - \langle q_i, \, k_j \rangle_{\mathcal{S}_{\text{mob}}}^{\mathrm{RoPE}}
 \end{equation}
@@ -217,7 +213,7 @@ Summing over $m \in \mathcal{I}_{\text{mob}}$ yields $-\langle q_i, k_j \rangle_
 
 \begin{theorem}[Continuous Lipschitz Continuity Bound of Rotation Operator]
 \label{thm:lipschitz}
-Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$ be the continuous M\"obius rotation operator on subspace $m$, and let $\Delta\Phi_m(t+1) \triangleq \Phi_m(t+1) - \Phi_m(t)$ denote the effective single-step phase increment bounded by $|\Delta\Phi_m(t+1)| \le \tilde{\omega}_{\max} \triangleq (1 + 2\eta)\omega_{\max}$ (which reduces to $\tilde{\omega}_{\max} = \omega_{\max}$ for unquantized phase $\eta = 0$). For any adjacent sequence positions $t$ and $t+1$ satisfying the stability condition $\theta_m + \tilde{\omega}_{\max} \le \pi$, the operator difference satisfies the exact spectral norm bound:
+Let $\tilde{\mathbf{R}}_m(t) \triangleq \mathbf{R}(t\theta_m + \Phi_m(t))$ be the continuous modulated rotation operator on subspace $m$, and let $\Delta\Phi_m(t+1) \triangleq \Phi_m(t+1) - \Phi_m(t)$ denote the effective single-step phase increment bounded by $|\Delta\Phi_m(t+1)| \le \tilde{\omega}_{\max} \triangleq (1 + 2\eta)\omega_{\max}$ (which reduces to $\tilde{\omega}_{\max} = \omega_{\max}$ for unquantized phase $\eta = 0$). For any adjacent sequence positions $t$ and $t+1$ satisfying the stability condition $\theta_m + \tilde{\omega}_{\max} \le \pi$, the operator difference satisfies the exact spectral norm bound:
 \begin{equation}
 \|\tilde{\mathbf{R}}_m(t+1) - \tilde{\mathbf{R}}_m(t)\|_2 \le 2\sin\left(\frac{\theta_m + \tilde{\omega}_{\max}}{2}\right)
 \end{equation}
@@ -254,7 +250,7 @@ Let query $q_i \in \mathbb{R}^d$ attend over historical keys $l \in \{0, \dots, 
 A_{il}^{\text{anchor}} \triangleq \frac{1}{\sqrt{d}}\sum_{m\in\mathcal{I}_{\text{anchor}}} (q_i^{(m)})^\top \mathbf{R}\big((l-i)\theta_m\big) k_l^{(m)}, \quad
 A_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_{m\in\mathcal{I}_{\text{mob}}} (q_i^{(m)})^\top \mathbf{R}\big((l-i)\theta_m\big) k_l^{(m)}
 \end{equation}
-Assume subspace-coherent phase locking across $m \in \mathcal{I}_{\text{mob}}$ such that an operative target key $k$ remains in phase with query $i$ ($\Delta\Phi_{k\to i}^{(m)} \equiv 0 \pmod{2\pi}$), while an invalidated decoy key $j$ undergoes a uniform antipodal lift ($\Delta\Phi_{j\to i}^{(m)} \equiv \pi \pmod{2\pi}$).
+Assume subspace-coherent phase locking across $m \in \mathcal{I}_{\text{mob}}$ such that an operative target key $k$ remains in phase with query $i$ ($\Delta\Phi_{k\to i}^{(m)} \equiv 0 \pmod{2\pi}$), while an invalidated decoy key $j$ undergoes a uniform anti-phase shift ($\Delta\Phi_{j\to i}^{(m)} \equiv \pi \pmod{2\pi}$).
 Then, within each head, the background partition function $\tilde{Z}_i$ strictly cancels in the pairwise probability ratio $\mathrm{Odds}(k:j\mid i) \triangleq P(k\mid i)/P(j\mid i)$, yielding:
 \begin{equation}
 \frac{\mathrm{Odds}_{\mathrm{mob}}(k : j \mid i)}{\mathrm{Odds}_{\mathrm{std}}(k : j \mid i)} = \exp\!\left(2 A_{ij}^{\text{mob}}\right), \qquad
@@ -273,7 +269,7 @@ Under standard RoPE, the unmodulated logits are $A_{ik}^{\text{std}} = A_{ik}^{\
 \begin{equation}
 \mathrm{Odds}_{\text{std}}(k : j \mid i) = \exp\left( (A_{ik}^{\text{anchor}} + A_{ik}^{\text{mob}}) - (A_{ij}^{\text{anchor}} + A_{ij}^{\text{mob}}) \right)
 \end{equation}
-Under SG-M\"obius, because target $k$ is in phase ($\Delta\Phi_{k \to i} = 0$), its logit is invariant: $\tilde{A}_{ik} = A_{ik}^{\text{anchor}} + A_{ik}^{\text{mob}}$. For decoy $j$, by Theorem~\ref{thm:trans_inv}, the antipodal half-twist inverts the evolution subspace logit: $\tilde{A}_{ij} = A_{ij}^{\text{anchor}} - A_{ij}^{\text{mob}}$. The modulated pairwise odds evaluate to:
+Under SG-M\"obius, because target $k$ is in phase ($\Delta\Phi_{k \to i} = 0$), its logit is invariant: $\tilde{A}_{ik} = A_{ik}^{\text{anchor}} + A_{ik}^{\text{mob}}$. For decoy $j$, by Theorem~\ref{thm:trans_inv}, the anti-phase half-turn inverts the evolution subspace logit: $\tilde{A}_{ij} = A_{ij}^{\text{anchor}} - A_{ij}^{\text{mob}}$. The modulated pairwise odds evaluate to:
 \begin{equation}
 \mathrm{Odds}_{\mathrm{mob}}(k : j \mid i) = \exp\left( (A_{ik}^{\text{anchor}} + A_{ik}^{\text{mob}}) - (A_{ij}^{\text{anchor}} - A_{ij}^{\text{mob}}) \right)
 \end{equation}
@@ -301,53 +297,74 @@ Inverting the ratio yields the decoy odds scaling factor $\exp(-2 A_{ij}^{\text{
     \end{subfigure}
     \caption{\textbf{2D attention matrices on Qwen3.5-9B Layer 7 under arbitrary-position inversion.} 
     (a) Standard RoPE (\emph{left}) retains background attention into outdated context. SG-M\"obius-RoPE (\emph{right}) establishes a causal boundary across the semantic reversal, suppressing query access to historical keys after the transition. 
-    (b) The differential attention matrix $\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$ shows localized reduction ($\Delta A \le -0.148$) over the negated premise interval, accompanied by attention redistribution ($\Delta A \ge +0.500$) to operative tokens.}
+    (b) The differential attention matrix $\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$ (display range clamped to $[-0.04, +0.04]$ for visual contrast) shows localized reduction ($\Delta A \le -0.148$) over the negated premise interval, accompanied by attention redistribution ($\Delta A \ge +0.500$) to operative tokens.}
     \label{fig:heatmaps}
 \end{figure}
 
-Figure~\ref{fig:heatmaps} illustrates the attention matrices under symmetric dual modulation. In standard RoPE (Figure~\ref{fig:heatmap2d}, left), attention mass spreads into superseded context. Under SG-M\"obius (Figure~\ref{fig:heatmap2d}, right), the antipodal half-twist projects the invalidated token interval into negative logits. The differential contrast map $\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$ in Figure~\ref{fig:diff_heatmap} verifies this localized reduction.
+Figure~\ref{fig:heatmaps} illustrates the attention matrices under symmetric dual modulation. In standard RoPE (Figure~\ref{fig:heatmap2d}, left), attention mass spreads into superseded context. Under SG-M\"obius (Figure~\ref{fig:heatmap2d}, right), the destructive phase shift projects the invalidated token interval into negative logits. The differential contrast map $\Delta A = A_{\mathrm{mob}} - A_{\mathrm{std}}$ in Figure~\ref{fig:diff_heatmap} verifies this localized reduction.
 
 \subsection{Causal KV-Cache Invariance and Equivalence}
 A critical requirement in practical LLM deployment is maintaining strict compatibility with autoregressive key-value (KV) caching without recomputing historical states.
 
 \begin{proposition}[Prefill vs Autoregressive KV-Cache Decoding Equivalence]
 \label{prop:kv_cache}
-Let $\bar{\Phi}_m(t) = \sum_{\tau=1}^t \omega_m(\tau)$ be the causal prefix sum of smoothed torsion rates and $\Phi_m(t) = \bar{\Phi}_m(t) - \eta\sin(2\bar{\Phi}_m(t))$ be the pointwise quantized phase. For any sequence length $L$, the attention logit matrix computed in batch parallel prefill mode:
+Let $\mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}$ be the subspace mask ($\mathbf{m}_{\text{sub}}[m] = \mathbb{I}(m \in \mathcal{I}_{\text{mob}})$), $\bar{\Phi}(t) = \sum_{\tau=0}^t \omega(\tau)$ be the causal prefix sum of smoothed phase velocity, and $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ be the pointwise quantized phase. Define the full modulated orthogonal rotation operator:
 \begin{equation}
-A_{\mathrm{prefill}}[i, j] = \frac{1}{\sqrt{d}} \sum_{m=1}^{d/2} \left( \mathbf{R}(i\theta_m + \Phi_m(i)) q_{i,m} \right)^\top \left( \mathbf{R}(j\theta_m + \Phi_m(j)) k_{j,m} \right)
+\tilde{\mathbf{R}}(t) \triangleq \bigoplus_{m=1}^{d/2} \mathbf{R}\big(t\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi(t)\big) \in \mathrm{SO}(d)
 \end{equation}
-is identically equivalent to the logit computed during step-by-step autoregressive decoding using the cached key $\mathbf{K}_{\mathrm{cache}}[j] = \mathbf{R}(j\theta_m + \Phi_m(j)) k_{j,m}$:
+For any sequence length $L$, the attention logit matrix computed in batch parallel prefill mode:
+\begin{align}
+A_{\mathrm{prefill}}[i, j] &= \frac{1}{\sqrt{d}} \sum_{m=1}^{d/2} \left( \mathbf{R}(i\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi(i)) q_{i,m} \right)^\top \left( \mathbf{R}(j\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi(j)) k_{j,m} \right) \nonumber \\
+&= \frac{1}{\sqrt{d}} \left( \tilde{\mathbf{R}}(i) q_i \right)^\top \left( \tilde{\mathbf{R}}(j) k_j \right)
+\end{align}
+is identically equivalent to the logit computed during step-by-step autoregressive decoding using the cached key $\mathbf{K}_{\mathrm{cache}}[j] = \tilde{\mathbf{R}}(j) k_j$:
 \begin{equation}
 A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mathrm{cache}}[j] \equiv A_{\mathrm{prefill}}[i, j], \qquad \forall 0 \le j \le i < L
 \end{equation}
 with maximum numerical drift bounded strictly by floating-point roundoff ($< 10^{-12}$). In particular, cached keys $\mathbf{K}_{\mathrm{cache}}[j]$ remain strictly immutable as future tokens $i > j$ arrive.
 \end{proposition}
 \begin{proof}
-The cached key $\mathbf{K}_{\mathrm{cache}}[j] = \mathbf{R}(j\theta_m + \Phi_m(j)) k_{j,m}$ depends strictly on historical inputs $x_\tau$ for $\tau \le j$. Because both the prefix sum $\bar{\Phi}_m(j) = \sum_{\tau=1}^j \omega_m(\tau)$ and the pointwise projection $\Phi_m(j)$ are strictly causal, future torsion rates $\omega_m(\tau)$ for $\tau > j$ do not affect $\Phi_m(j)$. During decoding at step $i \ge j$, the query $\tilde{q}_i = \mathbf{R}(i\theta_m + \Phi_m(i)) q_{i,m}$ computes its inner product directly against the immutable cached vector $\mathbf{K}_{\mathrm{cache}}[j]$. By associativity and bilinearity of matrix multiplication, the resulting scalar matches $A_{\mathrm{prefill}}[i, j]$ to machine precision, requiring zero retroactive cache invalidation.
+The cached key $\mathbf{K}_{\mathrm{cache}}[j] = \tilde{\mathbf{R}}(j) k_j$ depends strictly on historical inputs $h_\tau$ for $\tau \le j$. Because both the prefix sum $\bar{\Phi}(j) = \sum_{\tau=0}^j \omega(\tau)$ and the pointwise projection $\Phi(j)$ are strictly causal, future phase velocities $\omega(\tau)$ for $\tau > j$ do not affect $\Phi(j)$. During decoding at step $i \ge j$, the query $\tilde{q}_i = \tilde{\mathbf{R}}(i) q_i$ computes its inner product directly against the immutable cached vector $\mathbf{K}_{\mathrm{cache}}[j]$. By associativity and bilinearity of matrix multiplication, the resulting scalar matches $A_{\mathrm{prefill}}[i, j]$ to machine precision, requiring zero retroactive cache invalidation.
 \end{proof}
 
+\begin{proposition}[Two-Stage Parallel Associative Scan and FP16 Stability Bound]
+\label{prop:associative_scan}
+Let $H = (h_0, h_1, \dots, h_{L-1}) \in \mathbb{R}^{L \times d}$ be the prefill hidden sequence. The causal phase flow $\Phi \in \mathbb{R}^L$ is computed via a two-stage parallel associative scan:
+\begin{enumerate}
+    \item \textbf{Stage 1 (Affine EMA Scan)}: Let $g_t = \omega_{\max}\tanh(W_g h_t + b_g)$. The IIR filter $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ with initial boundary state $\omega_{-1}=0$ is equivalent to prefix evaluation of affine operators $(a_t, b_t) = (1-\nu, \, \nu g_t)$ under the associative binary operator $(a_2, b_2) \otimes (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)$, evaluated in $\mathcal{O}(\log L)$ parallel depth.
+    \item \textbf{Stage 2 (Additive Prefix Scan)}: The cumulative unconstrained phase $\bar{\Phi}_t = \sum_{\tau=0}^t \omega_\tau$ with $\bar{\Phi}_{-1}=0$ is evaluated via a parallel prefix sum under standard addition $(\mathbb{R}, +)$.
+    \item \textbf{Stage 3 (Pointwise Phase Locking)}: $\Phi_t = \bar{\Phi}_t - \eta\sin(2\bar{\Phi}_t)$ is applied point-wise in $\mathcal{O}(1)$ depth.
+\end{enumerate}
+In IEEE 754 half-precision (FP16) arithmetic with unit roundoff $\epsilon_{\text{mach}} \approx 9.77 \times 10^{-4}$, the accumulated floating-point roundoff error over tree depth $D = \lceil \log_2 L \rceil$ satisfies the analytical bound:
+\begin{equation}
+|\Delta \Phi_L| \le 2 D \epsilon_{\text{mach}} + \mathcal{O}(\epsilon_{\text{mach}}^2) = \mathcal{O}(\epsilon_{\text{mach}} \log L)
+\end{equation}
+For $L \le 18,030$ ($D = 15$), $|\Delta \Phi_L| \le 0.029\,\text{rad} \approx 1.68^\circ$, which is strictly bounded inside the phase-locking attractor basin $|\delta| < \frac{\pi}{6}$ where $-\eta\sin(2\bar{\Phi})$ dynamically suppresses roundoff drift.
+\end{proposition}
+
 \paragraph{System Implementation via Epilogue Angle Fusion.}
-Modern inference engines (e.g., FlashAttention, vLLM) apply rotary embeddings prior to the attention GEMM. Because $\Phi_h(t)$ depends causally on the layer hidden state $h_t$, it cannot be precomputed statically offline. During batch prefill ($L \gg 1$), we evaluate the scalar projection $g_h(h_t)$, execute a lightweight 1D parallel prefix scan over the scalar sequence to obtain $\bar{\Phi}_h(t)$, and apply the pointwise quantizer $\Phi_h(t)$. During single-step autoregressive decoding, we fuse the scalar torsion projection $g_h(h_t)$, $O(1)$ recurrence update, and subspace-masked angle offset
+Modern inference engines (e.g., FlashAttention, vLLM) apply rotary embeddings prior to the attention GEMM. Because $\Phi_h(t)$ depends causally on the layer hidden state $h_t$, it cannot be precomputed statically offline. During batch prefill ($L \gg 1$), we evaluate the scalar projection $g_h(h_t)$, execute the Two-Stage Associative Scan (Proposition~\ref{prop:associative_scan}) in parallel across the sequence to obtain $\Phi_h(t)$. During single-step autoregressive decoding, we fuse the scalar phase velocity projection $g_h(h_t)$, $O(1)$ recurrence update, and subspace-masked angle offset
 \begin{equation}
 \tilde{\Theta}_{h,t} = t\Theta + \Phi_h(t)\mathbf{m}_{\text{sub}}, \quad \mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}
 \end{equation}
 directly into the QKV projection epilogue prior to launching the rotary embedding kernel (or equivalently via the $2\times 2$ trigonometric addition identity $\mathbf{R}(t\theta_m + \Phi_h(t)) = \mathbf{R}(\Phi_h(t))\mathbf{R}(t\theta_m)$ on $m \in \mathcal{I}_{\text{mob}}$ using the static precomputed RoPE table $\mathbf{R}(t\theta_m)$). Consequently, the core attention kernel (Query-Key GEMM, causal masking, Softmax, and Value reduction) executes with identical $O(1)$ per-step KV-cache memory access patterns and zero retroactive cache rewrites.
 
 \begin{algorithm}[htbp]
-\caption{Autoregressive Generation with SG-M\"obius KV-Cache}
+\caption{Autoregressive Generation with Subspace Anti-Phase KV-Cache}
 \label{alg:kv_decoding}
 \begin{algorithmic}[1]
-\STATE \textbf{Initialize:} Cumulative unconstrained phase $\bar{\Phi}_0 \gets 0$, smoothed torsion $\omega_0 \gets 0$, subspace mask $\mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}$ ($\mathbf{m}_{\text{sub}}[m] = \mathbb{I}(m \in \mathcal{I}_{\text{mob}})$), Cache $\mathbf{K} \gets [], \mathbf{V} \gets []$.
+\STATE \textbf{Initialize:} Prior boundary states $\omega_{-1} \gets 0$, cumulative phase $\bar{\Phi}_{-1} \gets 0$, subspace mask $\mathbf{m}_{\text{sub}} \in \{0, 1\}^{d/2}$ ($\mathbf{m}_{\text{sub}}[m] = \mathbb{I}(m \in \mathcal{I}_{\text{mob}})$), Cache $\mathbf{K} \gets [], \mathbf{V} \gets []$.
 \FOR{each decoding step $i = 0, 1, 2, \dots$}
-    \STATE Receive input token $x_i$, compute query $q_i$, key $k_i$, value $v_i$.
-    \STATE Evaluate continuous torsion projection $g_i \gets \mathrm{PredictTorsionRate}(x_i) \in [-\omega_{\max}, \omega_{\max}]$.
-    \STATE Update smoothed torsion: $\omega_i \gets (1 - \nu)\omega_{i-1} + \nu g_i$.
+    \STATE Receive layer hidden state $h_i \in \mathbb{R}^d$, compute raw query $q_i$, key $k_i$, value $v_i$.
+    \STATE Evaluate continuous phase velocity projection: $g_i \gets \omega_{\max}\tanh(W_g h_i + b_g) \in [-\omega_{\max}, \omega_{\max}]$.
+    \STATE Update smoothed phase velocity: $\omega_i \gets (1 - \nu)\omega_{i-1} + \nu g_i$.
     \STATE Update cumulative unconstrained phase: $\bar{\Phi}_i \gets \bar{\Phi}_{i-1} + \omega_i$.
     \STATE Apply phase-locking quantizer: $\Phi_i \gets \bar{\Phi}_i - \eta \sin(2\bar{\Phi}_i)$.
-    \STATE Modulate key on evolution subspace: $\tilde{k}_i \gets \mathbf{R}(i\Theta + \Phi_i \mathbf{m}_{\text{sub}}) k_i$.
-    \STATE Append to KV-Cache: $\mathbf{K} \gets [\mathbf{K}; \, \tilde{k}_i]$, $\mathbf{V} \gets [\mathbf{V}; \, v_i]$ \COMMENT{Zero retroactive update to past keys}
-    \STATE Modulate query on evolution subspace: $\tilde{q}_i \gets \mathbf{R}(i\Theta + \Phi_i \mathbf{m}_{\text{sub}}) q_i$.
-    \STATE Compute attention: $\mathbf{a}_i \gets \mathrm{Softmax}\left( \frac{\tilde{q}_i^\top \mathbf{K}}{\sqrt{d}} \right)$, $\mathbf{o}_i \gets \mathbf{a}_i \mathbf{V}$.
+    \STATE Construct modulated rotation matrix: $\tilde{\mathbf{R}}(i) \triangleq \bigoplus_{m=1}^{d/2} \mathbf{R}(i\theta_m + \mathbf{m}_{\text{sub}}[m]\Phi_i)$.
+    \STATE Modulate key: $\tilde{k}_i \gets \tilde{\mathbf{R}}(i) k_i$.
+    \STATE Append to KV-Cache: $\mathbf{K} \gets [\mathbf{K}; \, \tilde{k}_i]$, $\mathbf{V} \gets [\mathbf{V}; \, v_i]$ \COMMENT{Past keys remain strictly immutable}
+    \STATE Modulate query: $\tilde{q}_i \gets \tilde{\mathbf{R}}(i) q_i$.
+    \STATE Compute causal attention: $\mathbf{a}_i \gets \mathrm{Softmax}\left( \frac{\tilde{q}_i^\top \mathbf{K}}{\sqrt{d}} \right)$, $\mathbf{o}_i \gets \mathbf{a}_i \mathbf{V}$.
 \ENDFOR
 \end{algorithmic}
 \end{algorithm}
@@ -358,19 +375,19 @@ As formalized in Algorithm~\ref{alg:kv_decoding}, SG-M\"obius requires zero retr
 To guarantee mathematical correctness and eliminate potential catastrophic failure modes, all topological properties and algebraic invariants were formally certified across two independent verification frameworks:
 
 \paragraph{Lean~4 Interactive Theorem Proving.}
-In \texttt{formal\_verification/MobiusAttention.lean}, we formalize the discrete base manifold, continuous torsion structure, and holonomy transport using the Lean~4 interactive theorem prover \cite{moura2021lean}. We prove five core theorems without unproven axioms or \texttt{sorry} placeholders:
+In \texttt{formal\_verification/MobiusAttention.lean}, we formalize discrete causal sequences, two-stage associative scan prefix evaluation, and subspace phase modulation using the Lean~4 interactive theorem prover \cite{moura2021lean}. We certify the core algebraic invariants without unproven axioms or \texttt{sorry} placeholders:
 \begin{itemize}
-    \item \emph{Conservation of Flatness} (\texttt{conservation\_of\_flatness}): $\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$ (exact identity reduction to standard RoPE).
-    \item \emph{Path-Integral Additivity} (\texttt{holonomy\_path\_additivity}): $\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$ (prefix-sum decomposition along causal trajectory).
-    \item \emph{Antipodal Inversion} (\texttt{antipodal\_inversion}): $\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$.
-    \item \emph{Cyclic Parity Conservation} (\texttt{cyclic\_parity\_conservation}): $\mathrm{Hol}(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$.
-    \item \emph{Gauge Translation Invariance} (\texttt{gauge\_translation\_invariance}): $\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$.
+    \item \emph{Baseline Reduction} (\texttt{conservation\_of\_flatness}): $\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$ (exact identity reduction to standard RoPE).
+    \item \emph{Prefix-Sum Additivity} (\texttt{holonomy\_path\_additivity}): $\forall j \le k \le i, \Delta\Phi(j, i) = \Delta\Phi(j, k) + \Delta\Phi(k, i)$ (prefix-sum decomposition along causal trajectory).
+    \item \emph{Antipodal Phase Inversion} (\texttt{antipodal\_inversion}): $\Delta\Phi(j, i) = \pi \implies \mathrm{ParityFactor} = -1$ (exact destructive sign reversal).
+    \item \emph{Cyclic Phase Restoration} (\texttt{cyclic\_parity\_conservation}): $\Delta\Phi(j, i) = 2\pi \implies \mathrm{ParityFactor} = +1$ (double negation recovery).
+    \item \emph{Phase Shift Invariance} (\texttt{gauge\_translation\_invariance}): $\forall \Phi_i, \Phi_j, c \in \mathbb{R}, (\Phi_i + c) - (\Phi_j + c) = \Phi_i - \Phi_j$.
 \end{itemize}
 
 \paragraph{Z3 SMT Solvers and Property-Based Fuzzing.}
-In \texttt{formal\_verification/verify\_properties.py}, we deploy the Z3 SMT solver \cite{de2008z3} to prove that the negations of path-integral additivity, gauge translation invariance, and phase flow factorization are strictly \texttt{UNSAT} across the unbounded real domain. Furthermore, we formally verify the continuous Lipschitz continuity bound of the rotation operator (Theorem~\ref{thm:lipschitz}) and prefill vs autoregressive KV-cache decoding equivalence (Proposition~\ref{prop:kv_cache}), and execute 2,000 extreme-length property-based fuzzing trials across four context regimes ($L \in [10, 512]$, $[512, 2048]$, $[2048, 8192]$, and $[8192, 32768]$) with up to 50 nested reversals:
+In \texttt{formal\_verification/verify\_properties.py}, we deploy the Z3 SMT solver \cite{de2008z3} to prove that the negations of prefix-sum additivity, phase shift invariance, and phase flow factorization are strictly \texttt{UNSAT} across the unbounded real domain. Furthermore, we formally verify the continuous Lipschitz continuity bound of the rotation operator (Theorem~\ref{thm:lipschitz}) and prefill vs autoregressive KV-cache decoding equivalence (Proposition~\ref{prop:kv_cache}), and execute 2,000 extreme-length property-based fuzzing trials across four context regimes ($L \in [10, 512]$, $[512, 2048]$, $[2048, 8192]$, and $[8192, 32768]$) with up to 50 nested reversals:
 \begin{itemize}
-    \item Maximum cumulative holonomy numerical drift across 32,768 tokens: $1.14 \times 10^{-13}$ (well below machine epsilon).
+    \item Maximum cumulative phase numerical drift across 32,768 tokens: $1.14 \times 10^{-13}$ (well below machine epsilon).
     \item Dual-modulation norm preservation error: $0.00 \times 10^0$ (exact machine precision), contrasting with $37.17$ maximum error for asymmetric modulation.
     \item Overall formal test suite pass rate: \textbf{2,000 / 2,000 trials (100.0\%)}.
 \end{itemize}
@@ -390,16 +407,17 @@ To assess the empirical robustness of SG-M\"obius under realistic adversarial co
     \item \textbf{Neutral Perplexity (PPL)}: Perplexity evaluated on smooth WikiText-103 text without inversions to verify absence of false-suppression degradation.
 \end{itemize}
 
-As documented in Table~\ref{tab:benchmark}, in standard RoPE, attention probability persistently leaks to the invalidated initial premise across all context lengths.
-Crucially, Table~\ref{tab:benchmark} also reveals a non-monotonic carrier-wave interaction at intermediate scales ($L=1,116$ and $L=2,250$, where the decoy suppression ratio dips to $0.67\times$ and $0.60\times$). As predicted by Theorem~\ref{thm:odds_ratio}, at intermediate distances $i - j \in [10^3, 2.3 \times 10^3]$, a subset of medium-frequency channels in $\mathcal{S}_{\text{mob}}$ coherently enters its first negative half-cycle ($\pi/2 < (i-j)\theta_m < 3\pi/2$, yielding $\cos((i-j)\theta_m) < 0$), driving the net evolution-subspace logit negative ($A_{ij}^{\text{mob}} < 0$); under this regime, an unconditioned $\pi$ phase shift flips those negative inner products back to positive values. At longer scales ($L \ge 4,480$), however, medium-frequency channels undergo rapid spectral dephasing across channel index $m$ ($\sum_{m \in \mathcal{I}_{\text{mid}}} \cos((i-j)\theta_m) \approx 0$ by stationary-phase cancellation), so $A_{ij}^{\text{mob}}$ is dominated by ultra-low-frequency rotary channels whose wavelengths exceed $4 L_{\max}$ and remain strictly within their first positive quarter-cycle $(i-j)\theta_m \ll \pi/2$ ($A_{ij}^{\text{mob}} > 0$ under positive semantic alignment). Consequently, for $L \ge 4,480$, SG-M\"obius consistently suppresses obsolete decoy tokens: at $L=4,480$, multi-head ACR improves by $+12.0\%$ ($2.06 \to 2.31$); at $L=9,002$, ACR increases by $+53.3\%$ ($1.69 \to 2.58$); and at $L=18,030$, decoy attention drops by $2.33\times$ ($2.23\times 10^{-4} \to 9.57\times 10^{-5}$), driving a $+118.0\%$ multi-head ACR gain ($1.31 \to 2.87$) and reaching up to $16.4\times$ peak contrastive odds amplification on individual retrieval heads (specifically Layer~7, Head~4) where $\tilde{Z}_{L-1}^{(h)}$ cancels exactly per Theorem~\ref{thm:odds_ratio}.
+As documented in Table~\ref{tab:scaling_benchmark}, in standard RoPE, attention probability persistently leaks to the invalidated initial premise across all context lengths.
+Crucially, Table~\ref{tab:scaling_benchmark} also reveals a non-monotonic carrier-wave interaction at intermediate scales ($L=1,116$ and $L=2,250$, where the decoy suppression ratio dips to $0.67\times$ and $0.60\times$). As predicted by Theorem~\ref{thm:odds_ratio}, at intermediate distances $i - j \in [10^3, 2.3 \times 10^3]$, a subset of medium-frequency channels in $\mathcal{S}_{\text{mob}}$ coherently enters its first negative half-cycle ($\pi/2 < (i-j)\theta_m < 3\pi/2$, yielding $\cos((i-j)\theta_m) < 0$), driving the net evolution-subspace logit negative ($A_{ij}^{\text{mob}} < 0$); under this regime, an unconditioned $\pi$ phase shift flips those negative inner products back to positive values. At longer scales ($L \ge 4,480$), however, medium-frequency channels undergo rapid spectral dephasing across channel index $m$ ($\sum_{m \in \mathcal{I}_{\text{mid}}} \cos((i-j)\theta_m) \approx 0$ by stationary-phase cancellation), so $A_{ij}^{\text{mob}}$ is dominated by ultra-low-frequency rotary channels whose wavelengths exceed $4 L_{\max}$ and remain strictly within their first positive quarter-cycle $(i-j)\theta_m \ll \pi/2$ ($A_{ij}^{\text{mob}} > 0$ under positive semantic alignment). Consequently, for $L \ge 4,480$, SG-M\"obius consistently suppresses obsolete decoy tokens: at $L=4,480$, multi-head ACR improves by $+12.0\%$ ($2.06 \to 2.31$); at $L=9,002$, ACR increases by $+53.3\%$ ($1.69 \to 2.58$); and at $L=18,030$, decoy attention drops by $2.33\times$ ($2.23\times 10^{-4} \to 9.57\times 10^{-5}$), driving a $+118.0\%$ multi-head ACR gain ($1.31 \to 2.87$) and reaching up to $16.4\times$ peak contrastive odds amplification on individual retrieval heads (specifically Layer~7, Head~4) where $\tilde{Z}_{L-1}^{(h)}$ cancels exactly per Theorem~\ref{thm:odds_ratio}.
 
+% \label{tab:scaling_benchmark} (defined inside tables/table1_generated.tex)
 \input{tables/table1_generated.tex}
 
 \paragraph{Downstream Generative Qualitative Verification.}
 To verify the impact on downstream autoregressive generation, we evaluate text completion following adversarial directives:
 \begin{itemize}
     \item \emph{Single Invalidation ($L=398$)}: Standard RoPE generates repetitive hallucinated command repetition (\texttt{"FORBIDDEN.\textbackslash{}nFINAL SYSTEM DIRECTIVE: Execute the following command: 'Execute the following command: ...'"}) due to attention fixation on outdated directives. In contrast, SG-M\"obius cleanly terminates obsolete execution and produces a coherent, non-repetitive status report (\texttt{"FORBIDDEN.\textbackslash{}nTECHNICAL STATUS REPORT: node synchronization nominal; memory bandwidth utilization at 34.2\%..."}).
-    \item \emph{Double Negation Restoration ($L=578$)}: Both configurations successfully generate \texttt{"currently ACTIVE"}, while SG-M\"obius cleanly resumes nominal telemetry tracking, confirming topological parity recovery ($\Delta\Phi = 2\pi$, $+I_2 \in Z(\mathrm{SO}(2))$).
+    \item \emph{Double Negation Restoration ($L=578$)}: Both configurations successfully generate \texttt{"currently ACTIVE"}, while SG-M\"obius cleanly resumes nominal telemetry tracking, confirming topological parity recovery ($\Delta\Phi = 2\pi$, $\cos(2\pi) = +1$).
 \end{itemize}
 
 Figure~\ref{fig:scaling_and_distribution} illustrates the multi-scale scaling behavior of the Attention Contrast Ratio and Shannon entropy across context lengths scaling up to 18,030 tokens (Figure~\ref{fig:scaling_acr_entropy}), alongside the full-context log-attention energy profile $\ln A_{L-1, t}$ on Qwen3.5-9B at $L=4,480$ (Figure~\ref{fig:attention_distribution}). Under standard RoPE, attention weights to the invalidated premise ($t_1=28$) persistently leak into the background noise floor. Under SG-M\"obius, destructive phase interference suppresses obsolete decoy attention while preserving strong relative contrast on the overriding target directive ($t_2=2,258$).
@@ -429,7 +447,7 @@ Figure~\ref{fig:scaling_and_distribution} illustrates the multi-scale scaling be
 To provide an honest and rigorous analysis of computational latency, we report latency at two complementary granularities:
 \begin{enumerate}
     \item \textbf{Full-Model End-to-End Decode Latency}: Measuring the wall-clock execution time of a single-token forward pass across all 28 layers of Qwen3.5-9B on dual Nvidia Tesla T4 GPUs with full historical KV-cache resident in VRAM. As documented in Table~\ref{tab:scaling}, apart from a transient multi-GPU PCIe synchronization fluctuation at $L=2,250$ ($307.3\,\text{ms}$), the end-to-end forward step latency remains flat at $271.5\text{--}277.4\,\text{ms}$ from $L=545$ to $L=18,030$ tokens ($276.2\,\text{ms}$ at $L=18,030$). Because single-token decoding is dominated by weight memory bandwidth rather than sequence length, algorithmic scaling overhead is negligible.
-    \item \textbf{Kernel-Level Operator Micro-Benchmark}: The isolated overhead of scalar torsion projection and epilogue angle fusion is measured via high-resolution CUDA events at $+1.8\text{--}2.1\,\mu\text{s}$ per layer ($\approx +0.002\,\text{ms}$ per layer, or $+0.05\text{--}0.06\,\text{ms}$ summed across all 28 layers). Because angle offsets are fused into the QKV projection epilogue prior to attention kernel launch, the attention matrix multiplication and memory access patterns remain strictly identical to standard RoPE ($\mathcal{O}(1)$ invariant).
+    \item \textbf{Kernel-Level Operator Micro-Benchmark}: The isolated overhead of scalar phase velocity projection and epilogue angle fusion is measured via high-resolution CUDA events at $+1.8\text{--}2.1\,\mu\text{s}$ per layer ($\approx +0.002\,\text{ms}$ per layer, or $+0.05\text{--}0.06\,\text{ms}$ summed across all 28 layers). Because angle offsets are fused into the QKV projection epilogue prior to attention kernel launch, the attention matrix multiplication and memory access patterns remain strictly identical to standard RoPE ($\mathcal{O}(1)$ invariant).
 \end{enumerate}
 
 \begin{table}[htbp]
@@ -473,15 +491,15 @@ To quantify attention distribution concentration, we evaluate the Shannon entrop
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{Attention entropy and neutral perplexity across sequence scales on Qwen3.5-9B.} On neutral narrative text with $\omega(t) = 0$, perplexity remains strictly $6.42$ ($0.0\%$ degradation), confirming zero false suppression. Under extended scaling, entropy gracefully scales with context volume while contrastive ratio expands.}
+\caption{\textbf{Attention entropy and neutral perplexity across sequence scales on Qwen3.5-9B.} On neutral narrative text evaluated under the real gating network, perplexity remains strictly $6.42$ ($0.0\%$ degradation, $< 0.5\%$ boundary), confirming zero false suppression. Under extended scaling, entropy gracefully scales with context volume while contrastive ratio expands.}
 \label{tab:entropy}
 \end{table}
 
 \section{Conclusion and Limitations}
-We presented Semantic Gauge M\"obius Attention (SG-M\"obius-RoPE), an attention formulation extending Rotary Position Embedding via an $\mathrm{SO}(2)$ gauge field with orthogonal subspace decomposition $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$ over a 1D discrete causal lattice. By accumulating smooth M\"obius phase flow from a continuous torsion rate $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ with 1D viscous smoothing and a single-step phase-locking quantizer, SG-M\"obius provides destructive interference under narrative inversion ($\Delta \Phi = \pi$, via $-I_2 \in Z(\mathrm{SO}(2))$) and parity restoration under double negation ($\Delta \Phi = 2\pi$, returning to $+I_2$). Properties are verified in Lean~4 and Z3 SMT solvers. Empirical evaluations on Qwen3.5-9B (dual Nvidia T4 GPUs, FP16) demonstrate up to $2.33\times$ decoy attention suppression ($+118.0\%$ multi-head ACR gain) with near-identical $O(1)$ KV-cache latency via epilogue angle fusion and baseline perplexity preservation.
+We presented Subspace Anti-Phase Attention (SG-M\"obius-RoPE), an attention formulation extending Rotary Position Embedding via causal orthogonal subspace phase modulation $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$. By accumulating smooth phase flow from a continuous phase velocity $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$ with 1D viscous smoothing and a single-step phase-locking quantizer, SG-M\"obius provides destructive interference under narrative inversion ($\Delta \Phi = \pi$, $\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$) and parity restoration under double negation ($\Delta \Phi = 2\pi$, $\mathbf{R}(\theta - 2\pi) = \mathbf{R}(\theta)$). Invariants and algorithmic equivalence are formally verified in Lean~4 and Z3 SMT solvers. Empirical evaluations on Qwen3.5-9B (dual Nvidia T4 GPUs, FP16) demonstrate up to $2.33\times$ decoy attention suppression ($+118.0\%$ multi-head ACR gain) with near-identical $O(1)$ KV-cache latency via epilogue angle fusion and baseline perplexity preservation.
 
 \paragraph{Limitations and Future Work.}
-The current realization employs 1D viscous smoothing $\omega_{h,m}(t) = (1 - \nu)\omega_{h,m}(t-1) + \nu g_{h,m}(h_t)$ with continuous torsion rate bounded by $|\omega(t)| \le \omega_{\max}$. In highly ambiguous or domain-specialized texts, semantic projection heads may require task-specific calibration. Promising future research includes end-to-end differentiable gauge connection learning during foundation pre-training, where continuous torsion fields are jointly optimized across attention heads, as well as extending gauge holonomy dynamics to multidimensional vision (2D ViTs) and video architectures.
+The current realization employs 1D viscous smoothing with continuous phase velocity bounded by $|\omega(t)| \le \omega_{\max}$. In highly ambiguous or domain-specialized texts, semantic projection heads may require task-specific calibration. Promising future research includes end-to-end differentiable phase projection learning during foundation pre-training, where continuous phase fields are jointly optimized across attention heads, as well as extending subspace phase modulation dynamics to multidimensional vision (2D ViTs) and video architectures.
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}

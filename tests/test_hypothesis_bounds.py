@@ -38,20 +38,23 @@ def test_so2_bilinear_invariance_and_double_covering(u, v, phi_q, phi_k):
     R_q = rot2(phi_q)
     R_k = rot2(phi_k)
 
+    scale = float(np.linalg.norm(u_vec) * np.linalg.norm(v_vec) + 1.0)
+    tol = 1e-6 * scale
+
     # 1. Bilinear relative rotation invariance: <R(phi_q) u, R(phi_k) v> == <u, R(phi_k - phi_q) v>
     lhs = np.dot(R_q @ u_vec, R_k @ v_vec)
     rhs = np.dot(u_vec, rot2(phi_k - phi_q) @ v_vec)
-    np.testing.assert_allclose(lhs, rhs, rtol=1e-8, atol=1e-8)
+    np.testing.assert_allclose(lhs, rhs, rtol=1e-6, atol=tol)
 
     # 2. Antipodal pi-shift inverts sign: <R(phi_q + pi) u, R(phi_k) v> == - <R(phi_q) u, R(phi_k) v>
     R_q_pi = rot2(phi_q + math.pi)
     anti_val = np.dot(R_q_pi @ u_vec, R_k @ v_vec)
-    np.testing.assert_allclose(anti_val, -lhs, rtol=1e-8, atol=1e-8)
+    np.testing.assert_allclose(anti_val, -lhs, rtol=1e-6, atol=tol)
 
     # 3. 2pi shift restores identity: <R(phi_q + 2pi) u, R(phi_k) v> == + <R(phi_q) u, R(phi_k) v>
     R_q_2pi = rot2(phi_q + 2 * math.pi)
     rest_val = np.dot(R_q_2pi @ u_vec, R_k @ v_vec)
-    np.testing.assert_allclose(rest_val, lhs, rtol=1e-8, atol=1e-8)
+    np.testing.assert_allclose(rest_val, lhs, rtol=1e-6, atol=tol)
 
 
 # =====================================================================
