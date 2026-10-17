@@ -33,7 +33,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Lint Dependencies
-        run: uv pip install --system markdown-it-py pytest
+        run: uv pip install markdown-it-py pytest
 
       - name: Run Markdown AST Integrity & GFM LaTeX Tests
         run: |
@@ -88,7 +88,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Paper Verification Tools
-        run: uv pip install --system arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate sympy
+        run: uv pip install arxiv-latex-cleaner bibtexparser pandas jinja2 tabulate sympy
 
       - name: Verify arXiv Cleaner Compliance (Google Research Tool)
         run: arxiv_latex_cleaner paper --keep_bib
@@ -160,7 +160,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv pip install --system --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+          uv pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
       - name: Run Pytest Test Suite (Parallelized via pytest-xdist)
         run: pytest tests/ -n auto -v
