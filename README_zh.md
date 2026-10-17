@@ -150,9 +150,9 @@ $$
 在长文本 Prefill 阶段（$L \gg 1$），若串行迭代计算 $\Phi_t$ 会导致并行计算复杂度退化。我们将相位演化严格形式化为**两阶段并行关联扫描（Two-Stage Parallel Associative Scan）**：
 1. **第一阶段（仿射 EMA 关联扫描）**：一阶自回归更新 $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ 构成仿射半群，其结合二元算子为：
 
-$$
-(a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)
-$$
+   $$
+   (a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)
+   $$
 
    输入元组为 $(1-\nu, \, \nu g_t)$，可在 $\mathcal{O}(\log L)$ 树状并行深度内完成扫描。
 2. **第二阶段（加法前缀和扫描）**：未约束相位累积 $\bar{\Phi}\_t = \bar{\Phi}\_{t-1} + \omega\_t$ 遵循实数标量加法群 $(\mathbb{R}, +)$，可在 $\mathcal{O}(\log L)$ 深度内完成并行求和。

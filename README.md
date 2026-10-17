@@ -150,9 +150,9 @@ $$
 During long-context Prefill ($L \gg 1$), calculating $\Phi_t$ sequentially would degrade computational complexity from $\mathcal{O}(1)$ parallel time to $\mathcal{O}(L)$. We formulate phase evolution as a **Two-Stage Parallel Associative Scan**:
 1. **Stage 1 (Affine EMA Associative Scan)**: The first-order autoregressive update $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ defines an affine semigroup with associative binary operator:
 
-$$
-(a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)
-$$
+   $$
+   (a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, \, a_2 b_1 + b_2)
+   $$
 
    with input tuples $(1-\nu, \, \nu g_t)$, evaluable via parallel prefix scan in $\mathcal{O}(\log L)$ parallel depth.
 2. **Stage 2 (Additive Prefix Sum)**: The unconstrained phase accumulation $\bar{\Phi}\_t = \bar{\Phi}\_{t-1} + \omega\_t$ operates over the standard associative addition operator $(\mathbb{R}, +)$, evaluable in $\mathcal{O}(\log L)$ parallel depth.
@@ -377,7 +377,7 @@ An obsolete initial premise (`"ACTIVE"`, token position $t_1 = 28$) is planted i
 
 > **Key Empirical Finding**: Across all evaluated scales from 545 up to 18,030 tokens, SG-Möbius-RoPE equipped with dynamic frequency cutoff $\alpha(L)$ achieves strictly monotonic physical suppression of obsolete decoy attention ($1.13\times\text{--}1.90\times$) and expands multi-head Attention Contrast Ratio (ACR) by up to **+465.1%** ($3.62 \to 20.44$ at $L=1,116$). At extreme 18,030-token scale, standard RoPE leaks $2.23 \times 10^{-4}$ attention mass into the obsolete decoy, whereas SG-Möbius-RoPE suppresses it to $1.67 \times 10^{-4}$ (**1.34× physical suppression**), driving a **+88.5%** ACR gain ($1.31 \to 2.48$) and reaching up to **16.4×** peak odds ratio amplification on individual retrieval heads (Layer 7, Head 4). Neutral text WikiText-103 perplexity remains strictly invariant at $7.48$ (**0.0% degradation**).
 > 
-> **Ablation on Fixed $\alpha=0.50$ vs. Adaptive Cutoff $\alpha(L)$**: In an un-defended baseline ablation with a static $\alpha=0.50$ cutoff, medium-frequency rotary channels in $\mathcal{S}\_{\text{mob}}$ at intermediate distances ($i - j \in [10^3, 2.3 \times 10^3]$) coherently enter their negative half-cycle ($\cos((i-j)\theta\_m) < 0$, $A\_{ij}^{\text{mob}} < 0$), causing an unconditioned $\pi$ phase shift to invert negative inner products back to positive (dips to $0.67\times$ at $L=1,116$ and $0.60\times$ at $L=2,250$). Introducing the closed-form dynamic cutoff $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$ dynamically anchors aliased frequencies to the structural invariant subspace, completely eliminating intermediate dips ($1.62\times$ and $1.17\times$ suppression) and establishing robust suppression across arbitrary context scales.
+> **Ablation on Fixed $\alpha=0.50$ vs. Adaptive Cutoff ($\alpha(L)$)**: In an un-defended baseline ablation with a static $\alpha=0.50$ cutoff, medium-frequency rotary channels in $\mathcal{S}\_{\text{mob}}$ at intermediate distances ($i - j \in [10^3, 2.3 \times 10^3]$) coherently enter their negative half-cycle ($\cos((i-j)\theta\_m) < 0$, $A\_{ij}^{\text{mob}} < 0$), causing an unconditioned $\pi$ phase shift to invert negative inner products back to positive (dips to $0.67\times$ at $L=1,116$ and $0.60\times$ at $L=2,250$). Introducing the closed-form dynamic cutoff $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$ dynamically anchors aliased frequencies to the structural invariant subspace, completely eliminating intermediate dips ($1.62\times$ and $1.17\times$ suppression) and establishing robust suppression across arbitrary context scales.
 
 ### Table 2: Dual-Granularity Decoding Latency & Micro-Overhead Audit
 
