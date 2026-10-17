@@ -5,6 +5,7 @@
 \small
 \renewcommand{\arraystretch}{1.20}
 \setlength{\tabcolsep}{7pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{rcccccc}
 \toprule
 \multirow{2}{*}{\textbf{Context ($L$)}} & \textbf{Baseline RoPE} & \multicolumn{2}{c}{\textbf{Fixed $\alpha = 0.50$ (Ablation)}} & \multicolumn{3}{c}{\textbf{Adaptive $\alpha(L)$ (Defense)}} \\
@@ -18,7 +19,8 @@
 9,002 & $1.69$ & $\mathbf{1.20\times}$ & $2.58$ & $0.875$ & $\mathbf{1.27\times}$ & $\mathbf{3.17}$ \\
 18,030 & $1.31$ & $\mathbf{2.33\times}$ & $2.87$ & $0.875$ & $\mathbf{1.34\times}$ & $\mathbf{2.48}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{\textbf{Ablation of Dynamic Frequency Band Cutoff $\alpha(L)$ Defense vs. Fixed Anchor Ratio on Qwen3.5-9B.} Under fixed $\alpha = 0.50$, carrier negative-half-cycle aliasing at intermediate distances ($L=1,116$ and $2,250$) degrades suppression ($0.67\times$ and $0.60\times$). Enabling adaptive $\alpha(L)$ dynamically freezes alias-prone channels into the anchor subspace, restoring robust suppression ($1.62\times$ and $1.17\times$) and expanding ACR up to $20.44$.}
 \label{tab:adaptive_defense}
 \end{table}

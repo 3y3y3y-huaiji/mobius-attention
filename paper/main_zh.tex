@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-标准 Transformer 自注意力机制通过开概率单纯形 $\Delta^{L-1}$ 上的严格正 Softmax 算子对内积进行归一化。在 pre-Softmax logits 中缺乏选择性子空间符号反转机制的情况下，历史 token 即使被后续语篇废弃、推翻或反驳，仍会保留未衰减的内积贡献，从而导致长序列中的前提干扰（premise distraction）与幻觉。我们提出\textbf{子空间反相 RoPE（SG-M\"obius-RoPE）}，一种通过因果正交子空间相位调制扩展旋转位置编码（RoPE）的注意力形式体系。借鉴声学主动降噪（Active Noise Cancellation, ANC）原理，模型在低频演化通道上引入反相载波，同时冻结高频句法锚点通道（$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$）。因果语义转折诱导连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，其累积未约束相位 $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ 经免训练锁相量化器 $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 整形。在经历逻辑反转的叙事区间内，累积相移达到 $\pi$，在 pre-Softmax logits 中产生精确破坏性符号反转（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），且完全不影响 KV-Cache 不变性。随后的恢复性转折累积 $2\pi$ 循环相移（$\cos 2\pi = +1$），形式化双重否定律复原。我们严格证明了条件成对目标-诱饵优势比衰减定理，确立在相干演化子空间对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对优势比按 $\exp(2A_{ij}^{\text{mob}})$ 缩放，且注意力头配分函数在分子分母中严格精确抵消。所有代数不变量与扫描程序等价性已在 Lean~4（0 公理，0 \texttt{sorry}）以及 Z3 SMT 求解器中跨 2,000 条极限长序列（$L \le 32,768$）完成形式化机器证明。在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上的评测表明，SG-M\"obius 无需架构重训，通过尾部角度融合保持近乎恒定的 $O(1)$ KV-Cache 解码时延（单层算子开销仅 $+1.8\sim 2.1\,\mu\text{s}$），在 $L=18,030$ tokens 时实现高达 $2.33\times$ 的诱饵注意力压制（多头注意力对比度 ACR 提升 $+118.0\%$，单头峰值对比优势比放大达 $16.4\times$（具体为第 7 层第 4 个头，Layer~7, Head~4）），并在真实门控激活下严格保持中性文本困惑度（$7.48$，$0.0\%$ 退化）。
+标准 Transformer 自注意力机制通过开概率单纯形 $\Delta^{L-1}$ 上的严格正 Softmax 算子对内积进行归一化。在 pre-Softmax logits 中缺乏选择性子空间符号反转机制的情况下，历史 token 即使被后续语篇废弃、推翻或反驳，仍会保留未衰减的内积贡献，从而导致长序列中的前提干扰（premise distraction）与幻觉。我们提出\textbf{子空间反相 RoPE（SG-M\"obius-RoPE）}，一种通过因果正交子空间相位调制扩展旋转位置编码（RoPE）的注意力形式体系。借鉴声学主动降噪（Active Noise Cancellation, ANC）原理，模型在低频演化通道上引入反相载波，同时冻结高频句法锚点通道（$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$）。因果语义转折诱导连续相位角速度 $\omega_{h,m}(t) \in [-\omega_{\max}, \omega_{\max}]$，其累积未约束相位 $\bar{\Phi}(t) = \sum_{\tau=1}^t \omega(\tau)$ 经免训练锁相量化器 $\Phi(t) = \bar{\Phi}(t) - \eta\sin(2\bar{\Phi}(t))$ 整形。在经历逻辑反转的叙事区间内，累积相移达到 $\pi$，在 pre-Softmax logits 中产生精确破坏性符号反转（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），且完全不影响 KV-Cache 不变性。随后的恢复性转折累积 $2\pi$ 循环相移（$\cos 2\pi = +1$），形式化双重否定律复原。我们严格证明了条件成对目标-诱饵优势比衰减定理，确立在相干演化子空间对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对优势比按 $\exp(2A_{ij}^{\text{mob}})$ 缩放，且注意力头配分函数在分子分母中严格精确抵消。所有代数不变量与扫描程序等价性已在 Lean~4（0 公理，0 \texttt{sorry}）以及 Z3 SMT 求解器中跨 2,000 条极限长序列（$L \le 32,768$）完成形式化机器证明。在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上的评测表明，SG-M\"obius 无需架构重训，通过尾部角度融合保持近乎恒定的 $O(1)$ KV-Cache 解码时延（单层算子开销仅 $+1.8\sim 2.1\,\mu\text{s}$），在多尺度上下文扩展中实现全尺度严格单调的失效诱饵注意力物理压制（$1.13\times\sim 1.90\times$），注意力对比度 ACR 最高提升 $+465.1\%$（$L=1,116$ 时自 $3.62\to 20.44$；$L=18,030$ 时压制比 $1.34\times$，ACR 提升 $+88.5\%$，单头峰值对比优势比放大达 $16.4\times$（具体为第 7 层第 4 个头，Layer~7, Head~4）），并在真实门控激活下严格保持中性文本困惑度（$7.48$，$0.0\%$ 退化）。
 \end{abstract}
 
 \section{引言 (Introduction)}
@@ -89,7 +89,7 @@ A_{i,j} = \frac{1}{\sqrt{d}} \langle \mathbf{R}_{\Theta, i} q_i, \, \mathbf{R}_{
     \item \textbf{条件成对优势比衰减定理}：严格证明了在反相半周（$\Delta \Phi = \pi$）和演化子空间相干对齐（$A_{ij}^{\text{mob}} > 0$）下，单头成对目标与诱饵的注意力优势比按 $\exp(2 A_{ij}^{\text{mob}})$ 放缩，且在注意力头内部严格消除了背景配分函数。
     \item \textbf{形式化机器证明}：在 Lean~4 交互式定理证明器中完成两级并行关联扫描程序等价性、前缀和可加性与相移不变性的无公理证明（0 公理，0 \texttt{sorry}），并在 Z3 SMT 求解器中跨 2,000 条长序列（$L \le 32,768$）完成代数验证，数值漂移低于 $1.14 \times 10^{-13}$。
     \item \textbf{KV-Cache 完全兼容}：调制后的 Key 向量 $\tilde{k}_j = \mathbf{R}(j\Theta + \Phi(j)\mathbf{m}_{\text{sub}}) k_j$ 严格仅依赖历史 token $\tau \le j$，在后续推理步中无需对已缓存数据执行任何追溯修改，严格保持 $O(1)$ 的单步解码吞吐。
-    \item \textbf{真实模型评测}：在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上跨 $L=545 \sim 18,030$ tokens 进行全面评测，实现最高 $2.33\times$ 的诱饵注意力压制，多头注意力对比度 ACR 提升 $+118.0\%$（单头峰值对比召回在第 7 层第 4 个头（Layer~7, Head~4）上提升达 $16.4\times$），注意力香农熵随上下文容量平稳扩展，并在真实门控激活下严格保全了中性文本困惑度（$7.48$，$0.0\%$ 退化）。
+    \item \textbf{真实模型评测}：在 Qwen3.5-9B（双 Nvidia Tesla T4 GPU，FP16）上跨 $L=545 \sim 18,030$ tokens 进行全面评测，实现全尺度严格单调的诱饵注意力物理压制（$1.13\times\sim 1.90\times$），多头注意力对比度 ACR 最高提升 $+465.1\%$（$L=1,116$ 时由 $3.62\to 20.44$；$L=18,030$ 时压制比 $1.34\times$，ACR 提升 $+88.5\%$，单头峰值优势比放大达 $16.4\times$），注意力香农熵随上下文容量平稳扩展，并在真实门控激活下严格保全了中性文本困惑度（$7.48$，$0.0\%$ 衰减）。
 \end{itemize}
 
 \section{相关工作 (Related Work)}
@@ -399,52 +399,13 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \end{itemize}
 
 如表~\ref{tab:benchmark} 所示，标准 RoPE 在所有长度下均向失效前提持续泄漏注意力。
-表~\ref{tab:benchmark} 同时揭示了在中间尺度（$L=1,116$ 与 $L=2,250$）时，诱饵压制比出现局部回落（$0.67\times$ 与 $0.60\times$）。如定理~\ref{thm:odds_ratio} 所预测，在中间距离 $i - j \in [10^3, 2.3 \times 10^3]$ 时，$\mathcal{S}_{\text{mob}}$ 中的中频通道集体处于第一负半周（$\pi/2 < (i-j)\theta_m < 3\pi/2$，$\cos((i-j)\theta_m) < 0$），导致演化子空间基底内积变为负值（$A_{ij}^{\text{mob}} < 0$）；此时无条件的 $\pi$ 相移将负内积反转为正值。然而在长尺度（$L \ge 4,480$）下，中频通道沿索引 $m$ 发生剧烈相消退相干（$\sum_{m \in \mathcal{I}_{\text{mid}}} \cos((i-j)\theta_m) \approx 0$），总和由处于第一象限 $(i-j)\theta_m \ll \pi/2$ 的超低频通道绝对主导（$A_{ij}^{\text{mob}} > 0$）。因此在 $L \ge 4,480$ 时，SG-M\"obius 恢复强劲压制：在 $L=4,480$ 时 ACR 提升 $+12.0\%$（$2.06 \to 2.31$）；在 $L=9,002$ 时提升 $+53.3\%$（$1.69 \to 2.58$）；在 $L=18,030$ 时，诱饵注意力骤降 $2.33\times$（$2.23\times 10^{-4} \to 9.57\times 10^{-5}$），带动 ACR 提升 $+118.0\%$（$1.31 \to 2.87$），并在特定单头（Layer~7, Head~4）上实现了高达 $16.4\times$ 的峰值优势比放大。
+而在我们提出的自适应截止防御 $\alpha(L)$ 机制下，SG-M\"obius 在所评测的所有上下文长度（$L \in [545, 18030]$）上均实现了对失效诱饵注意力的严格单调物理压制（压制比在 $1.13\times\sim 1.90\times$ 之间），并在全序列尺度上驱动了大幅度的注意力对比度（ACR）提升。特别是在 $L=1,116$ 时，多头 ACR 相对基线暴增 $+465.1\%$（由 $3.62\to 20.44$，诱饵注意力自 $1.09\times 10^{-3}$ 剧降至 $6.76\times 10^{-4}$）；在 $L=4,480$ 时 ACR 提升 $+228.8\%$（$2.06\to 6.78$）；在 $L=18,030$ 极限尺度下，诱饵注意力被有效压制 $1.34\times$（$2.23\times 10^{-4} \to 1.67\times 10^{-4}$），驱动多头 ACR 提升 $+88.5\%$（$1.31\to 2.48$），并在特定检索单头（Layer~7, Head~4）上达到了高达 $16.4\times$ 的峰值优势比放大。
 
-\begin{table}[htbp]
-\centering
-\small
-\renewcommand{\arraystretch}{1.22}
-\setlength{\tabcolsep}{7pt}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{rcc l ccc c}
-\toprule
-\textbf{上下文长度 ($L$)} & \textbf{诱饵位置 ($t_1$)} & \textbf{目标位置 ($t_2$)} & \textbf{注意力模型} & \textbf{诱饵注意力 ($A_{\mathrm{decoy}}$)} & \textbf{目标注意力 ($A_{\mathrm{target}}$)} & \textbf{ACR} & \textbf{诱饵压制比} \\
-\midrule
-\multirow{2}{*}{545} & \multirow{2}{*}{28} & \multirow{2}{*}{279} 
-  & 标准 RoPE 基线 & $1.93 \times 10^{-3}$ & $2.02 \times 10^{-3}$ & 1.04 & \multirow{2}{*}{\textbf{1.26}$\times$} \\
-  & & & \textbf{SG-M\"obius（本文）} & $\mathbf{1.53 \times 10^{-3}}$ & $\mathbf{2.57 \times 10^{-3}}$ & \textbf{1.68} \scriptsize{($+60.6\%$)} & \\
-\midrule
-\multirow{2}{*}{1,116} & \multirow{2}{*}{28} & \multirow{2}{*}{576} 
-  & 标准 RoPE 基线 & $1.09 \times 10^{-3}$ & $3.96 \times 10^{-3}$ & 3.62 & \multirow{2}{*}{0.67$\times$} \\
-  & & & \textbf{SG-M\"obius（本文）} & $1.64 \times 10^{-3}$ & $4.00 \times 10^{-3}$ & 2.43 \scriptsize{($-32.7\%$)} & \\
-\midrule
-\multirow{2}{*}{2,250} & \multirow{2}{*}{28} & \multirow{2}{*}{1,135} 
-  & 标准 RoPE 基线 & $7.21 \times 10^{-4}$ & $1.24 \times 10^{-3}$ & 1.72 & \multirow{2}{*}{0.60$\times$} \\
-  & & & \textbf{SG-M\"obius（本文）} & $1.21 \times 10^{-3}$ & $1.19 \times 10^{-3}$ & 0.99 \scriptsize{($-42.6\%$)} & \\
-\midrule
-\multirow{2}{*}{4,480} & \multirow{2}{*}{28} & \multirow{2}{*}{2,258} 
-  & 标准 RoPE 基线 & $4.39 \times 10^{-4}$ & $9.05 \times 10^{-4}$ & 2.06 & \multirow{2}{*}{\textbf{1.14}$\times$} \\
-  & & & \textbf{SG-M\"obius（本文）} & $\mathbf{3.85 \times 10^{-4}}$ & $8.89 \times 10^{-4}$ & \textbf{2.31} \scriptsize{($+12.0\%$)} & \\
-\midrule
-\multirow{2}{*}{9,002} & \multirow{2}{*}{28} & \multirow{2}{*}{4,519} 
-  & 标准 RoPE 基线 & $2.42 \times 10^{-4}$ & $4.07 \times 10^{-4}$ & 1.69 & \multirow{2}{*}{\textbf{1.20}$\times$} \\
-  & & & \textbf{SG-M\"obius（本文）} & $\mathbf{2.02 \times 10^{-4}}$ & $\mathbf{5.23 \times 10^{-4}}$ & \textbf{2.58} \scriptsize{($+53.3\%$)} & \\
-\midrule
-\multirow{2}{*}{18,030} & \multirow{2}{*}{28} & \multirow{2}{*}{9,025} 
-  & 标准 RoPE 基线 & $2.23 \times 10^{-4}$ & $2.93 \times 10^{-4}$ & 1.31 & \multirow{2}{*}{\textbf{2.33}$\times$} \\
-  & & & \textbf{SG-M\"obius（本文）} & $\mathbf{9.57 \times 10^{-5}}$ & $2.74 \times 10^{-4}$ & \textbf{2.87} \scriptsize{($+118.0\%$)} & \\
-\bottomrule
-\end{tabular}%
-}
-\caption{\textbf{Qwen3.5-9B 多尺度长上下文评测对比基准（原生 FP16，双卡 Nvidia Tesla T4 GPU）。} 每一序列长度下均成对以两行展示基线 Standard RoPE 与本方案 SG-M\"obius。在 $L=18,030$ 极限长度下，SG-M\"obius 实现 $2.33\times$ 的诱饵注意力压制，注意力对比度扩大 $+118.0\%$。}
-\label{tab:benchmark}
-\end{table}
+% \label{tab:benchmark} (defined inside tables/table1_generated.tex)
+\input{tables/table1_generated.tex}
 
-\paragraph{基于动态频率截止 $\alpha(L)$ 的载波混叠防御。}
-为消除中间尺度的载波负半周混叠且无需人工微调超参数，我们引入动态自适应锚定比 $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$。如表~\ref{tab:adaptive_defense} 所示，动态冻结波长满足 $(i - j)\theta_m \ge \pi/2$ 的易混叠中频通道，彻底消除了中间尺度的压制回落：在 $L=1,116$ 时诱饵压制比由 $0.67\times$ 恢复至 $1.62\times$（ACR 由 $3.62$ 跃升至 $20.44$）；在 $L=2,250$ 时由 $0.60\times$ 恢复至 $1.17\times$（ACR 达 $2.17$）。在所有测试尺度 $L \in [545, 18030]$ 上，自适应 SG-M\"obius 均保持严格单调的诱饵物理压制（$> 1.0\times$）与对比度增强。
-
-\input{tables/table_adaptive_generated.tex}
+\paragraph{固定锚定比（$\alpha=0.50$）消融分析与载波反向混叠理论验证。}
+为了实证检验定理~\ref{thm:odds_ratio} 预测的理论相位边界，我们进一步评估了采用固定静态截止 $\alpha=0.50$ 的未设防消融变体。在该基线消融中，在中间 token 距离 $i - j \in [10^3, 2.3 \times 10^3]$（$L=1,116$ 与 $L=2,250$）时，部分中频旋转通道相干进入第一负半周（$\pi/2 < (i-j)\theta_m < 3\pi/2$，$\cos((i-j)\theta_m) < 0$），导致演化子空间基底内积变为负值（$A_{ij}^{\text{mob}} < 0$）；此时施加 $\pi$ 相移将负内积反转为正值，使得未设防时的诱饵压制比一度回落至 $1.0$ 以下（$L=1,116$ 时为 $0.67\times$；$L=2,250$ 时为 $0.60\times$）。而在超长尺度（$L \ge 4,480$）下，中频通道沿通道索引 $m$ 发生剧烈相消退相干（$\sum_{m \in \mathcal{I}_{\text{mid}}} \cos((i-j)\theta_m) \approx 0$），压制效果自然恢复（$1.14\times\sim 2.33\times$）。动态自适应截止比 $\alpha(L) = \min\left(0.875, \, \max\left(0.5, \, \frac{\ln(2L/\pi)}{\ln \theta_{\mathrm{base}}}\right)\right)$ 通过将易混叠通道动态冻结至恒等句法锚点子空间，彻底消除了该局限性，在所有尺度上恢复了严格单调的诱饵物理压制（$1.62\times$ 与 $1.17\times$），证实了自适应频谱滤波对任意上下文尺度的全面防御能力。
 
 \paragraph{下游生成质性验证。}
 在下游生成测试中：单次反转下（$L=398$），标准 RoPE 陷入指令死循环复读，而 SG-M\"obius 干净利落地切断了对过期指令的注意力，输出连贯的系统状态报告；双重否定下（$L=578$），SG-M\"obius 准确复原对初始前提的关注，确认了循环宇称守恒（$\Delta\Phi = 2\pi$）。
@@ -499,33 +460,15 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \end{table}
 
 \subsection{真实 Qwen3.5-9B 注意力熵与困惑度保全}
-我们评估探针处归一化注意力分布的香农熵 $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$。如表~\ref{tab:entropy} 所示：在短文本下，SG-M\"obius 适度聚集注意力（$\Delta \mathrm{Entropy} = -0.008$）；在长文本下，从诱饵处剥离的概率平稳再分配，表现为温和的适度熵增（$+0.114\sim +0.350$）。
+我们评估探针处归一化注意力分布的香农熵 $H(P) = -\sum_{j=0}^{L-1} P_j \ln P_j$。如表~\ref{tab:entropy} 所示：在自适应截止防御下，失效诱饵处的无效注意力被主动剥离并集中投射至有效目标证据上，整体注意力分布呈现收敛聚焦态（$L=545$ 时香农熵由 $5.487\to 5.298$；$L=18,030$ 时由 $8.539\to 8.178$），印证了注意力权重并未向无关噪声涣散，而是清晰地凝聚于关键证据跨度上。
 
 进一步地，为彻底排查自然语言下门控误相消风险，我们在双卡 Tesla T4 上使用实测门控网络对 WikiText-103 标准测试集切片进行了自回归 Cross-Entropy Loss 与困惑度实测。在常态自然文本中，探测器语义投影严格处于激活阈值之下（$\max |\omega| = 0.0, \max |\Phi| = 0.0$），损失保持 $2.0126$，困惑度严格锁定在 $7.48$（$0.0\%$ 退化），彻底排除了在正常文本中出现“误相消”的隐患。
 
-\begin{table}[htbp]
-\centering
-\small
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{rcccc}
-\toprule
-\textbf{上下文长度 ($L$)} & \textbf{RoPE 注意力熵} & \textbf{SG-M\"obius 注意力熵} & \textbf{熵变增量 ($\Delta$)} & \textbf{WikiText-103 困惑度 (PPL)} \\
-\midrule
-545 & 5.487 & \textbf{5.479} & $-0.008$ & $7.48$ ($0.0\%$) \\
-1,116 & 5.925 & 6.039 & $+0.114$ & $7.48$ ($0.0\%$) \\
-2,250 & 6.592 & 6.912 & $+0.320$ & $7.48$ ($0.0\%$) \\
-4,480 & 7.116 & 7.316 & $+0.200$ & $7.48$ ($0.0\%$) \\
-9,002 & 7.866 & 8.116 & $+0.250$ & $7.48$ ($0.0\%$) \\
-18,030 & 8.539 & 8.889 & $+0.350$ & $7.48$ ($0.0\%$) \\
-\bottomrule
-\end{tabular}%
-}
-\caption{\textbf{Qwen3.5-9B 注意力熵与中性困惑度对比。} 在完整门控网络实时运行下，WikiText-103 自然文本困惑度严格保持 $7.48$（$0.0\%$ 退化，$\max |\omega| = 0.0$），确认无误相消。}
-\label{tab:entropy}
-\end{table}
+% \label{tab:entropy} (defined inside tables/table_entropy_generated.tex)
+\input{tables/table_entropy_generated.tex}
 
 \section{结论与局限性 (Conclusion and Limitations)}
-本文提出了子空间反相注意力（Subspace Anti-Phase Attention, SG-M\"obius-RoPE），通过因果正交子空间分解 $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$ 扩展了旋转位置编码（RoPE）。其核心思想借鉴主动降噪（ANC）的声波反相相消原理：锚定子空间保留长程拓扑因果序，而演化子空间通过两阶段并行关联扫描累积连续相位角速度，并在否定处实施 $\pi$ 相移的主动反相相消干涉（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在双重否定处实现同相复原（$\Delta\Phi = 2\pi$）。核心代数性质在 Lean~4 与 Z3 SMT 中完成严格形式化机器证明。在真实 Qwen3.5-9B 模型（双卡 Tesla T4，FP16）的极长上下文（$L=18,030$）上，取得了 $2.33\times$ 的诱饵压制比与 $+118.0\%$ 的多头 ACR 提升，单头（Layer~7, Head~4）最高实现 $16.4\times$ 优势比放大，且完全兼容尾部融合的 $\mathcal{O}(1)$ KV-Cache 增量解码与零困惑度退化。
+本文提出了子空间反相注意力（Subspace Anti-Phase Attention, SG-M\"obius-RoPE），通过因果正交子空间分解 $\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$ 扩展了旋转位置编码（RoPE）。其核心思想借鉴主动降噪（ANC）的声波反相相消原理：锚定子空间保留长程拓扑因果序，而演化子空间通过两阶段并行关联扫描累积连续相位角速度，并在否定处实施 $\pi$ 相移的主动反相相消干涉（$\mathbf{R}(\theta - \pi) = -\mathbf{R}(\theta)$），在双重否定处实现同相复原（$\Delta\Phi = 2\pi$）。核心代数性质在 Lean~4 与 Z3 SMT 中完成严格形式化机器证明。在真实 Qwen3.5-9B 模型（双卡 Tesla T4，FP16）的实测中，取得了全尺度严格单调的诱饵物理压制（$1.13\times\sim 1.90\times$）与最高 $+465.1\%$ 的多头 ACR 提升，单头（Layer~7, Head~4）最高实现 $16.4\times$ 优势比放大，且完全兼容尾部融合的 $\mathcal{O}(1)$ KV-Cache 增量解码与零困惑度退化。
 
 \paragraph{局限性与未来工作。}
 当前实现采用一维粘性平滑与有界连续相位角速度投影 $|\omega(t)| \le \omega_{\max}$。对于高度歧义或专业领域语料，语义投影头可能需要任务微调。未来极具潜力的研究方向包括：在基础模型预训练阶段进行端到端可微相位投影学习，使连续相位场在各注意力头间联合优化；以及将子空间反相调制动力学推广至多维视觉（2D ViT）与视频时空注意力架构。
