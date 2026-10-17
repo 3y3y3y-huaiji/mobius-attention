@@ -164,7 +164,7 @@ $$
 |\Delta \Phi_L| \le 2 D \epsilon_{\text{mach}} + \mathcal{O}(\epsilon_{\text{mach}}^2) = \mathcal{O}(\epsilon_{\text{mach}} \log L)
 $$
 
-当 $L \le 18,030$（$D = 15$）时，$|\Delta \Phi_L| \le 0.029\,\text{rad} \approx 1.68^\circ$，严格位于锁相吸引势阱 $|\delta| < \frac{\pi}{6}$ 内部，势能项 $-\eta\sin(2\bar{\Phi})$ 将主动压制浮点漂移。
+当 $L \le 18,030$（$D = 15$）时，$|\Delta \Phi_L| \le 0.029\,\text{rad} \approx 1.68^\circ$，严格位于锁相吸引势阱 $|\delta| < \frac{\pi}{6}$ 内部，势能项 -$\eta\sin(2\bar{\Phi})$ 将主动压制浮点漂移。
 
 ### 核心理论：相对平移不变性、Lipschitz 连续性与优势比衰减
 
@@ -551,7 +551,7 @@ pytest -q
 
 ### 对抗评测提示词完整规范（逐字全文）
 
-下游模型指令召回能力在上下文长度从 $L = 512$ 至 $16,384$ Token 的极限对抗反转场景下进行严格评估。标准 RoPE 因 Softmax 正定注意力泄漏无法消除已被作废的初始前置事实，产生严重的命题幻觉；SG-Möbius-RoPE 则通过在语义演化子空间 $`\mathcal{S}_{\text{mob}}`$ 累积对极半扭转相位（ $\Delta\Phi = \pi$ ），实现局域破坏性相消干涉，在压制失效信息的同时由 $`\mathcal{S}_{\text{anchor}}`$ 保全基础语法。
+下游模型指令召回能力在上下文长度从 $L = 512$ 至 $16,384$ Token 的极限对抗反转场景下进行严格评估。标准 RoPE 因 Softmax 正定注意力泄漏无法消除已被作废的初始前置事实，产生严重的命题幻觉；SG-Möbius-RoPE 则通过在语义演化子空间 $\mathcal{S}\_{\text{mob}}$ 累积对极半扭转相位（ $\Delta\Phi = \pi$ ），实现局域破坏性相消干涉，在压制失效信息的同时由 $\mathcal{S}\_{\text{anchor}}$ 保全基础语法。
 
 #### 评测场景 A：单次前置事实作废与对抗修正（Single Premise Invalidation）
 
@@ -618,14 +618,14 @@ def build_distractor_text(num_sentences: int) -> str:
 
 ### 形式化评测指标与目标 Token 定位协议
 
-对于序列长度为 $T$ 且探针 Query 位于 $T-1$ 的输入，自动扫描定位已失效诱饵词项（`"ACTIVE"`，位置 $`t_{\text{decoy}}`$）与最新修正目标词项（`"FORBIDDEN"` / `"REVOKED"`，位置 $`t_{\text{target}}`$）：
+对于序列长度为 $T$ 且探针 Query 位于 $T-1$ 的输入，自动扫描定位已失效诱饵词项（`"ACTIVE"`，位置 $t\_{\text{decoy}}$）与最新修正目标词项（`"FORBIDDEN"` / `"REVOKED"`，位置 $t\_{\text{target}}$）：
 
-1. **失效前置诱饵注意力质量（Decoy Attention Mass）**： $`A_{\text{decoy}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\text{decoy}}}`$
-2. **最新修正目标注意力质量（Target Attention Mass）**： $`A_{\text{target}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\text{target}}}`$
-3. **注意力对比度比值（Attention Contrast Ratio, ACR）**： $`\mathrm{ACR} = \frac{A_{\text{target}}}{A_{\text{decoy}} + \epsilon}`$
-4. **相对成对优势比衰减指数（Pairwise Odds Ratio Attenuation）**： $`\frac{\mathrm{Odds}_{\text{mob}}(t_{\text{decoy}} \mid T-1)}{\mathrm{Odds}_{\text{std}}(t_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A_{T-1, t_{\text{target}}}^{\text{mob}}\right)`$
-5. **全序列注意力香农熵（Shannon Entropy）**： $`H(P) = -\sum_{j=1}^{T} P_j \ln(P_j), \quad P_j = \frac{A_{T-1, j}}{\sum_{l} A_{T-1, l}}`$
-6. **自回归单步解码时延（$`\mathcal{O}(1)`$ 不变量认证）**：在载入全量历史 KV-Cache 的前提下，测量 100 次单步前向传播的实际物理耗时（毫秒）。
+1. **失效前置诱饵注意力质量（Decoy Attention Mass）**： $A\_{\text{decoy}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{decoy}}}$
+2. **最新修正目标注意力质量（Target Attention Mass）**： $A\_{\text{target}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{target}}}$
+3. **注意力对比度比值（Attention Contrast Ratio, ACR）**： $\mathrm{ACR} = \frac{A\_{\text{target}}}{A\_{\text{decoy}} + \epsilon}$
+4. **相对成对优势比衰减指数（Pairwise Odds Ratio Attenuation）**： $\frac{\mathrm{Odds}\_{\text{mob}}(t\_{\text{decoy}} \mid T-1)}{\mathrm{Odds}\_{\text{std}}(t\_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A\_{T-1, t\_{\text{target}}}^{\text{mob}}\right)$
+5. **全序列注意力香农熵（Shannon Entropy）**： $H(P) = -\sum\_{j=1}^{T} P\_j \ln(P\_j), \quad P\_j = \frac{A\_{T-1, j}}{\sum\_{l} A\_{T-1, l}}$
+6. **自回归单步解码时延（$\mathcal{O}(1)$ 不变量认证）**：在载入全量历史 KV-Cache 的前提下，测量 100 次单步前向传播的实际物理耗时（毫秒）。
 
 ---
 

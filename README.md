@@ -164,7 +164,7 @@ $$
 |\Delta \Phi_L| \le 2 D \epsilon_{\text{mach}} + \mathcal{O}(\epsilon_{\text{mach}}^2) = \mathcal{O}(\epsilon_{\text{mach}} \log L)
 $$
 
-For $L \le 18,030$ ($D = 15$), maximum floating-point drift satisfies $|\Delta \Phi_L| \le 0.029\,\text{rad} \approx 1.68^\circ$, remaining strictly within the phase-locking attractor basin $|\delta| < \frac{\pi}{6}$, where the potential gradient $-\eta\sin(2\bar{\Phi})$ actively suppresses floating-point drift.
+For $L \le 18,030$ ($D = 15$), maximum floating-point drift satisfies $|\Delta \Phi_L| \le 0.029\,\text{rad} \approx 1.68^\circ$, remaining strictly within the phase-locking attractor basin $|\delta| < \frac{\pi}{6}$, where the potential gradient -$\eta\sin(2\bar{\Phi})$ actively suppresses floating-point drift.
 
 ### Theorems on Relative Invariance, Lipschitz Continuity, and Odds Attenuation
 
@@ -557,7 +557,7 @@ All empirical zero-shot model evaluations on **Qwen3.5-9B** were conducted in pr
 
 ### Adversarial Benchmark Prompt Specifications (Verbatim Texts)
 
-Downstream model recall is evaluated on adversarial context inversion across sequence lengths scaling from $L = 512$ up to $16,384$ tokens. Standard RoPE suffers from catastrophic premise hallucination because positive-definite attention leakage cannot extinguish the initial verified premise. SG-Möbius-RoPE executes destructive interference via an antipodal phase twist ( $\Delta\Phi = \pi$ ) on $`\mathcal{S}_{\text{mob}}`$, suppressing the obsolete fact while preserving syntax in $`\mathcal{S}_{\text{anchor}}`$.
+Downstream model recall is evaluated on adversarial context inversion across sequence lengths scaling from $L = 512$ up to $16,384$ tokens. Standard RoPE suffers from catastrophic premise hallucination because positive-definite attention leakage cannot extinguish the initial verified premise. SG-Möbius-RoPE executes destructive interference via an antipodal phase twist ( $\Delta\Phi = \pi$ ) on $\mathcal{S}\_{\text{mob}}$, suppressing the obsolete fact while preserving syntax in $\mathcal{S}\_{\text{anchor}}$.
 
 #### Benchmark Scenario A: Single Premise Invalidation
 
@@ -624,14 +624,14 @@ def build_distractor_text(num_sentences: int) -> str:
 
 ### Formal Metric Definitions & Token Localization
 
-For a sequence of length $T$ with query token at $T-1$, we locate the **Decoy Token** (the obsolete claim `"ACTIVE"`, position $`t_{\text{decoy}}`$) and the **Target Token** (the overriding directive `"FORBIDDEN"` / `"REVOKED"`, position $`t_{\text{target}}`$):
+For a sequence of length $T$ with query token at $T-1$, we locate the **Decoy Token** (the obsolete claim `"ACTIVE"`, position $t\_{\text{decoy}}$) and the **Target Token** (the overriding directive `"FORBIDDEN"` / `"REVOKED"`, position $t\_{\text{target}}$):
 
-1. **Decoy Attention Mass (Obsolete Leakage)**: $`A_{\text{decoy}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\text{decoy}}}`$
-2. **Target Attention Mass (Active Directive)**: $`A_{\text{target}} = \frac{1}{|H|} \sum_{h \in H} A^{(h)}_{T-1, t_{\text{target}}}`$
-3. **Attention Contrast Ratio (ACR)**: $`\mathrm{ACR} = \frac{A_{\text{target}}}{A_{\text{decoy}} + \epsilon}`$
-4. **Relative Pairwise Odds Ratio Attenuation**: $`\frac{\mathrm{Odds}_{\text{mob}}(t_{\text{decoy}} \mid T-1)}{\mathrm{Odds}_{\text{std}}(t_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A_{T-1, t_{\text{target}}}^{\text{mob}}\right)`$
-5. **Attention Shannon Entropy (Noise Quantification)**: $`H(P) = -\sum_{j=1}^{T} P_j \ln(P_j), \quad P_j = \frac{A_{T-1, j}}{\sum_{l} A_{T-1, l}}`$
-6. **Autoregressive Single-Step Decode Latency ($`\mathcal{O}(1)`$ Invariant)**: Wall-clock latency (ms) measured over 100 iterations of single-token forward passes with full historical KV-cache loaded.
+1. **Decoy Attention Mass (Obsolete Leakage)**: $A\_{\text{decoy}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{decoy}}}$
+2. **Target Attention Mass (Active Directive)**: $A\_{\text{target}} = \frac{1}{|H|} \sum\_{h \in H} A^{(h)}\_{T-1, t\_{\text{target}}}$
+3. **Attention Contrast Ratio (ACR)**: $\mathrm{ACR} = \frac{A\_{\text{target}}}{A\_{\text{decoy}} + \epsilon}$
+4. **Relative Pairwise Odds Ratio Attenuation**: $\frac{\mathrm{Odds}\_{\text{mob}}(t\_{\text{decoy}} \mid T-1)}{\mathrm{Odds}\_{\text{std}}(t\_{\text{decoy}} \mid T-1)} \equiv \exp\left(-2 A\_{T-1, t\_{\text{target}}}^{\text{mob}}\right)$
+5. **Attention Shannon Entropy (Noise Quantification)**: $H(P) = -\sum\_{j=1}^{T} P\_j \ln(P\_j), \quad P\_j = \frac{A\_{T-1, j}}{\sum\_{l} A\_{T-1, l}}$
+6. **Autoregressive Single-Step Decode Latency ($\mathcal{O}(1)$ Invariant)**: Wall-clock latency (ms) measured over 100 iterations of single-token forward passes with full historical KV-cache loaded.
 
 ---
 

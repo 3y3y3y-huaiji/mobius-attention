@@ -11,10 +11,9 @@ require zero retroactive modifications when subsequent tokens are decoded, ensur
 3. Strict O(N) memory allocation with zero historical cache corruption.
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 
@@ -89,7 +88,6 @@ class SGMobiusKVCache:
             value_states = value_states.transpose(1, 2)
             is_transposed = True
 
-        batch_size = key_states.shape[0]
         incoming_len = key_states.shape[-2]
         current_len = self._seen_tokens.get(layer_idx, 0)
 

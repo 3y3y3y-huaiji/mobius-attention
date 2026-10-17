@@ -135,13 +135,9 @@ def verify_provenance_and_claims(tex_content: str) -> list[str]:
                     issues.append("Algorithm 1 index bound bug: Loop starts at i=0 and reads i-1, but -1 index is not initialized.")
 
     # 3. Check colorbar clamping disclosure in Figure 2 and 3 captions
-    for fig_num in [2, 3]:
-        fig_cap = re.search(rf"\\caption\{{[^}}]*Figure\s*{fig_num}[^}}]*\}}", tex_content, re.IGNORECASE)
-        # Search also generic caption
-        caps = re.findall(r"\\caption\{([^}]+)\}", tex_content)
-        for c in caps:
-            if "differential attention" in c.lower() or "clamped" in c.lower():
-                pass # Caption mentions clamping
+    has_clamping_note = "clamped" in tex_content.lower() or "display range" in tex_content.lower()
+    if not has_clamping_note:
+        issues.append("Warning: Captions do not explicitly disclose colorbar clamping for differential attention.")
 
     return issues
 

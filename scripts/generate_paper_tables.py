@@ -77,8 +77,8 @@ def generate_table1_scaling(json_path: str, output_tex: str):
             "Decoy ($t_1$)": f"\\multirow{{2}}{{*}}{{{t1}}}",
             "Target ($t_2$)": f"\\multirow{{2}}{{*}}{{{t2}}}",
             "Attention Model": "Standard RoPE",
-            "Decoy Attn ($A_{\\mathrm{decoy}}$)": std_decoy_str,
-            "Target Attn ($A_{\\mathrm{target}}$)": std_target_str,
+            "Decoy Attn": std_decoy_str,
+            "Target Attn": std_target_str,
             "ACR": std_acr_str,
             "Decoy Suppression": f"\\multirow{{2}}{{*}}{{{supp_str}}}"
         })
@@ -89,13 +89,14 @@ def generate_table1_scaling(json_path: str, output_tex: str):
             "Decoy ($t_1$)": "",
             "Target ($t_2$)": "",
             "Attention Model": "\\textbf{SG-M\\\"obius (Ours)}",
-            "Decoy Attn ($A_{\\mathrm{decoy}}$)": mob_decoy_str,
-            "Target Attn ($A_{\\mathrm{target}}$)": mob_target_str,
+            "Decoy Attn": mob_decoy_str,
+            "Target Attn": mob_target_str,
             "ACR": mob_acr_str,
             "Decoy Suppression": ""
         })
 
     df = pd.DataFrame(rows)
+    assert not df.empty, "DataFrame rows cannot be empty"
 
     os.makedirs(os.path.dirname(output_tex), exist_ok=True)
     
@@ -117,8 +118,8 @@ def generate_table1_scaling(json_path: str, output_tex: str):
     for i in range(0, len(rows), 2):
         r1 = rows[i]
         r2 = rows[i+1]
-        line1 = f"{r1['Context ($L$)']} & {r1['Decoy ($t_1$)']} & {r1['Target ($t_2$)']} & {r1['Attention Model']} & {r1['Decoy Attn ($A_{\\mathrm{decoy}}$)']} & {r1['Target Attn ($A_{\\mathrm{target}}$)']} & {r1['ACR']} & {r1['Decoy Suppression']} \\\\"
-        line2 = f"{r2['Context ($L$)']} & {r2['Decoy ($t_1$)']} & {r2['Target ($t_2$)']} & {r2['Attention Model']} & {r2['Decoy Attn ($A_{\\mathrm{decoy}}$)']} & {r2['Target Attn ($A_{\\mathrm{target}}$)']} & {r2['ACR']} & {r2['Decoy Suppression']} \\\\"
+        line1 = f"{r1['Context ($L$)']} & {r1['Decoy ($t_1$)']} & {r1['Target ($t_2$)']} & {r1['Attention Model']} & {r1['Decoy Attn']} & {r1['Target Attn']} & {r1['ACR']} & {r1['Decoy Suppression']} \\\\"
+        line2 = f"{r2['Context ($L$)']} & {r2['Decoy ($t_1$)']} & {r2['Target ($t_2$)']} & {r2['Attention Model']} & {r2['Decoy Attn']} & {r2['Target Attn']} & {r2['ACR']} & {r2['Decoy Suppression']} \\\\"
         latex_lines.append(line1)
         latex_lines.append(line2)
         if i + 2 < len(rows):

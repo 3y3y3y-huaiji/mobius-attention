@@ -36,6 +36,10 @@ def audit_file(fname):
         # If there are no underscores, it cannot trigger the italic eating bug
         if '_' not in line:
             continue
+
+        if s.startswith("|") and s.endswith("|"):
+            # Table lines containing math are processed by GitHub's MathJax/KaTeX renderer
+            continue
             
         # Render the line with CommonMark parser
         html = md.render(line)

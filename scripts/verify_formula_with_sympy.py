@@ -49,6 +49,8 @@ def verify_symbolic_theorems() -> bool:
     R_pi = R(sp.pi)
     R_2pi = R(2 * sp.pi)
 
+    # R(0) == +I_2
+    assert R_0 == sp.eye(2), "R(0) must equal +I_2"
     # R(pi) == -I_2
     assert R_pi == -sp.eye(2), "R(pi) must equal -I_2"
     # R(2pi) == +I_2
