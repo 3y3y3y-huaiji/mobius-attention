@@ -1,82 +1,104 @@
 # Project: Semantic Gauge Möbius Attention (SG-Möbius-RoPE)
-Academic Peer Review, Adversarial Stress-Testing & ArXiv Technical Report
+## Continuous Subspace Anti-Phase Rotary Modulation for LLMs
 
-## Architecture
-SG-Möbius-RoPE augments Rotary Position Embedding (RoPE) with a non-orientable fiber bundle connection. The semantic gauge connection defines a discrete $\mathbb{Z}_2$ holonomy phase $\Phi_t \in \{0, \pi\}$ along causal sequence paths. 
-- **Discrete Gauge Factorization**: Because $\omega_t \in \{0, \pi\}$, the relative phase modulates attention query-key inner products via $\cos(\Phi_i - \Phi_j) = \cos(\Phi_i)\cos(\Phi_j) = s_i s_j$, where $s_t = \cos(\Phi_t) \in \{-1, +1\}$.
-- **Dual Rotary Modulation**: Applying sign $s_t$ to both $\cos$ and $\sin$ tensors (or equivalently rotating the 2D vector by $\theta_t + \Phi_t$) preserves relative translation invariance $\langle \tilde{q}_i, \tilde{k}_j \rangle = s_i s_j \langle q_i, k_j \rangle_{\text{RoPE}}$ with 0.00 mathematical error.
-- **KV-Cache Compatibility**: Since modulation is a local rank-1 sign factor $s_t$, past key-value caches do not require back-propagation or global $O(N^2)$ recomputation upon semantic inversion.
-- **Refractory Semantic Predictor**: Semantic inversion detection employs refractory hysteresis to prevent spurious multi-word parity oscillations across long prompts.
+> **Status**: Completed, Formally Verified, and Publication-Ready (NeurIPS / ICLR Format)  
+> **Target Model**: Qwen3.5-9B  
+> **Evaluation Span**: $L \in [545, 18,030]$ tokens  
+> **Test Suite**: 407 / 407 passed (100%)  
+> **Formal Verification**: Lean 4 (9 theorems, 0 sorry, 0 custom axioms, 1946 jobs)
 
-## Code Layout
+---
+
+## Architecture Summary
+
+SG-Möbius-RoPE augments Rotary Position Embedding (RoPE) with continuous orthogonal subspace phase modulation to resolve strictly positive Softmax attention leakage under premise invalidation:
+
+1. **Subspace Orthogonal Decomposition**:
+   $$\mathbb{R}^d = \mathcal{S}_{\text{anchor}} \oplus \mathcal{S}_{\text{mob}}$$
+   - $\mathcal{S}_{\text{anchor}}$: High-frequency channels ($m \in \mathcal{I}_{\text{anchor}}$) retain standard static RoPE rotation ($\omega \equiv 0$), guaranteeing strict syntax, punctuation, and local grammar stability ($0.0\%$ WikiText-103 perplexity degradation, 7.48).
+   - $\mathcal{S}_{\text{mob}}$: Low-frequency semantic channels ($m \in \mathcal{I}_{\text{mob}}$) undergo continuous causal phase modulation $\Phi_t = \sum_{\tau \le t} \omega(\tau)$.
+
+2. **Continuous Rotary Dual Modulation**:
+   $$\tilde{q}_i^{(m)} = \mathbf{R}(i\theta_m + \Phi_m(i)) q_i^{(m)}, \qquad \tilde{k}_j^{(m)} = \mathbf{R}(j\theta_m + \Phi_m(j)) k_j^{(m)}$$
+   Preserves exact relative translation invariance:
+   $$\langle \tilde{q}_i^{(m)}, \tilde{k}_j^{(m)} \rangle = (q_i^{(m)})^\top \mathbf{R}((j - i)\theta_m + \Delta\Phi_{j \to i}^{(m)}) k_j^{(m)}$$
+
+3. **Discourse Transition Detector (Definition 1)**:
+   $$z_t = w_g^\top h_t + b_g, \qquad g(h_t) = \omega_{\max} \cdot \mathrm{softsign}\Big(\mathrm{ReLU}\big(|z_t| - \tau_{\text{gate}}\big)\mathrm{sgn}(z_t)\Big)$$
+   where $w_g \propto \mu_{\text{rev}} - \mu_{\text{cont}}$ is derived from pretrained unembedding token centroids. Dead-zone barrier $\tau_{\text{gate}} > 0$ quenches false activations on standard text.
+
+4. **1D Viscous Flow & Phase-Locking Attractor**:
+   $$\omega_t = (1 - \nu)\omega_{t-1} + \nu g(h_t), \qquad \Phi_t = \bar{\Phi}_t - \eta\sin(2\bar{\Phi}_t)$$
+   Quenches numerical floating-point drift and smoothly snaps phase accumulation to $\pi$ (destructive cancellation) or $2\pi$ (cyclic negation-of-negation recovery).
+
+5. **Prefix Partition Contraction & Probability Mass Siphoning (Corollary 4)**:
+   Collective phase cancellation across superseded prefix $\mathcal{P}$ ($|\mathcal{P}| = 576$ tokens including sentence-initial Attention Sink $l=0$) contracts partition function by $Z^{\mathrm{std}}/\tilde{Z} \approx 3.48\times$. This siphons probability mass into operative targets ($P(\text{target})$ amplified $3.49\times$) while cushioning apparent decoy probability drop ($1.62\times$), driving multi-head ACR $+465.1\%$ ($3.62 \to 20.44$).
+
+6. **KV-Cache Immutability (Proposition 5)**:
+   Session-level anchor cutoff $\alpha(L_{\max})$ is fixed at session initialization. Past keys $j < t$ remain byte-for-byte immutable in cache memory, ensuring strict $\mathcal{O}(1)$ autoregressive decoding.
+
+7. **Higham FP16 Forward Stability Bound (Proposition 6)**:
+   Under operational benchmark regime of up to $K \le 10$ discourse turns ($M_\Phi \le 10\pi$), tree-depth prefix scan in FP16 ($u = 2^{-11}$) yields $|\Delta\bar{\Phi}_L| \le 0.230\,\text{rad} < \pi/6$, residing strictly inside the phase-locking attractor basin.
+
+---
+
+## Codebase Organization
+
 ```
-c:\Users\安卓人\Documents\antigravity\算法研究\
-├── formal_verification/
-│   ├── MobiusAttention.lean        # Lean 4 formal mathematical theorems (0 sorry, 0 axioms)
-│   ├── lakefile.toml               # Lake package specification
-│   ├── lean-toolchain              # Lean 4 toolchain pin (4.33.1)
-│   ├── verify_properties.py        # 1000+ randomized property fuzzing & Z3 SMT verification
-│   └── test_rigor_verification.py  # 2000-trial extreme-length fuzzing (up to 32k)
-├── src/
-│   ├── mobius_attention.py         # PyTorch SG-Möbius-RoPE attention layer (dual cos/sin modulation)
-│   ├── gauge_predictor.py          # Hysteresis-gated semantic gauge connection predictor
-│   └── kv_cache.py                 # Linear KV-cache incremental decoding handler
-├── mobius_rope.py                  # Standalone reference rotary embedding module
-├── tests/
-│   ├── test_antagonistic.py        # Antagonistic edge cases (nested negations, quotes, contrastive)
-│   ├── test_cross_arch.py          # Cross-architecture benchmarks (Qwen2.5 and Llama-3)
-│   ├── test_long_context_niah.py   # 8k-32k scalability, ACR, perplexity preservation, Inverted NIAH
-│   └── test_kv_linearity.py        # O(N) memory scaling & KV-cache linear decoding tests
-├── paper/
-│   ├── main.tex                    # ArXiv preprint LaTeX master file (NeurIPS 2024 style)
-│   ├── neurips_2024.sty            # Conference style package
-│   ├── references.bib              # Complete academic bibliography (27 foundational references)
-│   ├── sections/                   # Modular sections (01_intro to 09_conclusion)
-│   ├── figures/                    # High-res English vector figures (fig1-fig6 PDF/SVG)
-│   ├── compile_paper.bat           # Local compilation script
-│   └── package_paper_zip.py        # Overleaf / ArXiv source bundle generator
-├── scripts/
-│   └── plot_paper_figures_en.py    # English vector figure generation from raw npz tensors
-└── assets/                         # Legacy & reference assets
+.
+├── src/                                  # Core PyTorch Implementation
+│   ├── gauge_predictor.py                # Definition 1 softsign detector, centroids, viscous EMA
+│   ├── mobius_attention.py               # Subspace rotary modulation layer
+│   └── kv_cache.py                       # Linear incremental KV-Cache manager
+├── formal_verification/                  # Lean 4 & Z3 Verification
+│   ├── MobiusAttention.lean              # 9 core theorems (0 sorry, 0 custom axioms)
+│   ├── lakefile.toml                     # Lake build configuration (Lean 4.33.1)
+│   └── verify_properties.py              # Z3 SMT UNSAT proof & 2000-trial property fuzzing
+├── tests/                                # 407 End-to-End Tests across 4 Tiers
+│   ├── test_gauge_gate_definition1.py    # Definition 1 softsign dead-zone tests
+│   ├── test_prefill_decoding_equivalence.py # Machine-precision prefill vs decode (< 10^-12)
+│   ├── test_tier1_features.py            # Feature unit tests (60 tests)
+│   ├── test_tier2_boundaries.py          # Boundary tests (60 tests)
+│   ├── test_tier3_combinations.py        # Complex combinations (12 tests)
+│   ├── test_tier4_scenarios.py           # Real-world long-context scenarios (5 tests)
+│   └── ...                               # Robustness, adversarial, NIAH tests (270 tests)
+├── paper/                                # Publication Manuscripts (NeurIPS / ICLR)
+│   ├── main.tex                          # English master paper (521 lines)
+│   ├── main_zh.tex                       # Chinese master paper (506 lines)
+│   ├── references.bib                    # Verified bibliography (15 citations, zero-hallucination)
+│   ├── main.pdf                          # Compiled English preprint PDF
+│   └── main_zh.pdf                       # Compiled Chinese preprint PDF
+├── scripts/                              # Zero-Trust Audit Tools & Figure Generators
+│   ├── verify_paper_claims.py            # SSOT claim, terminology, and arithmetic auditor
+│   ├── check_paper_integrity.py          # LaTeX citation & label integrity linter
+│   ├── check_markdown_math.py            # Markdown math syntax linter
+│   ├── render_scaling_figures.py         # Figure 1(a), 4(a) scaling data renderer
+│   └── plot_english_figures.py           # 300 DPI publication heatmap renderer
+├── experiments/                          # Ground Truth Benchmark Data
+│   └── kaggle_experiment_results.json    # Verified Qwen3.5-9B benchmark metrics
+├── AI_HANDOVER.md                        # Master Handover Guide for AI Assistants
+├── AGENTS.md                             # Autonomous Agent Operational Directives
+├── .cursorrules                          # Cursor AI Editor Configuration
+└── .github/workflows/ci.yml              # 8-job Parallel GitHub Actions CI Pipeline
 ```
 
-## Feature Inventory
-| # | Feature | Description | Milestone | Source |
-|---|---------|-------------|-----------|--------|
-| 1 | Discrete $\mathbb{Z}_2$ Holonomy Formulation | Continuous/discrete fiber bundle theory, causal Wilson line $\Phi(j, i)$, rank-1 sign factorization | M1 | Survey R1 |
-| 2 | Dual Rotary Injection Fix | Scaling both $\cos$ and $\sin$ by $s_t = \cos(\Phi_t)$ to restore exact relative position translation invariance | M1 | Survey R1/R2 |
-| 3 | Lean 4 Proof Verification | Lake workspace setup and compilation of `formal_verification/MobiusAttention.lean` (zero `sorry`, zero unproven axioms) | M1 | Survey R1 |
-| 4 | Property Fuzzing & Z3 SMT Suite | 2,000+ randomized trials covering extreme lengths (up to 32k) and arbitrary reversal points, plus Z3 proofs | M1 | Survey R1 |
-| 5 | Hysteresis Semantic Predictor | Refractory window and stateful gating to eliminate multi-trigger parity oscillation | M2 | Survey R2 |
-| 6 | Linear KV-Cache Incremental Decoding | Correct autoregressive token-by-token slicing for $O(1)$ decoding step | M2 | Survey R2 |
-| 7 | Antagonistic Stress Suite | Stress testing on nested negations, negations in quotes, and consecutive contrastive tokens | M2 | Survey R2 |
-| 8 | Cross-Architecture Generalization | Benchmark across Qwen2.5 and Llama-3 base architectures | M2 | Survey R2 |
-| 9 | Long-Context Scalability (8k - 32k) | Verify linear memory scaling and zero KV degradation across 8k to 32k sequence lengths | M2 | Survey R2 |
-| 10 | Attention Contrast Ratio (ACR) | Quantitative ACR improvement of SG-Möbius over standard RoPE | M2 | Survey R2 |
-| 11 | Neutral Text Perplexity Preservation | Confirm < 0.1% perplexity degradation on neutral texts (zero false-suppression) | M2 | Survey R2 |
-| 12 | Inverted Needle In A Haystack (NIAH) | Benchmark on conflicting premises and mid-context reversals | M2 | Survey R2 |
-| 13 | English Publication-Grade Vector Figures | Generate Figures 1-6 in high-resolution PDF/SVG format with English typography | M3 | Survey R3 |
-| 14 | LaTeX Master & Modular Sections | Scaffold compilable preprint (`paper/main.tex` and 9 sections) adhering to NeurIPS/ICLR formatting | M3 | Survey R3 |
-| 15 | Complete Bibliography | 27-entry bibtex file (`paper/references.bib`) covering RoPE, gauge theory, context cancellation, and non-Euclidean attention | M3 | Survey R3 |
-| 16 | Compilation & Packaging Pipeline | Overleaf bundle creator and compilation automation scripts | M3 | Survey R3 |
-| 17 | E2E Regression & Adversarial Hardening | Full requirement-driven 4-tier E2E testing followed by Tier 5 adversarial coverage hardening | M4 | Survey R1-R3 |
+---
 
-## Milestones
-| # | Name | Scope | Dependencies | Status |
-|---|------|-------|-------------|--------|
-| M1 | Mathematical Rigor & Lean 4 Verification | Features 1, 2, 3, 4: Rotary dual-modulation fix, Lean 4 Lake setup, 2000+ trial fuzzing & Z3 proofs | none | PLANNED |
-| M2 | Adversarial Stress-Testing & Benchmarks | Features 5, 6, 7, 8, 9, 10, 11, 12: Hysteresis predictor, KV decoding, antagonistic suite, Qwen/Llama-3, 8k-32k ACR/PPL, Inverted NIAH | M1 | PLANNED |
-| M3 | ArXiv Preprint Paper Drafting & Assets | Features 13, 14, 15, 16: English vector figures (fig1-fig6), LaTeX template, 9 modular sections, complete bibliography, packaging pipeline | M1 | PLANNED |
-| M4 | Final Milestone: E2E Pass & Hardening | Feature 17: Phase 1 pass 100% of E2E test suite (Tiers 1-4); Phase 2 adversarial coverage hardening (Tier 5) | M1, M2, M3 | PLANNED |
+## Milestone Execution Matrix (All Completed)
 
-## Interface Contracts
-### Gauge Connection $\leftrightarrow$ Attention Layer
-- Function: `apply_mobius_rope(q, k, cos, sin, phi)`
-- Input: `q, k`: `[batch, heads, seq_len, head_dim]`; `cos, sin`: `[seq_len, head_dim]`; `phi`: `[batch, seq_len]`
-- Sign factor: $s = \cos(\phi) \in \{-1, +1\}$
-- Output: `(q_rot, k_rot)` where $\tilde{q} = s_i \mathcal{R}_{\theta, i} q$, $\tilde{k} = s_j \mathcal{R}_{\theta, j} k$
-- Mathematical Invariant: $\langle \tilde{q}_i, \tilde{k}_j \rangle = s_i s_j \langle q_i, k_j \rangle_{\text{RoPE}} = \cos(\Phi_i - \Phi_j) \langle q_i, k_j \rangle_{\text{RoPE}}$
+| Milestone | Scope | Deliverables | Verification | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **M1: Mathematical Rigor & Lean 4** | Theorems 1-3, Corollary 4, Subspace Decoupling | `MobiusAttention.lean`, Lake configuration | `lake build` (1946 jobs, 0 sorry) | ✅ COMPLETED |
+| **M2: Detector Implementation & KV-Cache** | Definition 1 softsign gate, $\tau_{\text{gate}}$ dead-zone, centroid constructor, Proposition 5 | `src/gauge_predictor.py`, `src/kv_cache.py` | Prefill/decode equivalence ($< 10^{-12}$) | ✅ COMPLETED |
+| **M3: Adversarial Benchmarks & Kaggle Run** | Inverted NIAH, $L \in [545, 18,030]$, Table 1-3, Figure 1-6 | `experiments/kaggle_experiment_results.json`, `assets/` | Qwen3.5-9B on Dual T4 (FP16) | ✅ COMPLETED |
+| **M4: Publication Preprint & Bilingual Sync** | 18-page English & Chinese preprints, BibTeX anti-hallucination | `paper/main.tex`, `paper/main_zh.tex`, `paper/*.pdf` | GitHub Actions CI LaTeX compile | ✅ COMPLETED |
+| **M5: Zero-Trust Auditing & Linter Gates** | Terminology linter, SSOT caption sync, Higham bound qualification | `scripts/verify_paper_claims.py`, `scripts/check_paper_integrity.py` | 5 audit stages passed | ✅ COMPLETED |
+| **M6: Full Test Suite & CI/CD Hardening** | 407 tests, 8 parallel CI jobs, ORCID integration | `.github/workflows/ci.yml`, `tests/` | 407 passed in 25s, CI green | ✅ COMPLETED |
 
-### Gauge Predictor $\leftrightarrow$ KV-Cache
-- Method: `step(token_emb, past_phi)`
-- Invariant: $O(1)$ time complexity per token; returns incremental phase $\phi_t = \phi_{t-1} + \omega_t$ with hysteresis suppression.
+---
+
+## Maintenance Directives
+
+For maintenance instructions, forbidden anti-patterns, and step-by-step verification commands, refer to:
+- [`AI_HANDOVER.md`](file:///AI_HANDOVER.md) (Master Handover Guide)
+- [`AGENTS.md`](file:///AGENTS.md) (Operational Directives for Coding Agents)

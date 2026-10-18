@@ -1,0 +1,19 @@
+# .cursorrules - Cursor AI System Directives for SG-Möbius Attention
+
+You are working on the Subspace Anti-Phase Attention (SG-Möbius-RoPE) repository.
+Before generating or modifying any code or paper text, consult AI_HANDOVER.md and AGENTS.md.
+
+## Core Rules for Cursor:
+1. NEVER hallucinate line numbers. Real file sizes:
+   - src/gauge_predictor.py: 612 lines
+   - paper/main.tex: 521 lines
+   - tests/test_gauge_gate_definition1.py: 97 lines
+2. In src/gauge_predictor.py:
+   - Dead-zone gate must be computed on the unscaled linear projection z = w_g^T x + b_g via:
+     g(h_t) = omega_max * softsign(ReLU(|z| - tau_gate) * sgn(z))
+   - Never place tau_gate check after omega_max * tanh(z).
+3. Do not confuse raw gate output g(h_t) = 0.01667 with smoothed initial velocity omega_0 = nu * g = 0.00833.
+4. Corollary 4: Partition function contraction reduces the normalizer, which cushions decoy token probability decay (explaining single-token 1.62x vs ACR +465.1%).
+5. Propositions: Proposition 5 is KV-Cache equivalence; Proposition 6 is Higham FP16 stability bound.
+6. Formal proofs: formal_verification/MobiusAttention.lean must build with 0 sorry and 0 custom axioms.
+7. Verification command before finishing: pytest tests/ -n auto -q && python scripts/verify_paper_claims.py
