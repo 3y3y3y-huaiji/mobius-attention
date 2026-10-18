@@ -144,8 +144,13 @@ class SGMobiusRotaryEmbedding(nn.Module):
         dim = self.head_dim or 64
         num_subspaces = dim // 2
 
-        if self.orig_rotary is not None and hasattr(self.orig_rotary, "inv_freq") and self.orig_rotary.inv_freq is not None:
-            self.register_buffer("inv_freq", self.orig_rotary.inv_freq.clone(), persistent=False)
+        if self.orig_rotary is not None and hasattr(self.orig_rotary, "inv_freq"):
+            orig_inv = getattr(self.orig_rotary, "inv_freq")
+            if isinstance(orig_inv, torch.Tensor):
+                self.register_buffer("inv_freq", orig_inv.clone(), persistent=False)
+            else:
+                inv_freq = 1.0 / (self.base ** (torch.arange(0, num_subspaces, 1, dtype=torch.float32) * 2 / dim))
+                self.register_buffer("inv_freq", inv_freq, persistent=False)
         else:
             inv_freq = 1.0 / (self.base ** (torch.arange(0, num_subspaces, 1, dtype=torch.float32) * 2 / dim))
             self.register_buffer("inv_freq", inv_freq, persistent=False)
@@ -238,8 +243,8 @@ class SGMobiusRotaryEmbedding(nn.Module):
         self,
         phi: torch.Tensor,
         head_dim: int,
-        device: torch.device,
-        dtype: torch.dtype,
+        device: Optional[torch.device] = None,
+        dtype: Optional[torch.dtype] = None,
         return_half: bool = False,
         seq_len: Optional[int] = None
     ) -> torch.Tensor:
@@ -248,12 +253,14 @@ class SGMobiusRotaryEmbedding(nn.Module):
         [..., num_subspaces] -> [..., head_dim] with duplicate halves for 2D rotation.
         If return_half=True, returns [..., num_subspaces] for direct angle addition table pre-fusion.
         """
+        target_device = device if device is not None else phi.device
+        target_dtype = dtype if dtype is not None else phi.dtype
         num_subspaces = head_dim // 2
         effective_seq_len = seq_len if seq_len is not None else (phi.shape[-2] if phi.dim() >= 2 else None)
-        mask = self.get_subspace_mask(num_subspaces, device=device, seq_len=effective_seq_len)
+        mask = self.get_subspace_mask(num_subspaces, device=target_device, seq_len=effective_seq_len)
         num_mob = int(mask.sum().item())
 
-        phi = phi.to(device=device, dtype=dtype)
+        phi = phi.to(device=target_device, dtype=target_dtype)
 
         # Standardize trailing dimension
         last_dim = phi.shape[-1]
@@ -454,8 +461,9 @@ class SGMobiusRotaryEmbedding(nn.Module):
             pos = position_ids.to(dtype=calc_dtype)
 
         num_subspaces = head_dim // 2
-        if hasattr(self, "inv_freq") and self.inv_freq is not None:
-            inv_freq = self.inv_freq.to(device=device, dtype=calc_dtype)
+        inv_freq_buf = getattr(self, "inv_freq", None)
+        if isinstance(inv_freq_buf, torch.Tensor):
+            inv_freq = inv_freq_buf.to(device=device, dtype=calc_dtype)
         else:
             inv_freq = 1.0 / (self.base ** (torch.arange(0, num_subspaces, 1, device=device, dtype=calc_dtype) * 2 / head_dim))
 

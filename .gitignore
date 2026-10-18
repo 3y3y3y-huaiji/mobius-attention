@@ -42,3 +42,10 @@ downloaded_paper_pdf/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Test & Coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/

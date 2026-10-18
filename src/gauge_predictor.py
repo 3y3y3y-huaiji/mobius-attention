@@ -11,7 +11,7 @@ Provides:
    spurious multi-trigger parity oscillations across dense contrastive contexts.
 """
 
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union, cast
 
 import torch
 import torch.nn as nn
@@ -184,7 +184,7 @@ def two_stage_associative_scan(
         init_w = initial_omega
         if omega_max is not None:
             init_w = torch.clamp(init_w, -omega_max, omega_max)
-        idx = [slice(None)] * g.dim()
+        idx: List[Any] = [slice(None)] * g.dim()
         idx[pos_dim] = 0
         idx_tuple = tuple(idx)
         if init_w.shape != b[idx_tuple].shape:
@@ -247,17 +247,19 @@ def causal_viscous_ema(
         curr_g = g.select(seq_dim, 0)
         if initial_omega is not None:
             prev = initial_omega
+            attractor: Union[torch.Tensor, float]
             if eta > 0.0 and initial_phi is not None:
                 attractor = -eta * torch.sin(2.0 * initial_phi)
             else:
                 attractor = 0.0
             out = (1.0 - nu) * prev + nu * curr_g + attractor
         else:
+            attractor_base: Union[torch.Tensor, float]
             if eta > 0.0 and initial_phi is not None:
-                attractor = -eta * torch.sin(2.0 * initial_phi)
+                attractor_base = -eta * torch.sin(2.0 * initial_phi)
             else:
-                attractor = 0.0
-            out = nu * curr_g + attractor
+                attractor_base = 0.0
+            out = nu * curr_g + attractor_base
 
         if omega_max is not None:
             out = torch.clamp(out, -omega_max, omega_max)
@@ -560,7 +562,7 @@ class HysteresisSemanticGaugePredictor(SemanticGaugeConnection):
 
     def reset_state(self):
         super().reset_state()
-        self._last_trigger_step.fill_(-100000)
+        cast(torch.Tensor, self._last_trigger_step).fill_(-100000)
 
     def filter_with_hysteresis(self, raw_triggers: List[int], seq_len: int) -> List[int]:
         r"""
