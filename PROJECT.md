@@ -4,8 +4,8 @@
 > **Status**: Completed, Formally Verified, and Publication-Ready (NeurIPS / ICLR Format)  
 > **Target Model**: Qwen3.5-9B  
 > **Evaluation Span**: $L \in [545, 18,030]$ tokens  
-> **Test Suite**: 407 / 407 passed (100%)  
-> **Formal Verification**: Lean 4 (9 theorems, 0 sorry, 0 custom axioms, 1946 jobs)
+> **Test Suite**: 453 / 453 passed (100%)  
+> **Formal Verification**: Lean 4 (17 theorems, 0 sorry, 0 custom axioms, 1946 jobs)
 
 ---
 
@@ -51,20 +51,21 @@ SG-Möbius-RoPE augments Rotary Position Embedding (RoPE) with continuous orthog
 │   ├── mobius_attention.py               # Subspace rotary modulation layer
 │   └── kv_cache.py                       # Linear incremental KV-Cache manager
 ├── formal_verification/                  # Lean 4 & Z3 Verification
-│   ├── MobiusAttention.lean              # 9 core theorems (0 sorry, 0 custom axioms)
+│   ├── MobiusAttention.lean              # 17 core theorems (0 sorry, 0 custom axioms)
 │   ├── lakefile.toml                     # Lake build configuration (Lean 4.33.1)
 │   └── verify_properties.py              # Z3 SMT UNSAT proof & 2000-trial property fuzzing
-├── tests/                                # 407 End-to-End Tests across 4 Tiers
+├── tests/                                # 453 End-to-End Tests across 4 Tiers
 │   ├── test_gauge_gate_definition1.py    # Definition 1 softsign dead-zone tests
 │   ├── test_prefill_decoding_equivalence.py # Machine-precision prefill vs decode (< 10^-12)
 │   ├── test_tier1_features.py            # Feature unit tests (60 tests)
 │   ├── test_tier2_boundaries.py          # Boundary tests (60 tests)
 │   ├── test_tier3_combinations.py        # Complex combinations (12 tests)
 │   ├── test_tier4_scenarios.py           # Real-world long-context scenarios (5 tests)
+│   ├── test_multi_turn_contraction.py    # Multi-turn parity-alternating partition contraction (46 tests)
 │   └── ...                               # Robustness, adversarial, NIAH tests (270 tests)
 ├── paper/                                # Publication Manuscripts (NeurIPS / ICLR)
-│   ├── main.tex                          # English master paper (521 lines)
-│   ├── main_zh.tex                       # Chinese master paper (506 lines)
+│   ├── main.tex                          # English master paper (578 lines)
+│   ├── main_zh.tex                       # Chinese master paper (563 lines)
 │   ├── references.bib                    # Verified bibliography (15 citations, zero-hallucination)
 │   ├── main.pdf                          # Compiled English preprint PDF
 │   └── main_zh.pdf                       # Compiled Chinese preprint PDF
@@ -93,7 +94,7 @@ SG-Möbius-RoPE augments Rotary Position Embedding (RoPE) with continuous orthog
 | **M3: Adversarial Benchmarks & Kaggle Run** | Inverted NIAH, $L \in [545, 18,030]$, Table 1-3, Figure 1-6 | `experiments/kaggle_experiment_results.json`, `assets/` | Qwen3.5-9B on Dual T4 (FP16) | ✅ COMPLETED |
 | **M4: Publication Preprint & Bilingual Sync** | 18-page English & Chinese preprints, BibTeX anti-hallucination | `paper/main.tex`, `paper/main_zh.tex`, `paper/*.pdf` | GitHub Actions CI LaTeX compile | ✅ COMPLETED |
 | **M5: Zero-Trust Auditing & Linter Gates** | Terminology linter, SSOT caption sync, Higham bound qualification | `scripts/verify_paper_claims.py`, `scripts/check_paper_integrity.py` | 5 audit stages passed | ✅ COMPLETED |
-| **M6: Full Test Suite & CI/CD Hardening** | 407 tests, 8 parallel CI jobs, ORCID integration | `.github/workflows/ci.yml`, `tests/` | 407 passed in 25s, CI green | ✅ COMPLETED |
+| **M6: Full Test Suite & CI/CD Hardening** | 453 tests, 8 parallel CI jobs, ORCID integration | `.github/workflows/ci.yml`, `tests/` | 453 passed in ~37s, CI green | ✅ COMPLETED |
 
 ---
 

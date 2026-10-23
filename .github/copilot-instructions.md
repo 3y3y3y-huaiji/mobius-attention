@@ -7,7 +7,7 @@ It decouples the embedding space into an anchor subspace S_anchor (preserving st
 ## Implementation & Style Standards
 - Model Code: `src/` (PyTorch, FP16/BF16/FP32).
 - Formal Verification: `formal_verification/` (Lean 4, lake).
-- Unit Tests: `tests/` (Pytest, pytest-xdist, Hypothesis). All 407 tests must pass.
+- Unit Tests: `tests/` (Pytest, pytest-xdist, Hypothesis). All 453 tests must pass.
 - Paper: `paper/` (LaTeX NeurIPS/ICLR style).
 
 ## Key Implementation Constraints

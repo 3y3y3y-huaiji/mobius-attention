@@ -685,4 +685,139 @@ theorem epsilon_perturbation_robustness
     exact h_supp_pos
   exact ⟨h_margin_gt, h_exp_gt⟩
 
+/-
+  =============================================================================
+  Section 8: Multi-Turn Parity-Alternating Partition Function Contraction
+  Real-algebra core of paper Theorem 7 (thm:multi_turn_contraction) and
+  Corollary 8 (cor:k_turn_acr). Floating-point semantics remain the
+  responsibility of Proposition 6; everything below is exact real algebra.
+  Deeply reuses Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+  =============================================================================
+-/
+
+/--
+  Lemma (Theorem 7 (i), parity core): the n-th nominal reversal phase nπ
+  contributes cos(nπ) = (-1)^n, i.e. the sign alternates with the parity of n.
+-/
+theorem multi_turn_parity_cos_phase (n : ℕ) :
+    Real.cos (n * Real.pi) = (-1 : ℝ) ^ n :=
+  Real.cos_nat_mul_pi n
+
+/--
+  Theorem 7 (i): Multi-Turn Parity Sign Flip.
+  Rotating a 2D rotary vector by an extra nπ flips the rotary inner product
+  sign exactly with the parity of n: even n revives the term in phase, odd n
+  voids it anti-phase.
+-/
+theorem multi_turn_parity_sign_flip (n : ℕ) (θ : ℝ) (q k : Vec2) :
+    dot2 (rotate2 (θ + n * Real.pi) q) k = (-1 : ℝ) ^ n * dot2 (rotate2 θ q) k := by
+  have h_cos : Real.cos (θ + n * Real.pi) = (-1 : ℝ) ^ n * Real.cos θ :=
+    Real.cos_add_nat_mul_pi θ n
+  have h_sin : Real.sin (θ + n * Real.pi) = (-1 : ℝ) ^ n * Real.sin θ :=
+    Real.sin_add_nat_mul_pi θ n
+  unfold dot2 rotate2
+  rw [h_cos, h_sin]
+  ring
+
+/--
+  Theorem 7 (i): Voided-Term Identity.
+  A voided anti-phase contribution satisfies
+  exp(A_std - 2 * A_mob) = exp(A_std) - exp(A_std) * (1 - exp(-2 * A_mob)),
+  the term-by-term form of the contraction law Z̃ = Z - ΔZ_tot.
+-/
+theorem multi_turn_voided_term_identity (a m : ℝ) :
+    Real.exp (a - 2 * m) = Real.exp a - Real.exp a * (1 - Real.exp (-2 * m)) := by
+  have h_split : Real.exp (a - 2 * m) = Real.exp a * Real.exp (-2 * m) := by
+    rw [show a - 2 * m = a + (-2 * m) from by ring, Real.exp_add]
+  rw [h_split]
+  ring
+
+/--
+  Theorem 7 (i): Multi-Turn Partition Contraction (single voided term).
+  Every voided contribution exp(a) * (1 - exp(-2 * m)) is strictly positive
+  whenever the coherence alignment satisfies A_mob = m > 0.
+-/
+theorem multi_turn_partition_contraction (a m : ℝ) (hm : 0 < m) :
+    0 < Real.exp a * (1 - Real.exp (-2 * m)) := by
+  have h_exp_pos : 0 < Real.exp a := Real.exp_pos a
+  have h_arg_neg : -2 * m < 0 := by linarith
+  have h_exp_lt : Real.exp (-2 * m) < 1 := Real.exp_lt_one_iff.mpr h_arg_neg
+  have h_one_sub_pos : 0 < 1 - Real.exp (-2 * m) := by linarith
+  exact mul_pos h_exp_pos h_one_sub_pos
+
+/--
+  Theorem 7 (i): Multi-Turn Partition Contraction (summed form).
+  With strictly positive voided contributions over a nonempty segment index
+  set, the total ΔZ_tot > 0 and the contracted partition function obeys
+  Z̃ = Z - ΔZ_tot < Z strictly.
+-/
+theorem multi_turn_partition_contraction_sum {ι : Type*} (s : Finset ι) (A Am : ι → ℝ)
+    (Z : ℝ) (hs : s.Nonempty) (hpos : ∀ i ∈ s, 0 < Am i) :
+    0 < s.sum (fun i => Real.exp (A i) * (1 - Real.exp (-2 * Am i))) ∧
+      Z - s.sum (fun i => Real.exp (A i) * (1 - Real.exp (-2 * Am i))) < Z := by
+  have h_term : ∀ i ∈ s, 0 < Real.exp (A i) * (1 - Real.exp (-2 * Am i)) := by
+    intro i hi
+    exact multi_turn_partition_contraction (A i) (Am i) (hpos i hi)
+  have h_sum : 0 < s.sum (fun i => Real.exp (A i) * (1 - Real.exp (-2 * Am i))) :=
+    Finset.sum_pos h_term hs
+  exact ⟨h_sum, by linarith⟩
+
+/--
+  Corollary 8 (1): Uniform In-Phase Amplification Identity.
+  For an in-phase token with unchanged numerator exp(a), the probability ratio
+  against the contracted partition function satisfies
+  exp(a) / (Z - Δ) = (exp(a) / Z) * (1 / (1 - Δ / Z)),
+  where the second factor is the token-independent amplification
+  T = 1 / (1 - ΔZ_tot / Z).
+-/
+theorem uniform_in_phase_amplification (a Z Δ : ℝ) (hZ : 0 < Z) (_hΔ : 0 < Δ) (hlt : Δ < Z) :
+    Real.exp a / (Z - Δ) = (Real.exp a / Z) * (1 / (1 - Δ / Z)) := by
+  have hZ_ne : Z ≠ 0 := ne_of_gt hZ
+  have hsub_pos : 0 < Z - Δ := by linarith
+  have hsub_ne : Z - Δ ≠ 0 := ne_of_gt hsub_pos
+  have hratio_pos : 0 < 1 - Δ / Z := by
+    have h_ratio : Δ / Z < 1 := (div_lt_one hZ).2 hlt
+    linarith
+  have hratio_ne : 1 - Δ / Z ≠ 0 := ne_of_gt hratio_pos
+  field_simp [hZ_ne, hsub_ne, hratio_ne]
+
+/--
+  Corollary 8 (1): Token-Identity-Independent Amplification Factor.
+  There exists T = 1 / (1 - Δ / Z) > 1 such that for every logit a the
+  uniform identity exp(a) / (Z - Δ) = (exp(a) / Z) * T holds; the factor T
+  does not depend on the token identity a.
+-/
+theorem uniform_in_phase_amplification_factor (Z Δ : ℝ) (hZ : 0 < Z) (hΔ : 0 < Δ) (hlt : Δ < Z) :
+    ∃ T : ℝ, 1 < T ∧ ∀ a : ℝ, Real.exp a / (Z - Δ) = (Real.exp a / Z) * T := by
+  refine ⟨1 / (1 - Δ / Z), ?_, ?_⟩
+  · have hratio_pos : 0 < 1 - Δ / Z := by
+      have h_ratio : Δ / Z < 1 := (div_lt_one hZ).2 hlt
+      linarith
+    have hratio_lt : 1 - Δ / Z < 1 := by
+      have h_ratio : 0 < Δ / Z := div_pos hΔ hZ
+      linarith
+    exact (one_lt_div hratio_pos).2 hratio_lt
+  · intro a
+    exact uniform_in_phase_amplification a Z Δ hZ hΔ hlt
+
+/--
+  Theorem 7 (ii): Perturbation Sufficient Condition.
+  For bounded phase perturbation |δ| ≤ π/6, the anti-phase first-order
+  contraction factor satisfies 1 + cos δ ≥ 1 + √3 / 2 ≈ 1.866, keeping the
+  anti-phase first-order contraction dominant under the stated perturbation.
+-/
+theorem one_add_cos_lower_bound (δ : ℝ) (hδ : |δ| ≤ Real.pi / 6) :
+    1 + Real.sqrt 3 / 2 ≤ 1 + Real.cos δ := by
+  have h_bound : Real.sqrt 3 / 2 ≤ Real.cos δ := by
+    rw [← Real.cos_abs]
+    have h_nonneg : 0 ≤ |δ| := abs_nonneg δ
+    have h_le_pi : Real.pi / 6 ≤ Real.pi := by
+      have _h_pi_pos : 0 < Real.pi := Real.pi_pos
+      linarith
+    have h_cos_le : Real.cos (Real.pi / 6) ≤ Real.cos |δ| :=
+      Real.cos_le_cos_of_nonneg_of_le_pi h_nonneg h_le_pi hδ
+    rw [Real.cos_pi_div_six] at h_cos_le
+    exact h_cos_le
+  linarith
+
 end MobiusAttention

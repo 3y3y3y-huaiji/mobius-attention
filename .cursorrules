@@ -5,9 +5,11 @@ Before generating or modifying any code or paper text, consult AI_HANDOVER.md an
 
 ## Core Rules for Cursor:
 1. NEVER hallucinate line numbers. Real file sizes:
-   - src/gauge_predictor.py: 612 lines
-   - paper/main.tex: 521 lines
-   - tests/test_gauge_gate_definition1.py: 97 lines
+   - src/gauge_predictor.py: 615 lines
+   - paper/main.tex: 578 lines
+   - tests/test_gauge_gate_definition1.py: 138 lines
+   - formal_verification/MobiusAttention.lean: 17 theorems
+   - Test suite: 453 passed
 2. In src/gauge_predictor.py:
    - Dead-zone gate must be computed on the unscaled linear projection z = w_g^T x + b_g via:
      g(h_t) = omega_max * softsign(ReLU(|z| - tau_gate) * sgn(z))

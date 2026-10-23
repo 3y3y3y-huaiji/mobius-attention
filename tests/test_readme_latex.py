@@ -136,26 +136,21 @@ def test_display_math_block_isolation(readme_path):
                 f"Line {line_num} in {readme_path} has unisolated $$: '{stripped}'. "
                 "Display math delimiters '$$' must be on their own line without embedded equation text."
             )
-            is_in_list = any(
-                lines[j].lstrip().startswith(("-", "*", "1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9."))
-                for j in range(max(0, idx-4), idx)
+            assert not line.startswith(" "), (
+                f"Line {line_num} in {readme_path}: Display math '$$' must start at column 0 without indentation. "
+                "GitHub math renderer treats indented $$ (e.g. inside lists) as plain text."
             )
-            if not is_in_list:
-                assert not line.startswith(" "), (
-                    f"Line {line_num} in {readme_path}: Display math '$$' must start at column 0 without indentation. "
-                    "GitHub math renderer treats indented $$ (e.g. inside lists) as plain text."
-                )
             if not in_math_block:
                 # Opening $$
                 in_math_block = True
-                if idx > 0 and not is_in_list:
+                if idx > 0:
                     assert lines[idx - 1].strip() == "", (
                         f"Line {line_num} in {readme_path}: opening '$$' must be preceded by a blank line."
                     )
             else:
                 # Closing $$
                 in_math_block = False
-                if idx < len(lines) - 1 and not is_in_list:
+                if idx < len(lines) - 1:
                     assert lines[idx + 1].strip() == "", (
                         f"Line {line_num} in {readme_path}: closing '$$' must be followed by a blank line."
                     )
@@ -163,12 +158,31 @@ def test_display_math_block_isolation(readme_path):
 
 @pytest.mark.parametrize("readme_path", README_FILES)
 def test_no_broken_pipe_norm_in_math(readme_path):
-    """GFM rule: do not use \\| for vector norms in math; use \\Vert or \\lVert/\\rVert."""
-    display_matches, inline_matches, _ = extract_math_blocks(readme_path)
+    """GFM rule:
+    1. Do not use \\| for vector norms in math; use \\Vert or \\lVert/\\rVert.
+    2. Never use \\_, \\!, \\,, \\{, or \\} inside math (GitHub strips backslashes before punctuation).
+    3. Never place inline $...$ directly adjacent to CJK fullwidth punctuation without a space, or '-$' outside math.
+    """
+    display_matches, inline_matches, content = extract_math_blocks(readme_path)
     all_math = [m[0] for m in display_matches] + [m[0] for m in inline_matches]
     for expr in all_math:
         assert r"\|" not in expr, (
             f"Found raw \\| in math in {readme_path}: '{expr}'. Use \\Vert instead to prevent GFM pipe collision."
+        )
+        assert r"\_" not in expr, f"Forbidden \\_ in math in {readme_path}: '{expr}'"
+        assert r"\!" not in expr, f"Forbidden \\! in math in {readme_path}: '{expr}'"
+        assert r"\," not in expr, f"Forbidden \\, in math in {readme_path}: '{expr}'"
+        assert r"\{" not in expr, f"Forbidden \\{{ in math in {readme_path}: '{expr}' (use \\lbrace)"
+        assert r"\}" not in expr, f"Forbidden \\}} in math in {readme_path}: '{expr}' (use \\rbrace)"
+
+    for idx, line in enumerate(content.splitlines(), 1):
+        if line.strip().startswith("```"):
+            continue
+        assert not re.search(r"[（【「『“‘：，、]\$(?!`)|(?<!`)\$[）】」』”’、，。；：]", line), (
+            f"Line {idx} in {readme_path} has inline $ directly adjacent to CJK fullwidth punctuation: '{line}'"
+        )
+        assert "-$" not in line, (
+            f"Line {idx} in {readme_path} has '-$' outside math delimiter: '{line}'"
         )
 
 @pytest.mark.parametrize("readme_path", README_FILES)

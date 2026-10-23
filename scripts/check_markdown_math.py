@@ -31,18 +31,37 @@ def audit_file(fname):
             in_display_math = not in_display_math
             continue
         if in_display_math:
-            continue
-            
-        # If there are no underscores, it cannot trigger the italic eating bug
-        if '_' not in line:
+            if r'\_' in line or r'\!' in line or r'\,' in line:
+                corrupted_lines.append((idx, line.strip(), line.strip(), "Forbidden escaped char in display math"))
+                print(f"[CORRUPTED DISPLAY MATH ESCAPE] Line {idx}: {line.strip()}")
             continue
 
         if s.startswith("|") and s.endswith("|"):
             # Table lines containing math are processed by GitHub's MathJax/KaTeX renderer
             continue
-            
-        # Render the line with CommonMark parser
-        html = md.render(line)
+
+        # Check all inline math spans on this line for forbidden escapes (\_, \!, \,, \{, \}),
+        # or CJK fullwidth punctuation immediately adjacent to $ delimiters
+        math_spans = re.findall(r'\$`[^`\n]+`\$|\$[^$\n]+\$', line)
+        for ms in math_spans:
+            if any(esc in ms for esc in (r'\_', r'\!', r'\,', r'\{', r'\}')):
+                corrupted_lines.append((idx, line.strip(), ms, "Forbidden escaped char inside math"))
+                print(f"[CORRUPTED MATH ESCAPE] Line {idx}: {ms}")
+                break
+        if re.search(r'[（【「『“‘：，、]\$(?!`)|(?<!`)\$[）】」』”’、，。；：]', line):
+            corrupted_lines.append((idx, line.strip(), line.strip(), "Inline $ adjacent to CJK punctuation"))
+            print(f"[CJK PUNCTUATION ADJACENT TO $] Line {idx}: {line.strip()}")
+
+        # If there are no underscores, it cannot trigger the italic eating bug
+        if '_' not in line:
+            continue
+
+        line_clean = re.sub(r'\$`[^`\n]+`\$|\$[^$\n]+\$', 'MATH_BLOCK', line)
+        if '_' not in line_clean:
+            continue
+
+        # Render the remaining non-math text with CommonMark parser
+        html = md.render(line_clean)
         
         # Check if any <em> tag was produced
         # If an <em> tag contains any LaTeX characters or is inside math, it's corrupted!

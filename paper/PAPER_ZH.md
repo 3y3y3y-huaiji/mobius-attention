@@ -312,12 +312,42 @@ $$
 
 ---
 
+### 3.4 配分函数收缩的多轮推广（定理 7 / 推论 8 摘要）
+
+> 说明：此处“定理 7 / 推论 8”的编号沿用 `main_zh.tex` 的共享定理计数器（定理 1/2/3 → 推论 4 → 命题 5/6 → 定理 7 → 推论 8）。
+
+#### 定理 7（多轮奇偶交替配分函数收缩）
+设 $t_1 < t_2 < \cdots < t_K \le i$（$K \le 10$）为语篇反转位置，各自向因果相位流注入标称相移 $\pi$。定义反转计数 $R(l) \triangleq \#\{r \mid t_r \le l\}$ 与分段 $S_s \triangleq [t_s, t_{s+1})$（约定 $t_0 \triangleq 0$，$t_{K+1} \triangleq i+1$），则演化子空间上累积相对相移为 $\Delta\Phi_{l \to i} = \pi\big(R(i) - R(l)\big) \equiv (K - s)\pi \pmod{2\pi}$。
+
+- **(i) 名义情形**：$K - s$ 为偶数的分段同相复原（$\tilde{A}_{il} = A_{il}^{\text{std}}$），$K - s$ 为奇数的分段反相废止（$\tilde{A}_{il} = A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}$）。记废止指标集 $\mathcal{I}_{\text{inv}} \triangleq \{l \mid K - R(l) \text{ 为奇数}\}$：
+$$
+\tilde{Z}_i = Z_i^{\mathrm{std}} - \Delta Z_{\text{tot}}, \qquad \Delta Z_{\text{tot}} \triangleq \sum_{l \in \mathcal{I}_{\text{inv}}} \exp\big(A_{il}^{\text{std}}\big)\left(1 - \exp\big(-2A_{il}^{\text{mob}}\big)\right)
+$$
+只要对所有 $l \in \mathcal{I}_{\text{inv}}$ 满足 $A_{il}^{\text{mob}} > 0$，即有 $\Delta Z_{\text{tot}} > 0$ 且配分函数严格收缩，每个复原分段恰好贡献其标准质量；$K = 1$ 时该恒等式逐项退化为单轮配分函数收缩律。
+- **(ii) 有界扰动情形**（$\Delta\Phi_{l \to i} = (K - s)\pi \pm \delta_l$，$|\delta_l| \le \pi/6$）：反相分段 $\tilde{A}_{il} = A_{il}^{\text{std}} - (1 + \cos\delta_l)A_{il}^{\text{mob}} \mp \sin\delta_l B_{il}^{\text{mob}}$；同相分段 $\tilde{A}_{il} = A_{il}^{\text{std}} - (1 - \cos\delta_l)A_{il}^{\text{mob}} \pm \sin\delta_l B_{il}^{\text{mob}}$，其中 $1 - \cos\delta_l \le \delta_l^2/2 \le \pi^2/72$，复原分段仅发生二阶泄漏。全局收缩的充分条件为逐点支配 $(1 + \cos\delta_l)A_{il}^{\text{mob}} > |\sin\delta_l B_{il}^{\text{mob}}|$ 且反相收缩总量严格超过同相泄漏总量（注意 $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$）。
+
+#### 推论 8（同相均匀放大、诱饵缓冲与 ACR 复合分解）
+1. **同相均匀放大**：对每个同相 token $k \notin \mathcal{I}_{\text{inv}}$，
+$$
+\frac{P_{\mathrm{mob}}(k \mid i)}{P_{\mathrm{std}}(k \mid i)} = T \triangleq \frac{1}{1 - \Delta Z_{\text{tot}}/Z_i^{\mathrm{std}}} > 1
+$$
+放大因子 $T$ 与 token 身份无关。
+2. **诱饵缓冲**：对被废止 token $j \in \mathcal{I}_{\text{inv}}$，$\frac{P_{\mathrm{mob}}(j \mid i)}{P_{\mathrm{std}}(j \mid i)} = \exp\big(-2A_{ij}^{\text{mob}}\big) \cdot T$，即配分函数收缩降低全局分母，从而部分缓冲诱饵 logit 衰减带来的概率降幅。
+3. **ACR 复合恒等式**：
+$$
+\frac{\mathrm{ACR}_{\mathrm{mob}}(k : j \mid i)}{\mathrm{ACR}_{\mathrm{std}}(k : j \mid i)} = \exp\big(2A_{ij}^{\text{mob}}\big) = T \times D_j^{\text{cushion}}, \qquad D_j^{\text{cushion}} \triangleq \frac{1}{\exp(-2A_{ij}^{\text{mob}}) \cdot T}
+$$
+单轮实测分解为 $T = 3.49$ 与 $D^{\text{cushion}} = 1.62$，其乘积 $3.49 \times 1.62 \approx 5.65$（$+465.1\%$）复原观测到的 ACR 复合跃升。
+4. **奇偶交替诚实披露**：新增一次反转使每个既有分段的宇称翻转（废止分段 $\leftrightarrow$ 复原分段），抑制量随 $K$ **不具单调性**，收缩律仅具奇偶交替语义。
+
+---
+
 ## 4. 形式化机器证明与性质验证 (Formal Machine Verification)
 
 为了彻底根除可能潜藏的数学逻辑疏漏与极端长文本崩溃风险，我们在两大独立的机器证明系统中对 SG-Möbius-RoPE 进行了全面的形式化证明与形式化验证：
 
 ### 4.1 Lean 4 交互式定理证明
-在源码 `formal_verification/MobiusAttention.lean` 中，我们使用 Lean 4 形式化了 1D 因果底流形、连续扭率结构与纤维丛和乐平行移动。在**零未证明公理（0 axioms）、零 `sorry` 占位符**的前提下，机械化证明了以下 5 大核心定理：
+在源码 `formal_verification/MobiusAttention.lean` 中，我们使用 Lean 4 形式化了 1D 因果底流形、连续扭率结构、纤维丛和乐平行移动与多轮配分函数收缩。在**零未证明公理（0 axioms）、零 `sorry` 占位符**的前提下，机械化证明了 17 项实数代数核心定理（含定理 7 与推论 8 对应的 `multi_turn_partition_contraction_sum` 及 `uniform_in_phase_amplification_factor`；以下列出 5 项基础和乐不变量）：
 - **平坦性守恒（`conservation_of_flatness`）**：$\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$（在中性平淡语篇中严格退化为标准 RoPE，无任何副作用）；
 - **和乐路径可加性（`holonomy_path_additivity`）**：$\forall j \le k \le i, \mathrm{Hol}(j, i) = \mathrm{Hol}(j, k) + \mathrm{Hol}(k, i)$（因果轨迹上的前缀和结合律）；
 - **对径反演（`antipodal_inversion`）**：$\mathrm{Hol}(j, i) = \pi \implies \mathrm{ParityFactor} = -1$（半扭转下演化子空间内积严格反向）；

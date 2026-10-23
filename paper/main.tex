@@ -299,6 +299,7 @@ P_{\mathrm{mob}}(k \mid i) = \frac{\exp(A_{ik}^{\mathrm{std}})}{Z_i^{\mathrm{std
 \end{equation}
 More generally, in the presence of bounded phase perturbation $\Delta\Phi_{l \to i} = \pi \pm \delta_l$ ($|\delta_l| \le \pi/6$), planar rotation yields $\tilde{A}_{il} = A_{il}^{\mathrm{std}} - (1 + \cos\delta_l)A_{il}^{\mathrm{mob}} \pm \sin\delta_l B_{il}^{\mathrm{mob}}$ with orthogonal coupling $B_{il}^{\mathrm{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_m (q_i^{(m)})^\top \mathbf{J} \mathbf{R}((l-i)\theta_m) k_l^{(m)}$ where $\mathbf{J} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$. Because $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$, the contraction condition $\Delta Z_{\mathcal{P}} > 0$ robustly holds whenever $(1+\cos\delta_l)A_{il}^{\mathrm{mob}} > |\sin\delta_l B_{il}^{\mathrm{mob}}|$.
 Crucially, in multi-scale reasoning ($L=1,116$), the superseded prefix $\mathcal{P}$ contains not only the isolated decoy token ($t_1=28$), but all 576 antecedent tokens including the sentence-initial Attention Sink ($l=0$). Analytically, under the hypothesis of unmodulated operative target logits ($\tilde{A}_{ik} \approx A_{ik}^{\mathrm{std}}$), the observed $3.491\times$ target probability amplification corresponds to an effective aggregate partition function contraction of $Z_i^{\mathrm{std}}/\tilde{Z}_i \approx 3.48\times$. Because partition function contraction reduces the normalizer across the whole vocabulary, it partially cushions the raw logit decay of the decoy token, explaining why apparent decoy attention probability drops by $1.62\times$ while the target-to-decoy attention contrast ratio (ACR) compounds by $3.49 \times 1.62 \approx 5.65\times$ ($+465.1\%$, from $3.62$ to $20.44$).
+The multi-turn ($K \le 10$) parity-alternating generalization of this contraction law, together with its uniform in-phase amplification and ACR compounding decomposition, is established in Theorem~\ref{thm:multi_turn_contraction} and Corollary~\ref{cor:k_turn_acr}.
 \end{corollary}
 
 \begin{figure}[t!]
@@ -396,11 +397,68 @@ directly into the QKV projection epilogue prior to launching the rotary embeddin
 
 As formalized in Algorithm~\ref{alg:kv_decoding}, SG-M\"obius requires zero retroactive invalidation of cached keys in GPU memory. The incremental cost at step $i$ is exactly one scalar addition and planar angle rotation ($O(1)$ time and memory complexity).
 
+\subsection{Multi-Turn Generalization of Partition Contraction}
+Corollary~\ref{cor:partition_siphoning} establishes the contraction law for a single narrative reversal. We generalize it to $K \le 10$ parity-alternating discourse reversals, matching the $M_\Phi \le 10\pi$ operational envelope of Proposition~\ref{prop:associative_scan}.
+
+\begin{theorem}[Multi-Turn Parity-Alternating Partition Function Contraction]
+\label{thm:multi_turn_contraction}
+Let $t_1 < t_2 < \cdots < t_K \le i$ ($K \le 10$) be the discourse reversal positions, each injecting a nominal phase shift of $\pi$ into the causal phase flow. Define the reversal count $R(l) \triangleq \#\{r \mid t_r \le l\}$ and the segments $S_s \triangleq [t_s, t_{s+1})$ for $s = 0, 1, \dots, K$, under the conventions $t_0 \triangleq 0$ and $t_{K+1} \triangleq i+1$. For every $l \in S_s$, the relative phase shift accumulated on the evolution subspace is $\Delta\Phi_{l \to i} = \pi\big(R(i) - R(l)\big) \equiv (K - s)\pi \pmod{2\pi}$. Under subspace-coherent phase locking:
+
+(i) \textbf{Nominal case.} Segments with even $K - s$ revive in phase, $\tilde{A}_{il} = A_{il}^{\text{std}}$, while segments with odd $K - s$ are voided anti-phase, $\tilde{A}_{il} = A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}$. Writing the voided index set as $\mathcal{I}_{\text{inv}} \triangleq \{l \mid K - R(l) \text{ is odd}\}$,
+\begin{equation}
+\tilde{Z}_i = Z_i^{\mathrm{std}} - \Delta Z_{\text{tot}}, \qquad \Delta Z_{\text{tot}} \triangleq \sum_{l \in \mathcal{I}_{\text{inv}}} \exp\big(A_{il}^{\text{std}}\big)\left(1 - \exp\big(-2A_{il}^{\text{mob}}\big)\right)
+\end{equation}
+Whenever $A_{il}^{\text{mob}} > 0$ for all $l \in \mathcal{I}_{\text{inv}}$, one has $\Delta Z_{\text{tot}} > 0$ and the partition function contracts strictly; every revived segment contributes exactly its standard mass (cyclic revival under an even number of flips). For $K = 1$ the identity degenerates term-by-term to Corollary~\ref{cor:partition_siphoning}.
+
+(ii) \textbf{Bounded perturbation.} For perturbed relative phases $\Delta\Phi_{l \to i} = (K - s)\pi \pm \delta_l$ with $|\delta_l| \le \pi/6$:
+\begin{itemize}
+    \item Anti-phase segments ($K - s$ odd): $\tilde{A}_{il} = A_{il}^{\text{std}} - (1 + \cos\delta_l)A_{il}^{\text{mob}} \mp \sin\delta_l B_{il}^{\text{mob}}$.
+    \item In-phase segments ($K - s$ even): $\tilde{A}_{il} = A_{il}^{\text{std}} - (1 - \cos\delta_l)A_{il}^{\text{mob}} \pm \sin\delta_l B_{il}^{\text{mob}}$, where $1 - \cos\delta_l \le \delta_l^2/2 \le \pi^2/72$, so revived segments leak only at second order.
+    \item The orthogonal coupling $B_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_m (q_i^{(m)})^\top \mathbf{J} \mathbf{R}((l-i)\theta_m) k_l^{(m)}$ with $\mathbf{J} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$ is exactly the coupling of Corollary~\ref{cor:partition_siphoning}.
+    \item A sufficient condition for global contraction: the pointwise dominance $(1 + \cos\delta_l)A_{il}^{\text{mob}} > |\sin\delta_l B_{il}^{\text{mob}}|$ on every anti-phase segment, together with the requirement that the total anti-phase contraction strictly exceed the total in-phase perturbation leakage. Note $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$.
+\end{itemize}
+\end{theorem}
+\begin{proof}
+(i) By Theorem~\ref{thm:trans_inv}, the modulated evolution-subspace logit at $l \in S_s$ depends on the accumulated phase only through $\cos\big((K-s)\pi\big) = (-1)^{K-s}$, so the sign of $A_{il}^{\text{mob}}$ flips exactly with the parity of $K - s$: even parity leaves the term intact (revival), odd parity negates it (voiding), yielding $\tilde{A}_{il} = A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}$ on $\mathcal{I}_{\text{inv}}$. Decomposing $Z_i^{\mathrm{std}}$ over the segments and isolating $\mathcal{I}_{\text{inv}}$, each voided term satisfies
+\begin{equation}
+\exp\big(A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}\big) = \exp\big(A_{il}^{\text{std}}\big)\Big(1 - \big(1 - \exp(-2A_{il}^{\text{mob}})\big)\Big)
+\end{equation}
+and summing over $l \in \mathcal{I}_{\text{inv}}$ yields the closed form of $\Delta Z_{\text{tot}}$. Since $1 - \exp(-2A_{il}^{\text{mob}}) > 0 \iff A_{il}^{\text{mob}} > 0$, every summand is strictly positive under the coherence hypothesis, so $\Delta Z_{\text{tot}} > 0$; revived terms equal their standard mass term by term. For $K = 1$ one has $\mathcal{I}_{\text{inv}} = \mathcal{P}$ and the identity collapses to Corollary~\ref{cor:partition_siphoning}.
+
+(ii) Expanding the planar rotation exactly as in the bounded-perturbation analysis of Corollary~\ref{cor:partition_siphoning}, the perturbed phase decomposes into a $\cos$-component along $A_{il}^{\text{mob}}$ and a $\sin$-component along the orthogonal coupling $B_{il}^{\text{mob}}$. An anti-phase phase $\pi \pm \delta_l$ contributes $-\cos\delta_l\, A_{il}^{\text{mob}} \mp \sin\delta_l\, B_{il}^{\text{mob}}$, which combines with the invariant anchor part to $\tilde{A}_{il} = A_{il}^{\text{std}} - (1 + \cos\delta_l)A_{il}^{\text{mob}} \mp \sin\delta_l B_{il}^{\text{mob}}$; an in-phase phase $\pm \delta_l$ contributes $+(\cos\delta_l - 1)A_{il}^{\text{mob}} \pm \sin\delta_l\, B_{il}^{\text{mob}}$. The second-order bound $1 - \cos\delta_l \le \delta_l^2/2 \le \pi^2/72$ confines revived-segment leakage to second order, while $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$ keeps the anti-phase first-order contraction dominant; imposing the stated pointwise dominance together with the global inequality that total anti-phase contraction exceeds total in-phase leakage yields $\Delta Z_{\text{tot}} > 0$ strictly, closing the global contraction condition.
+\end{proof}
+
+\begin{corollary}[Uniform In-Phase Amplification, Decoy Cushioning, and ACR Compounding]
+\label{cor:k_turn_acr}
+Under the setting of Theorem~\ref{thm:multi_turn_contraction}:
+\begin{enumerate}
+    \item \textbf{Uniform in-phase amplification.} For every in-phase token $k \notin \mathcal{I}_{\text{inv}}$ (the current directive together with the even-parity revived history),
+    \begin{equation}
+    \frac{P_{\mathrm{mob}}(k \mid i)}{P_{\mathrm{std}}(k \mid i)} = T \triangleq \frac{1}{1 - \Delta Z_{\text{tot}}/Z_i^{\mathrm{std}}} > 1
+    \end{equation}
+    The amplification factor $T$ is independent of the token identity.
+    \item \textbf{Decoy cushioning.} For a voided token $j \in \mathcal{I}_{\text{inv}}$,
+    \begin{equation}
+    \frac{P_{\mathrm{mob}}(j \mid i)}{P_{\mathrm{std}}(j \mid i)} = \exp\big(-2A_{ij}^{\text{mob}}\big) \cdot T
+    \end{equation}
+    i.e., partition function contraction reduces the global denominator and thus partially cushions the raw logit decay of the decoy.
+    \item \textbf{ACR compounding identity.} With $\mathrm{ACR}(k : j \mid i) \triangleq P(k \mid i)/P(j \mid i)$, the target-to-decoy contrast ratio of the in-phase target $k \notin \mathcal{I}_{\text{inv}}$ and the voided decoy $j \in \mathcal{I}_{\text{inv}}$ obeys
+    \begin{equation}
+    \frac{\mathrm{ACR}_{\mathrm{mob}}(k : j \mid i)}{\mathrm{ACR}_{\mathrm{std}}(k : j \mid i)} = \exp\big(2A_{ij}^{\text{mob}}\big) = T \times D_j^{\text{cushion}}, \qquad D_j^{\text{cushion}} \triangleq \frac{1}{\exp(-2A_{ij}^{\text{mob}}) \cdot T}
+    \end{equation}
+    where $D_j^{\text{cushion}}$ is the apparent decoy suppression ratio. The measured single-turn decomposition is $T = 3.49$ and $D^{\text{cushion}} = 1.62$, whose product $3.49 \times 1.62 \approx 5.65$ ($+465.1\%$) recovers the observed ACR compounding.
+    \item \textbf{Parity-alternating disclosure.} Adding one further reversal flips the parity of every existing segment (voided segments $\leftrightarrow$ revived segments); the suppression quantity is therefore \emph{not} monotonic in $K$, and the contraction law admits only parity-alternating semantics.
+\end{enumerate}
+\end{corollary}
+\begin{proof}
+(1) For $k \notin \mathcal{I}_{\text{inv}}$ the factor $\exp(A_{ik})$ is unchanged, so $\exp(A_{ik})/\tilde{Z}_i$ divided by $\exp(A_{ik})/Z_i^{\mathrm{std}}$ reduces to $Z_i^{\mathrm{std}}/\tilde{Z}_i = 1/(1 - \Delta Z_{\text{tot}}/Z_i^{\mathrm{std}}) = T$, uniformly in the identity of $k$. (2) Dividing $\exp(A_{ij} - 2A_{ij}^{\text{mob}})/\tilde{Z}_i$ by $\exp(A_{ij})/Z_i^{\mathrm{std}}$ gives $\exp(-2A_{ij}^{\text{mob}}) \cdot T$. (3) Dividing the identity of (1) by that of (2) yields $\exp(2A_{ij}^{\text{mob}})$; conversely $T \times D_j^{\text{cushion}} = T \cdot \frac{1}{\exp(-2A_{ij}^{\text{mob}}) T} = \exp(2A_{ij}^{\text{mob}})$. (4) Voided and revived segments are distinguished solely by the parity of $K - s$, so $K \mapsto K + 1$ flips the parity of every existing segment at once, and the suppression quantity inherits this parity alternation rather than any monotone ordering in $K$.
+\end{proof}
+
 \section{Formal Machine Verification}
 To guarantee mathematical correctness and eliminate potential catastrophic failure modes, all topological properties and algebraic invariants were formally certified across two complementary verification frameworks:
 
 \paragraph{Lean~4 Interactive Theorem Proving.}
-In \texttt{formal\_verification/MobiusAttention.lean}, we formalize discrete causal sequences, two-stage associative scan prefix evaluation, and subspace phase modulation using the Lean~4 interactive theorem prover \cite{moura2021lean}. We certify the core algebraic invariants without unproven axioms or \texttt{sorry} placeholders:
+In \texttt{formal\_verification/MobiusAttention.lean}, we formalize discrete causal sequences, two-stage associative scan prefix evaluation, subspace phase modulation, and multi-turn partition contraction using the Lean~4 interactive theorem prover \cite{moura2021lean}. We certify 17 core real-algebraic theorems without unproven axioms or \texttt{sorry} placeholders (including \texttt{multi\_turn\_partition\_contraction\_sum} and \texttt{uniform\_in\_phase\_amplification\_factor} for Theorem~\ref{thm:multi_turn_contraction} and Corollary~\ref{cor:k_turn_acr}; 5 foundational invariants are highlighted below):
 \begin{itemize}
     \item \emph{Baseline Reduction} (\texttt{conservation\_of\_flatness}): $\forall t, \omega(t) = 0 \implies \mathrm{ParityFactor} \equiv 1$ (exact identity reduction to standard RoPE).
     \item \emph{Prefix-Sum Additivity} (\texttt{holonomy\_path\_additivity}): $\forall j \le k \le i, \Delta\Phi(j, i) = \Delta\Phi(j, k) + \Delta\Phi(k, i)$ (prefix-sum decomposition along causal trajectory).

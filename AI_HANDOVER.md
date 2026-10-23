@@ -88,16 +88,16 @@
 
 ```
 算法研究/ (mobius-attention)
-├── src/                                  # [核心工程源码] - 任何修改必须保证 407 测试全通
-│   ├── gauge_predictor.py                # 语篇转换探测器、门控 softsign、质心构建、粘性平滑 (612 行)
+├── src/                                  # [核心工程源码] - 任何修改必须保证 453 测试全通
+│   ├── gauge_predictor.py                # 语篇转换探测器、门控 softsign、质心构建、粘性平滑 (615 行)
 │   ├── mobius_attention.py               # 子空间解耦注意力层实现、RoPE 旋转注入
 │   └── kv_cache.py                       # 增量自回归解码与 KV-Cache 管理器
 ├── formal_verification/                  # [Lean 4 形式化数学证明] - 严禁破坏 0 sorry 保证
-│   ├── MobiusAttention.lean              # 9 大核心定理形式化证明（实数域反相收缩与一阶稳定性）
+│   ├── MobiusAttention.lean              # 17 大核心定理形式化证明（实数域反相收缩与一阶稳定性）
 │   ├── lakefile.toml                     # Lean 4 Lake 构建配置
 │   ├── lean-toolchain                    # 固定 Lean 4.33.1 工具链
 │   └── verify_properties.py              # Z3 SMT 普遍 UNSAT 证明与 2000 次性质模糊测试
-├── tests/                                # [端到端测试套件] - 407 项测试（4 大层次 + 鲁棒性）
+├── tests/                                # [端到端测试套件] - 453 项测试（4 大层次 + 鲁棒性 + 多轮收缩）
 │   ├── test_gauge_gate_definition1.py    # 针对 Definition 1 门控软饱和、死区拦截与质心差分的测试
 │   ├── test_prefill_decoding_equivalence.py # Prefill 与 Step 解码机器精度等价测试 (< 10^-12)
 │   ├── test_m2_continuous_mobius.py      # 连续相位流与 2D 旋转内积断言
@@ -106,10 +106,11 @@
 │   ├── test_tier2_boundaries.py          # 第二层：极端边界条件测试 (60 项)
 │   ├── test_tier3_combinations.py        # 第三层：复杂组合对抗测试 (12 项)
 │   ├── test_tier4_scenarios.py           # 第四层：现实长文本业务场景测试 (5 项)
+│   ├── test_multi_turn_contraction.py    # 多轮奇偶交替配分函数收缩测试 (46 项，本轮新增)
 │   └── test_readme_latex.py              # 文档与数学公式 AST 一致性自动化测试 (14 项)
 ├── paper/                                # [NeurIPS / ICLR 投稿级论文源文件]
-│   ├── main.tex                          # 英文主论文源文件 (521 行)
-│   ├── main_zh.tex                       # 中文对照版论文源文件 (506 行)
+│   ├── main.tex                          # 英文主论文源文件 (578 行)
+│   ├── main_zh.tex                       # 中文对照版论文源文件 (563 行)
 │   ├── references.bib                    # 严格校验的学术参考文献数据库 (15 篇真值，零幻觉)
 │   ├── main.pdf                          # GitHub Actions 编译出的最新英文论文 PDF
 │   ├── main_zh.pdf                       # GitHub Actions 编译出的最新中文论文 PDF
@@ -124,7 +125,7 @@
 │   └── kaggle_experiment_results.json    # 在双路 T4 上全量运行 Qwen3.5-9B (L=545~18,030) 的基准 JSON
 ├── assets/                               # README 与展示用 300 DPI 高清图像
 ├── .github/workflows/ci.yml              # GitHub Actions 8 并行全自动流水线
-├── README.md                             # 英文全景技术白皮书与工程文档 (含 407 测试徽章)
+├── README.md                             # 英文全景技术白皮书与工程文档 (含 453 测试徽章)
 ├── README_zh.md                          # 中文版全景技术白皮书
 ├── CITATION.cff                          # 官方学术引用规范 (含 ORCID 0009-0008-2312-6913)
 └── AI_HANDOVER.md                        # 本交接文件 (所有后续 AI 必读)
@@ -137,7 +138,7 @@
 任何接入本项目的 AI Agent 必须无条件遵守以下开发红线：
 
 #### 🛑 红线 1：绝对禁止凭空捏造行号、函数名与文件
-- **事实背景**：此前部分未连网的模型假装审查 GitHub，凭空编造了不存在的行号（如谎称 `src/gauge_predictor.py` 有 1975 行，而实际只有 612 行；谎称 `paper/main.tex` 有 1682 行，而实际只有 521 行）。
+- **事实背景**：此前部分未连网的模型假装审查 GitHub，凭空编造了不存在的行号（如谎称 `src/gauge_predictor.py` 有 1975 行，而实际只有 615 行；谎称 `paper/main.tex` 有 1682 行，而实际只有 578 行）。
 - **要求**：引用任何代码或论文内容时，**必须以本地工作区的真实物理行号为准**；严禁在没有任何证据的情况下脑补“某行还有旧代码”。
 
 #### 🛑 红线 2：绝对禁止篡改 Definition 1 的门控位置与结构
@@ -154,7 +155,7 @@
 - **混合精度界限**：严禁写“FP32 across arbitrary sequence lengths”，必须严谨表述为“在超长文本（$L \le 10^6$）下将前缀累积漂移控制在 $< 10^{-5}$ rad 以内”。
 
 #### 🛑 红线 5：绝对禁止破坏 Lean 4 形式化证明
-- `formal_verification/MobiusAttention.lean` 包含 9 大核心定理；
+- `formal_verification/MobiusAttention.lean` 包含 17 大核心定理；
 - 严禁引入任何 `sorry`，严禁新增自定义公理（custom axioms），必须保持 `lake build`（1946 jobs）100% 成功构建。
 
 ---
@@ -163,12 +164,12 @@
 
 在完成任何代码修改或论文润色后，后续 AI 必须在终端中按顺序执行以下指令验证闭环：
 
-#### 5.1 运行全量单元测试与模糊测试 (407 项)
+#### 5.1 运行全量单元测试与模糊测试 (453 项)
 ```bash
-# 执行全部 407 项测试（利用多进程加速，耗时约 25 秒）
+# 执行全部 453 项测试（利用多进程加速，耗时约 37 秒）
 pytest tests/ -n auto -q
 
-# 预期输出：407 passed in ~25s
+# 预期输出：453 passed in ~37s
 ```
 
 #### 5.2 运行零信任论文断言与修辞门禁
@@ -229,7 +230,7 @@ ruff check src/ tests/ scripts/
 | **Higham 误差界前提** | 曾宣称“无条件成立”且 FP32“任意长度无误差” | 明确限定在基准评测覆盖的 $K \le 10$ 次反转语境下；FP32 限定在 $L \le 10^6$ 上下文下漂移 $< 10^{-5}$ rad |
 | **Lean 4 覆盖边界** | 曾被质疑虚假宣传证明了 FP16 浮点 | 论文已明确声明：Lean 4 证明的是实数域下的正交反相与一阶李雅普诺夫稳定性，数值误差归入 Proposition 6 |
 | **香农信息熵波动** | 曾试图淡化 Table 3 中的熵波动 | 在正文 Section 5.3 坦诚披露 $L=2,250$ 处的 $+0.174$ 瞬态熵波动（$6.592 \to 6.766$），消除指控 |
-| **测试套件总数** | 历史版本曾从 367 扩展到 404，现扩展到 407 | 407 项测试（新增 3 项针对 Definition 1 门控软饱和测试），README 与代码库 100% 同步 |
+| **测试套件总数** | 历史版本曾从 367 扩展到 404，现扩展到 453 | 453 项测试（本轮新增 46 项多轮奇偶交替配分函数收缩测试），README 与代码库 100% 同步 |
 
 ---
 
@@ -250,4 +251,4 @@ ruff check src/ tests/ scripts/
    根据目标会议（NeurIPS / ICLR / ICML）最新的正文页数要求，进行附录拆分与排版微调。
 
 ---
-**致接手的 AI 同仁**：本仓库的代码与理论经过多轮极为苛刻的学术刺客级审计，所有的数学公式、边界界定与测试断言均已做到极致严谨。请务必继承本指南中的“零信任”原则，任何改动务必跑通 `verify_paper_claims.py` 与 407 项 pytest，保持本项目的工业级与顶会级品质！
+**致接手的 AI 同仁**：本仓库的代码与理论经过多轮极为苛刻的学术刺客级审计，所有的数学公式、边界界定与测试断言均已做到极致严谨。请务必继承本指南中的“零信任”原则，任何改动务必跑通 `verify_paper_claims.py` 与 453 项 pytest，保持本项目的工业级与顶会级品质！

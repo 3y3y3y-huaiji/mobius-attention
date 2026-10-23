@@ -727,6 +727,373 @@ print(f"  SG-Möbius     WikiText-103 Loss = {loss_mob:.4f} | PPL = {ppl_mob:.2f
 print(f"  Detector Activity on Neutral Text: Max |omega| = {max_omega:.4f}, Max |phi| = {max_phi:.4f}")
 
 # -----------------------------------------------------------------------------
+# 5c. Microscopic Partition Function Telemetry & K-Turn Parity Alternation
+#     (Empirical Verification of Corollary 4, Theorem 7, and Corollary 8)
+# -----------------------------------------------------------------------------
+print("\n[5c/6] Running Microscopic Partition Function & Multi-Turn (K=1..5) Parity Alternation Benchmark...")
+
+def extract_microscopic_logits_and_probs(model, inputs, target_layer_idx=target_self_attn_idx):
+    r"""
+    Extracts last-token pre-softmax attention logits s_{i,l} (mean over heads),
+    unnormalized partition weights w_{i,l} = exp(s_{i,l} - s_max),
+    partition function Z_i = sum_l w_{i,l} (in common logit reference frame),
+    and normalized attention probabilities alpha_{i,l}.
+    """
+    attn_layer = model.model.layers[target_layer_idx].self_attn
+    cfg = getattr(model, "config", None)
+    text_cfg = getattr(cfg, "text_config", cfg)
+    num_heads = getattr(attn_layer, "num_heads", None) or getattr(text_cfg, "num_attention_heads", 16)
+    num_kv_heads = getattr(attn_layer, "num_key_value_heads", None) or getattr(text_cfg, "num_key_value_heads", 4)
+    head_dim = getattr(attn_layer, "head_dim", None) or getattr(text_cfg, "head_dim", 256)
+
+    class EarlyExitMicro(Exception):
+        pass
+
+    cache = {}
+    def q_hook(m, inp, out):
+        cache["q"] = out
+    def k_hook(m, inp, out):
+        cache["k"] = out
+        raise EarlyExitMicro()
+
+    hq = attn_layer.q_proj.register_forward_hook(q_hook)
+    hk = attn_layer.k_proj.register_forward_hook(k_hook)
+
+    try:
+        torch.cuda.empty_cache()
+        with torch.no_grad():
+            try:
+                _ = model.model(**inputs)
+            except EarlyExitMicro:
+                pass
+        raw_q = cache["q"]
+        raw_k = cache["k"]
+        bsz, slen, _ = raw_q.shape
+
+        expected_q_dim = num_heads * head_dim
+        q_vec = raw_q[..., :expected_q_dim] if raw_q.shape[-1] >= 2 * expected_q_dim else raw_q
+        expected_k_dim = num_kv_heads * head_dim
+        k_vec = raw_k[..., :expected_k_dim]
+
+        q = q_vec.view(bsz, slen, num_heads, head_dim).transpose(1, 2)
+        k = k_vec.view(bsz, slen, num_kv_heads, head_dim).transpose(1, 2)
+
+        pos_ids = torch.arange(slen, device=inputs.input_ids.device).unsqueeze(0)
+        rotary_module = getattr(attn_layer, "rotary_emb", None) or getattr(model.model, "rotary_emb", None) or modulators[0]
+        try:
+            cos, sin = rotary_module(raw_q, pos_ids)
+        except Exception:
+            cos, sin = rotary_module(raw_q, position_ids=pos_ids)
+
+        rotary_dim = cos.shape[-1]
+        q_rot, q_pass = q[..., :rotary_dim], q[..., rotary_dim:]
+        k_rot, k_pass = k[..., :rotary_dim], k[..., rotary_dim:]
+
+        def rotate_half(x):
+            return torch.cat([-x[..., x.shape[-1] // 2:], x[..., :x.shape[-1] // 2]], dim=-1)
+
+        def apply_rotary_pos_emb(x, c, s):
+            c = c.to(device=x.device, dtype=x.dtype)
+            s = s.to(device=x.device, dtype=x.dtype)
+            while c.dim() > 4 and c.shape[0] == 1:
+                c, s = c.squeeze(0), s.squeeze(0)
+            if c.dim() == 4 and c.shape[0] == 3:
+                c, s = c[0], s[0]
+            if c.dim() == 3:
+                c, s = c.unsqueeze(1), s.unsqueeze(1)
+            return (x * c) + (rotate_half(x) * s)
+
+        q_rot_emb = apply_rotary_pos_emb(q_rot, cos, sin)
+        k_rot_emb = apply_rotary_pos_emb(k_rot, cos, sin)
+
+        q_full = torch.cat([q_rot_emb, q_pass], dim=-1)
+        k_full = torch.cat([k_rot_emb, k_pass], dim=-1)
+
+        if num_kv_heads != num_heads:
+            k_full = k_full.repeat_interleave(num_heads // num_kv_heads, dim=1)
+
+        q_last = q_full[:, :, -1:, :].float()
+        k_full = k_full.to(device=q_last.device).float()
+        scores = torch.matmul(q_last, k_full.transpose(-1, -2)) / math.sqrt(head_dim)  # [1, H, 1, S]
+        attn_probs = F.softmax(scores, dim=-1).squeeze(2).squeeze(0)  # [H, S]
+        scores_2d = scores.squeeze(2).squeeze(0)  # [H, S]
+        return scores_2d.cpu().numpy(), attn_probs.cpu().numpy()
+    finally:
+        hq.remove()
+        hk.remove()
+        cache.clear()
+        torch.cuda.empty_cache()
+
+# 1. Microscopic Partition Telemetry at L ~ 1,116 (Corollary 4 & Attention Sink Audit)
+micro_s1 = max(2, int((1024 - base_prompt_len) / 36))
+micro_s2 = micro_s1
+micro_prompt = prompt_premise_a + build_distractor_text(micro_s1) + prompt_reversal_a + build_distractor_text(micro_s2) + prompt_query_a
+micro_inputs = tokenizer(micro_prompt, return_tensors="pt").to(model.device)
+micro_len = micro_inputs.input_ids.shape[1]
+micro_tokens = [tokenizer.decode([tid]) for tid in micro_inputs.input_ids[0]]
+
+micro_decoy_idx = 28
+micro_target_idx = micro_len // 2
+for idx in range(min(100, micro_len)):
+    if "ACTIVE" in micro_tokens[idx].strip().upper() or "VERIFIED" in micro_tokens[idx].strip().upper():
+        micro_decoy_idx = idx
+        break
+for idx in range(micro_len // 3, micro_len):
+    if any(k in micro_tokens[idx].strip().upper() for k in ["REVOK", "FORBID", "INVALID"]):
+        micro_target_idx = idx
+        break
+
+for m in modulators:
+    m.clear_holonomy_phase()
+scores_std_h, probs_std_h = extract_microscopic_logits_and_probs(model, micro_inputs)
+
+_, phi_micro = detector(micro_inputs.input_ids, embed_layer)
+for m in modulators:
+    m.adaptive_alpha = True
+    m.set_holonomy_phase(phi_micro)
+scores_mob_h, probs_mob_h = extract_microscopic_logits_and_probs(model, micro_inputs)
+
+# Compute per-head partition function ratio Z_std / Z_mob using common shift for numerical stability
+head_z_ratios = []
+head_sink_std = []
+head_sink_mob = []
+head_T_target = []
+head_D_decoy = []
+head_gamma_inv = []
+
+for h_idx in range(scores_std_h.shape[0]):
+    s_std = scores_std_h[h_idx]
+    s_mob = scores_mob_h[h_idx]
+    ref_shift = max(float(np.max(s_std)), float(np.max(s_mob)))
+    w_std = np.exp(s_std - ref_shift)
+    w_mob = np.exp(s_mob - ref_shift)
+    Z_std_h = float(np.sum(w_std))
+    Z_mob_h = float(np.sum(w_mob))
+    z_ratio_h = Z_std_h / max(Z_mob_h, 1e-30)
+    head_z_ratios.append(z_ratio_h)
+    head_sink_std.append(float(probs_std_h[h_idx, 0]))
+    head_sink_mob.append(float(probs_mob_h[h_idx, 0]))
+    p_tgt_std = float(probs_std_h[h_idx, micro_target_idx])
+    p_tgt_mob = float(probs_mob_h[h_idx, micro_target_idx])
+    p_dec_std = float(probs_std_h[h_idx, micro_decoy_idx])
+    p_dec_mob = float(probs_mob_h[h_idx, micro_decoy_idx])
+    T_h = p_tgt_mob / max(p_tgt_std, 1e-30)
+    D_h = p_dec_std / max(p_dec_mob, 1e-30)
+    gamma_h = float(w_mob[micro_decoy_idx] / max(w_std[micro_decoy_idx], 1e-30))
+    head_T_target.append(T_h)
+    head_D_decoy.append(D_h)
+    head_gamma_inv.append(1.0 / max(gamma_h, 1e-30))
+
+mean_prob_std = probs_std_h.mean(axis=0)
+mean_prob_mob = probs_mob_h.mean(axis=0)
+T_mean = float(mean_prob_mob[micro_target_idx] / max(mean_prob_std[micro_target_idx], 1e-12))
+D_mean = float(mean_prob_std[micro_decoy_idx] / max(mean_prob_mob[micro_decoy_idx], 1e-12))
+acr_ratio_mean = T_mean * D_mean
+
+microscopic_telemetry = {
+    "seq_len": micro_len,
+    "decoy_index": micro_decoy_idx,
+    "target_index": micro_target_idx,
+    "head_averaged_T_amplification": T_mean,
+    "head_averaged_D_cushioned_suppression": D_mean,
+    "head_averaged_acr_gain_product_T_times_D": acr_ratio_mean,
+    "attention_sink_token0_mass_std": float(mean_prob_std[0]),
+    "attention_sink_token0_mass_mobius": float(mean_prob_mob[0]),
+    "prefix_mass_before_reversal_std": float(mean_prob_std[:micro_target_idx].sum()),
+    "prefix_mass_before_reversal_mobius": float(mean_prob_mob[:micro_target_idx].sum()),
+    "suffix_mass_from_reversal_std": float(mean_prob_std[micro_target_idx:].sum()),
+    "suffix_mass_from_reversal_mobius": float(mean_prob_mob[micro_target_idx:].sum()),
+    "per_head_partition_ratio_Z_std_over_Z_mob_mean": float(np.mean(head_z_ratios)),
+    "per_head_partition_ratio_Z_std_over_Z_mob_max": float(np.max(head_z_ratios)),
+    "per_head_identity_verification_max_rel_err": float(
+        np.max(np.abs(np.array(head_T_target) * np.array(head_D_decoy) - np.array(head_gamma_inv)) / (np.array(head_gamma_inv) + 1e-12))
+    )
+}
+print(f"  [Microscopic Telemetry L={micro_len}] T={T_mean:.4f}x | D_cushion={D_mean:.4f}x | T*D={acr_ratio_mean:.4f}x | Prefix Mass: {microscopic_telemetry['prefix_mass_before_reversal_std']:.4f} -> {microscopic_telemetry['prefix_mass_before_reversal_mobius']:.4f}")
+
+# 2. Multi-Turn (K=1..5) Parity-Alternating Contraction Benchmark (Theorem 7 & Corollary 8)
+turn_clauses = [
+    ("Initial Directive (Segment 0): Execution Profile Delta is officially VERIFIED, ACTIVE, and OPERATIONAL.\n", "ACTIVE"),
+    ("Amendment 1 (Reversal K=1): However, critical fault detected! Execution Profile Delta is REVOKED and FORBIDDEN!\n", "FORBID"),
+    ("Amendment 2 (Reversal K=2): However, forensic audit cleared the fault! Execution Profile Delta is RESTORED and VALID!\n", "VALID"),
+    ("Amendment 3 (Reversal K=3): However, emergency override triggered! Execution Profile Delta is TERMINATED and INVALID!\n", "INVALID"),
+    ("Amendment 4 (Reversal K=4): However, supreme council countermanded the override! Execution Profile Delta is APPROVED and CONFIRMED!\n", "CONFIRM"),
+    ("Amendment 5 (Reversal K=5): However, final security lockdown enacted! Execution Profile Delta is NEGATED and FORBIDDEN!\n", "NEGAT"),
+]
+
+multi_turn_results = {}
+for K_turns in range(1, 6):
+    segments_text = []
+    seg_token_spans = []
+    curr_tok_offset = 0
+    for seg_idx in range(K_turns + 1):
+        seg_str = turn_clauses[seg_idx][0] + build_distractor_text(4)
+        segments_text.append(seg_str)
+    full_k_prompt = "".join(segments_text) + prompt_query_a
+    k_inputs = tokenizer(full_k_prompt, return_tensors="pt").to(model.device)
+    k_len = k_inputs.input_ids.shape[1]
+    k_tokens = [tokenizer.decode([tid]) for tid in k_inputs.input_ids[0]]
+
+    # Exact token boundary search via prefix tokenization
+    acc_str = ""
+    seg_boundaries = [0]
+    for seg_str in segments_text:
+        acc_str += seg_str
+        seg_boundaries.append(len(tokenizer(acc_str, add_special_tokens=False).input_ids))
+
+    seg_token_indices = []
+    for r in range(K_turns + 1):
+        kw = turn_clauses[r][1]
+        win_start = max(0, seg_boundaries[r] - 2)
+        win_end = min(k_len, seg_boundaries[r + 1] + 2)
+        found_idx = min(k_len - 2, max(1, win_start + 10))
+        for tidx in range(win_start, win_end):
+            if kw in k_tokens[tidx].strip().upper():
+                found_idx = tidx
+                break
+        seg_token_indices.append(found_idx)
+
+    for m in modulators:
+        m.clear_holonomy_phase()
+    attn_k_std = extract_last_token_attention(model, k_inputs)
+
+    # Also compute exact multi-turn segment-locked phase (Theorem 7 exact parity schedule)
+    # alongside unsupervised detector phase
+    phi_k_exact = torch.zeros((1, k_len), device=model.device, dtype=torch.float32)
+    for r in range(K_turns + 1):
+        b_start = seg_boundaries[r]
+        b_end = seg_boundaries[r + 1] if r < K_turns else k_len
+        phi_k_exact[0, b_start:b_end] = float(r) * math.pi
+
+    for m in modulators:
+        m.adaptive_alpha = True
+        m.set_holonomy_phase(phi_k_exact)
+    attn_k_mob = extract_last_token_attention(model, k_inputs)
+
+    in_phase_mass_std = 0.0
+    in_phase_mass_mob = 0.0
+    anti_phase_mass_std = 0.0
+    anti_phase_mass_mob = 0.0
+    in_phase_seg_mass_std = 0.0
+    in_phase_seg_mass_mob = 0.0
+    anti_phase_seg_mass_std = 0.0
+    anti_phase_seg_mass_mob = 0.0
+    segment_Breakdown = []
+
+    for r in range(K_turns + 1):
+        parity_r = (K_turns - r) % 2
+        idx_r = seg_token_indices[r]
+        b_start = max(1, seg_boundaries[r])  # exclude attention sink token 0
+        b_end = min(k_len, seg_boundaries[r + 1])
+        seg_sum_std = float(attn_k_std[b_start:b_end].sum())
+        seg_sum_mob = float(attn_k_mob[b_start:b_end].sum())
+        a_std_r = float(attn_k_std[idx_r])
+        a_mob_r = float(attn_k_mob[idx_r])
+        ratio_r = a_mob_r / max(a_std_r, 1e-12)
+        if parity_r == 0:
+            in_phase_mass_std += a_std_r
+            in_phase_mass_mob += a_mob_r
+            in_phase_seg_mass_std += seg_sum_std
+            in_phase_seg_mass_mob += seg_sum_mob
+        else:
+            anti_phase_mass_std += a_std_r
+            anti_phase_mass_mob += a_mob_r
+            anti_phase_seg_mass_std += seg_sum_std
+            anti_phase_seg_mass_mob += seg_sum_mob
+        segment_Breakdown.append({
+            "segment_r": r,
+            "relative_parity_pi_r": parity_r,
+            "role": "in_phase_active" if parity_r == 0 else "anti_phase_revoked",
+            "token_index": idx_r,
+            "token_text": k_tokens[idx_r],
+            "attn_std": a_std_r,
+            "attn_mobius": a_mob_r,
+            "amplification_ratio_mob_over_std": ratio_r,
+            "segment_total_mass_std": seg_sum_std,
+            "segment_total_mass_mobius": seg_sum_mob
+        })
+
+    acr_k_std = in_phase_mass_std / max(anti_phase_mass_std, 1e-12)
+    acr_k_mob = in_phase_mass_mob / max(anti_phase_mass_mob, 1e-12)
+    acr_k_gain = acr_k_mob / max(acr_k_std, 1e-12)
+    seg_acr_std = in_phase_seg_mass_std / max(anti_phase_seg_mass_std, 1e-12)
+    seg_acr_mob = in_phase_seg_mass_mob / max(anti_phase_seg_mass_mob, 1e-12)
+    seg_acr_gain = seg_acr_mob / max(seg_acr_std, 1e-12)
+    print(f"  [K={K_turns} Reversals | L={k_len}] Keyword ACR: Std={acr_k_std:.3f} -> Möbius={acr_k_mob:.3f} ({acr_k_gain:.2f}x) | Segment Mass Ratio Gain: {seg_acr_gain:.2f}x")
+
+    multi_turn_results[f"K_{K_turns}"] = {
+        "num_reversals_K": K_turns,
+        "seq_len": k_len,
+        "in_phase_active_mass_std": in_phase_mass_std,
+        "in_phase_active_mass_mobius": in_phase_mass_mob,
+        "anti_phase_revoked_mass_std": anti_phase_mass_std,
+        "anti_phase_revoked_mass_mobius": anti_phase_mass_mob,
+        "multi_turn_acr_std": acr_k_std,
+        "multi_turn_acr_mobius": acr_k_mob,
+        "multi_turn_acr_gain_factor": acr_k_gain,
+        "segment_mass_acr_std": seg_acr_std,
+        "segment_mass_acr_mobius": seg_acr_mob,
+        "segment_mass_acr_gain_factor": seg_acr_gain,
+        "segments": segment_Breakdown
+    }
+
+# 3. Multi-Domain Prompt Variance Benchmark (5 Domains: Cloud, Legal, Medical, Finance, Code Config)
+domain_templates = [
+    ("Cloud_Security", "Profile Delta is ACTIVE and VERIFIED.", "However, security breach detected! Profile Delta is REVOKED and FORBIDDEN!", "ACTIVE", "REVOK"),
+    ("Legal_Contract", "Clause 7 indemnity is VALID and APPROVED.", "However, annex override signed! Clause 7 indemnity is TERMINATED and INVALID!", "VALID", "INVALID"),
+    ("Clinical_Protocol", "Dosage Regimen Alpha is CONFIRMED and ACTIVE.", "However, adverse biomarker observed! Dosage Regimen Alpha is FORBIDDEN and NEGATED!", "ACTIVE", "FORBID"),
+    ("Financial_Credit", "Credit Facility Omega is APPROVED and OPERATIONAL.", "However, covenant default triggered! Credit Facility Omega is REVOKED and TERMINATED!", "APPROVED", "REVOK"),
+    ("Compiler_Config", "Optimization Flag AVX512 is TRUE and ACTIVE.", "However, silicon errata confirmed! Optimization Flag AVX512 is FALSE and FORBIDDEN!", "TRUE", "FALSE"),
+]
+
+domain_gains = []
+domain_records = {}
+for dom_name, dom_prem, dom_rev, kw_dec, kw_tgt in domain_templates:
+    dom_prompt = dom_prem + "\n" + build_distractor_text(14) + dom_rev + "\n" + build_distractor_text(14) + prompt_query_a
+    dom_inputs = tokenizer(dom_prompt, return_tensors="pt").to(model.device)
+    dom_len = dom_inputs.input_ids.shape[1]
+    dom_tokens = [tokenizer.decode([tid]) for tid in dom_inputs.input_ids[0]]
+
+    d_idx, t_idx = 5, dom_len // 2
+    for idx in range(min(40, dom_len)):
+        if kw_dec in dom_tokens[idx].strip().upper():
+            d_idx = idx
+            break
+    for idx in range(dom_len // 3, dom_len):
+        if kw_tgt in dom_tokens[idx].strip().upper():
+            t_idx = idx
+            break
+
+    for m in modulators:
+        m.clear_holonomy_phase()
+    a_dom_std = extract_last_token_attention(model, dom_inputs)
+
+    _, phi_dom = detector(dom_inputs.input_ids, embed_layer)
+    for m in modulators:
+        m.adaptive_alpha = True
+        m.set_holonomy_phase(phi_dom)
+    a_dom_mob = extract_last_token_attention(model, dom_inputs)
+
+    acr_d_std = float(a_dom_std[t_idx] / max(a_dom_std[d_idx], 1e-12))
+    acr_d_mob = float(a_dom_mob[t_idx] / max(a_dom_mob[d_idx], 1e-12))
+    gain_d = acr_d_mob / max(acr_d_std, 1e-12)
+    domain_gains.append(gain_d)
+    domain_records[dom_name] = {
+        "seq_len": dom_len,
+        "acr_std": acr_d_std,
+        "acr_mobius": acr_d_mob,
+        "acr_gain_factor": gain_d
+    }
+    print(f"  [Domain: {dom_name}] ACR Std={acr_d_std:.2f} -> Möbius={acr_d_mob:.2f} ({gain_d:.2f}x)")
+
+multi_domain_summary = {
+    "num_domains": len(domain_templates),
+    "mean_acr_gain_factor": float(np.mean(domain_gains)),
+    "std_acr_gain_factor": float(np.std(domain_gains)),
+    "domains": domain_records
+}
+
+# -----------------------------------------------------------------------------
 # 6. Save Structured Benchmark Results JSON
 # -----------------------------------------------------------------------------
 print("\n[6/6] Saving Output JSON & Generating Publication Figures...")
@@ -762,7 +1129,10 @@ final_payload = {
             "max_abs_omega": max_omega,
             "max_abs_phi": max_phi
         }
-    }
+    },
+    "microscopic_partition_telemetry": microscopic_telemetry,
+    "multi_turn_parity_benchmarks": multi_turn_results,
+    "multi_domain_variance_benchmarks": multi_domain_summary
 }
 
 with open("kaggle_experiment_results.json", "w", encoding="utf-8") as f:

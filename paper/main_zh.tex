@@ -295,6 +295,7 @@ P_{\mathrm{mob}}(k \mid i) = \frac{\exp(A_{ik}^{\mathrm{std}})}{Z_i^{\mathrm{std
 \end{equation}
 更一般地，在存在有界扰动 $\Delta\Phi_{l \to i} = \pi \pm \delta_l$（$|\delta_l| \le \pi/6$）时，平面旋转诱导 $\tilde{A}_{il} = A_{il}^{\mathrm{std}} - (1 + \cos\delta_l)A_{il}^{\mathrm{mob}} \pm \sin\delta_l B_{il}^{\mathrm{mob}}$，其中正交耦合项 $B_{il}^{\mathrm{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_m (q_i^{(m)})^\top \mathbf{J} \mathbf{R}((l-i)\theta_m) k_l^{(m)}$，$\mathbf{J} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$。由于 $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$，只要 $(1+\cos\delta_l)A_{il}^{\mathrm{mob}} > |\sin\delta_l B_{il}^{\mathrm{mob}}|$，收缩条件 $\Delta Z_{\mathcal{P}} > 0$ 恒成立。
 关键在于：在长程推理中（$L=1,116$），前置失效区间 $\mathcal{P}$ 包含了整整 576 个历史 token（包含占据极大权重的句首 Attention Sink $l=0$）。整个前缀区间的集体反相使得配分函数分母收缩约 $Z_i^{\mathrm{std}}/\tilde{Z}_i \approx 3.48\times$，将原本沉淀于前缀与 Attention Sink 中的庞大概率质量强力虹吸注入目标指令（使 $P(\text{target})$ 放大 $3.49\times$），同时分母的收缩部分抵消了诱饵 token 表观概率的降幅，严密自洽地解释了为何单点诱饵表观注意力仅下降 $1.62\times$，而多头对比度 ACR 却整体跃升 $+465.1\%$（$3.62 \to 20.44$）。
+该收缩律的多轮（$K \le 10$）奇偶交替推广，连同其同相均匀放大与 ACR 复合分解，由定理~\ref{thm:multi_turn_contraction} 与推论~\ref{cor:k_turn_acr} 给出。
 \end{corollary}
 
 \begin{figure}[t!]
@@ -388,11 +389,68 @@ A_{\mathrm{decode}}[i, j] = \frac{1}{\sqrt{d}} \tilde{q}_i^\top \mathbf{K}_{\mat
 \end{algorithmic}
 \end{algorithm}
 
+\subsection{配分函数收缩的多轮推广}
+推论~\ref{cor:partition_siphoning} 确立了单次叙事反转下的收缩律。我们将其推广至 $K \le 10$ 次奇偶交替的语篇反转，与命题~\ref{prop:associative_scan} 的 $M_\Phi \le 10\pi$ 运行包络完全吻合。
+
+\begin{theorem}[多轮奇偶交替配分函数收缩]
+\label{thm:multi_turn_contraction}
+设 $t_1 < t_2 < \cdots < t_K \le i$（$K \le 10$）为语篇反转位置，各自向因果相位流注入标称相移 $\pi$。定义反转计数 $R(l) \triangleq \#\{r \mid t_r \le l\}$ 与分段 $S_s \triangleq [t_s, t_{s+1})$（$s = 0, 1, \dots, K$），约定 $t_0 \triangleq 0$ 与 $t_{K+1} \triangleq i+1$。对每个 $l \in S_s$，演化子空间上累积的相对相移为 $\Delta\Phi_{l \to i} = \pi\big(R(i) - R(l)\big) \equiv (K - s)\pi \pmod{2\pi}$。在子空间相干锁相下：
+
+(i) \textbf{名义情形。} 当 $K - s$ 为偶数时对应分段同相复原，$\tilde{A}_{il} = A_{il}^{\text{std}}$；当 $K - s$ 为奇数时对应分段为反相废止，$\tilde{A}_{il} = A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}$。记废止指标集为 $\mathcal{I}_{\text{inv}} \triangleq \{l \mid K - R(l) \text{ 为奇数}\}$，
+\begin{equation}
+\tilde{Z}_i = Z_i^{\mathrm{std}} - \Delta Z_{\text{tot}}, \qquad \Delta Z_{\text{tot}} \triangleq \sum_{l \in \mathcal{I}_{\text{inv}}} \exp\big(A_{il}^{\text{std}}\big)\left(1 - \exp\big(-2A_{il}^{\text{mob}}\big)\right)
+\end{equation}
+只要对所有 $l \in \mathcal{I}_{\text{inv}}$ 满足 $A_{il}^{\text{mob}} > 0$，即有 $\Delta Z_{\text{tot}} > 0$ 且配分函数严格收缩；每个复原分段恰好贡献其标准质量（偶数次翻转下的循环复原）。当 $K = 1$ 时，该恒等式逐项退化为推论~\ref{cor:partition_siphoning}。
+
+(ii) \textbf{有界扰动情形。} 对扰动相对相移 $\Delta\Phi_{l \to i} = (K - s)\pi \pm \delta_l$（$|\delta_l| \le \pi/6$）：
+\begin{itemize}
+    \item 反相分段（$K - s$ 为奇数）：$\tilde{A}_{il} = A_{il}^{\text{std}} - (1 + \cos\delta_l)A_{il}^{\text{mob}} \mp \sin\delta_l B_{il}^{\text{mob}}$。
+    \item 同相分段（$K - s$ 为偶数）：$\tilde{A}_{il} = A_{il}^{\text{std}} - (1 - \cos\delta_l)A_{il}^{\text{mob}} \pm \sin\delta_l B_{il}^{\text{mob}}$，其中 $1 - \cos\delta_l \le \delta_l^2/2 \le \pi^2/72$，故复原分段仅发生二阶泄漏。
+    \item 正交耦合项 $B_{il}^{\text{mob}} \triangleq \frac{1}{\sqrt{d}}\sum_m (q_i^{(m)})^\top \mathbf{J} \mathbf{R}((l-i)\theta_m) k_l^{(m)}$（$\mathbf{J} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$）与推论~\ref{cor:partition_siphoning} 中的耦合项完全相同。
+    \item 全局收缩的充分条件：在每个反相分段上满足逐点支配 $(1 + \cos\delta_l)A_{il}^{\text{mob}} > |\sin\delta_l B_{il}^{\text{mob}}|$，且反相收缩总量严格超过同相扰动泄漏总量。注意 $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$。
+\end{itemize}
+\end{theorem}
+\begin{proof}
+(i) 由定理~\ref{thm:trans_inv}，$l \in S_s$ 处的调制演化子空间 logit 仅通过 $\cos\big((K-s)\pi\big) = (-1)^{K-s}$ 依赖累积相位，故 $A_{il}^{\text{mob}}$ 的符号恰好随 $K - s$ 的奇偶性翻转：偶宇称保留该项（复原），奇宇称取反该项（废止），在 $\mathcal{I}_{\text{inv}}$ 上给出 $\tilde{A}_{il} = A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}$。将 $Z_i^{\mathrm{std}}$ 按分段分解并分离出 $\mathcal{I}_{\text{inv}}$，每个被废止项满足
+\begin{equation}
+\exp\big(A_{il}^{\text{std}} - 2A_{il}^{\text{mob}}\big) = \exp\big(A_{il}^{\text{std}}\big)\Big(1 - \big(1 - \exp(-2A_{il}^{\text{mob}})\big)\Big)
+\end{equation}
+对 $l \in \mathcal{I}_{\text{inv}}$ 求和即得 $\Delta Z_{\text{tot}}$ 的闭式。由于 $1 - \exp(-2A_{il}^{\text{mob}}) > 0 \iff A_{il}^{\text{mob}} > 0$，相干假设下每个求和项严格为正，故 $\Delta Z_{\text{tot}} > 0$；复原项逐项等于其标准质量。当 $K = 1$ 时 $\mathcal{I}_{\text{inv}} = \mathcal{P}$，该恒等式退化为推论~\ref{cor:partition_siphoning}。
+
+(ii) 与推论~\ref{cor:partition_siphoning} 的有界扰动分析完全同构地展开平面旋转，扰动相位分解为沿 $A_{il}^{\text{mob}}$ 的 $\cos$ 分量与沿正交耦合 $B_{il}^{\text{mob}}$ 的 $\sin$ 分量。反相相位 $\pi \pm \delta_l$ 贡献 $-\cos\delta_l\, A_{il}^{\text{mob}} \mp \sin\delta_l\, B_{il}^{\text{mob}}$，与不变锚定部分合并得 $\tilde{A}_{il} = A_{il}^{\text{std}} - (1 + \cos\delta_l)A_{il}^{\text{mob}} \mp \sin\delta_l B_{il}^{\text{mob}}$；同相相位 $\pm \delta_l$ 贡献 $+(\cos\delta_l - 1)A_{il}^{\text{mob}} \pm \sin\delta_l\, B_{il}^{\text{mob}}$。二阶界 $1 - \cos\delta_l \le \delta_l^2/2 \le \pi^2/72$ 将复原分段的泄漏限制在二阶，而 $1 + \cos\delta_l \ge 1 + \sqrt{3}/2 \approx 1.866$ 保持反相一阶收缩占优；施加上述逐点支配条件并结合“反相收缩总量严格超过同相泄漏总量”的全局不等式，即严格推出 $\Delta Z_{\text{tot}} > 0$，闭合全局收缩条件。
+\end{proof}
+
+\begin{corollary}[同相均匀放大、诱饵缓冲与 ACR 复合分解]
+\label{cor:k_turn_acr}
+在定理~\ref{thm:multi_turn_contraction} 的设定下：
+\begin{enumerate}
+    \item \textbf{同相均匀放大。} 对每个同相 token $k \notin \mathcal{I}_{\text{inv}}$（当前有效指令与偶宇称复原的历史），
+    \begin{equation}
+    \frac{P_{\mathrm{mob}}(k \mid i)}{P_{\mathrm{std}}(k \mid i)} = T \triangleq \frac{1}{1 - \Delta Z_{\text{tot}}/Z_i^{\mathrm{std}}} > 1
+    \end{equation}
+    放大因子 $T$ 与 token 身份无关。
+    \item \textbf{诱饵缓冲。} 对被废止 token $j \in \mathcal{I}_{\text{inv}}$，
+    \begin{equation}
+    \frac{P_{\mathrm{mob}}(j \mid i)}{P_{\mathrm{std}}(j \mid i)} = \exp\big(-2A_{ij}^{\text{mob}}\big) \cdot T
+    \end{equation}
+    即配分函数收缩降低全局分母，从而部分缓冲诱饵 logit 衰减带来的概率降幅。
+    \item \textbf{ACR 复合恒等式。} 记 $\mathrm{ACR}(k : j \mid i) \triangleq P(k \mid i)/P(j \mid i)$，同相目标 $k \notin \mathcal{I}_{\text{inv}}$ 与被废止诱饵 $j \in \mathcal{I}_{\text{inv}}$ 的目标-诱饵对比度满足
+    \begin{equation}
+    \frac{\mathrm{ACR}_{\mathrm{mob}}(k : j \mid i)}{\mathrm{ACR}_{\mathrm{std}}(k : j \mid i)} = \exp\big(2A_{ij}^{\text{mob}}\big) = T \times D_j^{\text{cushion}}, \qquad D_j^{\text{cushion}} \triangleq \frac{1}{\exp(-2A_{ij}^{\text{mob}}) \cdot T}
+    \end{equation}
+    其中 $D_j^{\text{cushion}}$ 为表观诱饵压制比。单轮实测分解为 $T = 3.49$ 与 $D^{\text{cushion}} = 1.62$，其乘积 $3.49 \times 1.62 \approx 5.65$（$+465.1\%$）复原观测到的 ACR 复合跃升。
+    \item \textbf{奇偶交替诚实披露。} 新增一次反转会使每个既有分段的宇称翻转（废止分段 $\leftrightarrow$ 复原分段）；因此抑制量随 $K$ \textbf{不具单调性}，收缩律仅具奇偶交替语义。
+\end{enumerate}
+\end{corollary}
+\begin{proof}
+(1) 对 $k \notin \mathcal{I}_{\text{inv}}$，因子 $\exp(A_{ik})$ 保持不变，故 $\exp(A_{ik})/\tilde{Z}_i$ 除以 $\exp(A_{ik})/Z_i^{\mathrm{std}}$ 化简为 $Z_i^{\mathrm{std}}/\tilde{Z}_i = 1/(1 - \Delta Z_{\text{tot}}/Z_i^{\mathrm{std}}) = T$，与 $k$ 的身份无关。(2) 将 $\exp(A_{ij} - 2A_{ij}^{\text{mob}})/\tilde{Z}_i$ 除以 $\exp(A_{ij})/Z_i^{\mathrm{std}}$ 得 $\exp(-2A_{ij}^{\text{mob}}) \cdot T$。(3) 将 (1) 的恒等式除以 (2) 的恒等式即得 $\exp(2A_{ij}^{\text{mob}})$；反之 $T \times D_j^{\text{cushion}} = T \cdot \frac{1}{\exp(-2A_{ij}^{\text{mob}}) T} = \exp(2A_{ij}^{\text{mob}})$。(4) 废止与复原分段仅由 $K - s$ 的奇偶性区分，故 $K \mapsto K + 1$ 一次性翻转每个既有分段的宇称，抑制量继承这一奇偶交替，而非关于 $K$ 的任何单调序。
+\end{proof}
+
 \section{形式化机器证明与性质验证}
 为了排除潜在的数学不一致与失效隐患，我们在两个独立的验证框架下形式化证明了核心代数不变量与算法等价性：
 
 \paragraph{Lean~4 交互式定理证明。}
-在 \texttt{formal\_verification/MobiusAttention.lean} 中，我们使用 Lean~4 交互式定理证明器 \cite{moura2021lean} 形式化了离散因果序列、两阶段并行关联扫描前缀求和与子空间反相旋转。在\textbf{零自定义公理、零 \texttt{sorry}} 的严格前提下证明了 5 大核心定理：
+在 \texttt{formal\_verification/MobiusAttention.lean} 中，我们使用 Lean~4 交互式定理证明器 \cite{moura2021lean} 形式化了离散因果序列、两阶段并行关联扫描前缀求和、子空间反相旋转与多轮配分函数收缩。在\textbf{零自定义公理、零 \texttt{sorry}} 的严格前提下证明了 17 项实数代数核心定理（含定理~\ref{thm:multi_turn_contraction} 与推论~\ref{cor:k_turn_acr} 对应的 \texttt{multi\_turn\_partition\_contraction\_sum} 与 \texttt{uniform\_in\_phase\_amplification\_factor}；以下列出 5 项基础不变量）：
 \begin{itemize}
     \item \emph{基线退化}（\texttt{conservation\_of\_flatness}）：$\forall t, \omega(t) = 0 \implies \mathbf{R}_{\text{mod}}(t) = \mathbf{R}(t\theta)$（中性语篇严格退化为标准 RoPE，无任何修改）。
     \item \emph{前缀和可加性}（\texttt{holonomy\_path\_additivity}）：$\forall j \le k \le i, \Delta\Phi(j, i) = \Delta\Phi(j, k) + \Delta\Phi(k, i)$（严格满足并行关联扫描的因果区间前缀和结合律分解）。

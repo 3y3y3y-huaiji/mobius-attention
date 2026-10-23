@@ -54,7 +54,7 @@
       "acr_improvement_factor": 1.6064285947474386,
       "decoy_suppression_factor": 1.2587064676616915,
       "adaptive_suppression_factor": 1.900469483568075,
-      "decode_latency_ms": 273.099301000002
+      "decode_latency_ms": 267.90493499999
     },
     "L_1116": {
       "seq_len": 1116,
@@ -96,7 +96,7 @@
       "acr_improvement_factor": 0.6730121246860035,
       "decoy_suppression_factor": 0.6653132250580046,
       "adaptive_suppression_factor": 1.6189131968948482,
-      "decode_latency_ms": 271.3178090000383
+      "decode_latency_ms": 263.97473699995544
     },
     "L_2250": {
       "seq_len": 2250,
@@ -138,7 +138,7 @@
       "acr_improvement_factor": 0.5741449541281244,
       "decoy_suppression_factor": 0.5975513428120063,
       "adaptive_suppression_factor": 1.1728682170542635,
-      "decode_latency_ms": 281.37102400000913
+      "decode_latency_ms": 264.22671000000264
     },
     "L_4480": {
       "seq_len": 4480,
@@ -180,7 +180,7 @@
       "acr_improvement_factor": 1.120015253015075,
       "decoy_suppression_factor": 1.1392326732673268,
       "adaptive_suppression_factor": 1.127372933251684,
-      "decode_latency_ms": 287.7862480000317
+      "decode_latency_ms": 275.1799369999617
     },
     "L_9002": {
       "seq_len": 9002,
@@ -222,7 +222,7 @@
       "acr_improvement_factor": 1.5327968353658394,
       "decoy_suppression_factor": 1.1950500883912787,
       "adaptive_suppression_factor": 1.2675,
-      "decode_latency_ms": 299.24969299997883
+      "decode_latency_ms": 265.22356800001035
     },
     "L_18030": {
       "seq_len": 18030,
@@ -264,7 +264,7 @@
       "acr_improvement_factor": 2.18036123394825,
       "decoy_suppression_factor": 2.3300124533001245,
       "adaptive_suppression_factor": 1.3392984967788117,
-      "decode_latency_ms": 274.1529140000125
+      "decode_latency_ms": 270.419253
     }
   },
   "wikitext_perplexity": {
@@ -281,6 +281,382 @@
     "detector_activity": {
       "max_abs_omega": 0.0,
       "max_abs_phi": 0.0
+    }
+  },
+  "microscopic_partition_telemetry": {
+    "seq_len": 1116,
+    "decoy_index": 28,
+    "target_index": 576,
+    "head_averaged_T_amplification": 3.4883549213409424,
+    "head_averaged_D_cushioned_suppression": 1.6206185817718506,
+    "head_averaged_acr_gain_product_T_times_D": 5.6532928053404135,
+    "attention_sink_token0_mass_std": 0.0017450441373512149,
+    "attention_sink_token0_mass_mobius": 0.0012165217194706202,
+    "prefix_mass_before_reversal_std": 0.6705463528633118,
+    "prefix_mass_before_reversal_mobius": 0.5615972280502319,
+    "suffix_mass_from_reversal_std": 0.32945364713668823,
+    "suffix_mass_from_reversal_mobius": 0.43840277194976807,
+    "per_head_partition_ratio_Z_std_over_Z_mob_mean": 1.3939753719214574,
+    "per_head_partition_ratio_Z_std_over_Z_mob_max": 5.353588894907272,
+    "per_head_identity_verification_max_rel_err": 0.011868757449780405
+  },
+  "multi_turn_parity_benchmarks": {
+    "K_1": {
+      "num_reversals_K": 1,
+      "seq_len": 246,
+      "in_phase_active_mass_std": 0.00296783447265625,
+      "in_phase_active_mass_mobius": 0.00585174560546875,
+      "anti_phase_revoked_mass_std": 0.0045013427734375,
+      "anti_phase_revoked_mass_mobius": 0.004489898681640625,
+      "multi_turn_acr_std": 0.6593220338983051,
+      "multi_turn_acr_mobius": 1.3033135089209855,
+      "multi_turn_acr_gain_factor": 1.9767479955356848,
+      "segment_mass_acr_std": 0.8295648104101769,
+      "segment_mass_acr_mobius": 1.0435886471153222,
+      "segment_mass_acr_gain_factor": 1.2579953175681615,
+      "segments": [
+        {
+          "segment_r": 0,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 15,
+          "token_text": " ACTIVE",
+          "attn_std": 0.0045013427734375,
+          "attn_mobius": 0.004489898681640625,
+          "amplification_ratio_mob_over_std": 0.997457627118644,
+          "segment_total_mass_std": 0.49718475341796875,
+          "segment_total_mass_mobius": 0.4259614944458008
+        },
+        {
+          "segment_r": 1,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 111,
+          "token_text": " K",
+          "attn_std": 0.00296783447265625,
+          "attn_mobius": 0.00585174560546875,
+          "amplification_ratio_mob_over_std": 1.9717223650385605,
+          "segment_total_mass_std": 0.4124469757080078,
+          "segment_total_mass_mobius": 0.44452857971191406
+        }
+      ]
+    },
+    "K_2": {
+      "num_reversals_K": 2,
+      "seq_len": 357,
+      "in_phase_active_mass_std": 0.0057697296142578125,
+      "in_phase_active_mass_mobius": 0.0063152313232421875,
+      "anti_phase_revoked_mass_std": 0.0016956329345703125,
+      "anti_phase_revoked_mass_mobius": 0.00174713134765625,
+      "multi_turn_acr_std": 3.402699662542182,
+      "multi_turn_acr_mobius": 3.6146288209606987,
+      "multi_turn_acr_gain_factor": 1.0622826518459707,
+      "segment_mass_acr_std": 1.7486304428941328,
+      "segment_mass_acr_mobius": 3.121713225740272,
+      "segment_mass_acr_gain_factor": 1.7852332597924865,
+      "segments": [
+        {
+          "segment_r": 0,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 15,
+          "token_text": " ACTIVE",
+          "attn_std": 0.0038433074951171875,
+          "attn_mobius": 0.004138946533203125,
+          "amplification_ratio_mob_over_std": 1.0769230769230769,
+          "segment_total_mass_std": 0.38721179962158203,
+          "segment_total_mass_mobius": 0.4514350891113281
+        },
+        {
+          "segment_r": 1,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 111,
+          "token_text": " K",
+          "attn_std": 0.0016956329345703125,
+          "attn_mobius": 0.00174713134765625,
+          "amplification_ratio_mob_over_std": 1.03037120359955,
+          "segment_total_mass_std": 0.3373756408691406,
+          "segment_total_mass_mobius": 0.2231292724609375
+        },
+        {
+          "segment_r": 2,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 242,
+          "token_text": " VALID",
+          "attn_std": 0.001926422119140625,
+          "attn_mobius": 0.0021762847900390625,
+          "amplification_ratio_mob_over_std": 1.1297029702970296,
+          "segment_total_mass_std": 0.20273351669311523,
+          "segment_total_mass_mobius": 0.24511051177978516
+        }
+      ]
+    },
+    "K_3": {
+      "num_reversals_K": 3,
+      "seq_len": 466,
+      "in_phase_active_mass_std": 0.004343986511230469,
+      "in_phase_active_mass_mobius": 0.005831718444824219,
+      "anti_phase_revoked_mass_std": 0.004703521728515625,
+      "anti_phase_revoked_mass_mobius": 0.0023012161254882812,
+      "multi_turn_acr_std": 0.9235604217356043,
+      "multi_turn_acr_mobius": 2.5341898052217156,
+      "multi_turn_acr_gain_factor": 2.743935042668167,
+      "segment_mass_acr_std": 0.9382470099807511,
+      "segment_mass_acr_mobius": 1.3646806650472656,
+      "segment_mass_acr_gain_factor": 1.4545004146352283,
+      "segments": [
+        {
+          "segment_r": 0,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 15,
+          "token_text": " ACTIVE",
+          "attn_std": 0.0027942657470703125,
+          "attn_mobius": 0.0013322830200195312,
+          "amplification_ratio_mob_over_std": 0.47679180887372014,
+          "segment_total_mass_std": 0.33774232864379883,
+          "segment_total_mass_mobius": 0.26490259170532227
+        },
+        {
+          "segment_r": 1,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 111,
+          "token_text": " K",
+          "attn_std": 0.002742767333984375,
+          "attn_mobius": 0.0039005279541015625,
+          "amplification_ratio_mob_over_std": 1.4221140472879,
+          "segment_total_mass_std": 0.2995471954345703,
+          "segment_total_mass_mobius": 0.36383676528930664
+        },
+        {
+          "segment_r": 2,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 242,
+          "token_text": " VALID",
+          "attn_std": 0.0019092559814453125,
+          "attn_mobius": 0.00096893310546875,
+          "amplification_ratio_mob_over_std": 0.5074925074925075,
+          "segment_total_mass_std": 0.1440753936767578,
+          "segment_total_mass_mobius": 0.1190638542175293
+        },
+        {
+          "segment_r": 3,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 351,
+          "token_text": " INVALID",
+          "attn_std": 0.0016012191772460938,
+          "attn_mobius": 0.0019311904907226562,
+          "amplification_ratio_mob_over_std": 1.2060750446694462,
+          "segment_total_mass_std": 0.15251684188842773,
+          "segment_total_mass_mobius": 0.1601548194885254
+        }
+      ]
+    },
+    "K_4": {
+      "num_reversals_K": 4,
+      "seq_len": 581,
+      "in_phase_active_mass_std": 0.004944801330566406,
+      "in_phase_active_mass_mobius": 0.005109310150146484,
+      "anti_phase_revoked_mass_std": 0.0025835037231445312,
+      "anti_phase_revoked_mass_mobius": 0.0027179718017578125,
+      "multi_turn_acr_std": 1.9139904023624954,
+      "multi_turn_acr_mobius": 1.8798245614035087,
+      "multi_turn_acr_gain_factor": 0.9821494188702228,
+      "segment_mass_acr_std": 1.9267222152836012,
+      "segment_mass_acr_mobius": 2.9619200955528386,
+      "segment_mass_acr_gain_factor": 1.5372844471598428,
+      "segments": [
+        {
+          "segment_r": 0,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 15,
+          "token_text": " ACTIVE",
+          "attn_std": 0.002719879150390625,
+          "attn_mobius": 0.0028285980224609375,
+          "amplification_ratio_mob_over_std": 1.0399719495091164,
+          "segment_total_mass_std": 0.30859804153442383,
+          "segment_total_mass_mobius": 0.37946128845214844
+        },
+        {
+          "segment_r": 1,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 111,
+          "token_text": " K",
+          "attn_std": 0.0012197494506835938,
+          "attn_mobius": 0.0017108917236328125,
+          "amplification_ratio_mob_over_std": 1.4026583268178263,
+          "segment_total_mass_std": 0.20521783828735352,
+          "segment_total_mass_mobius": 0.13680338859558105
+        },
+        {
+          "segment_r": 2,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 242,
+          "token_text": " VALID",
+          "attn_std": 0.0014734268188476562,
+          "attn_mobius": 0.0015153884887695312,
+          "amplification_ratio_mob_over_std": 1.0284789644012946,
+          "segment_total_mass_std": 0.15141725540161133,
+          "segment_total_mass_mobius": 0.15506362915039062
+        },
+        {
+          "segment_r": 3,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 351,
+          "token_text": " INVALID",
+          "attn_std": 0.0013637542724609375,
+          "attn_mobius": 0.001007080078125,
+          "amplification_ratio_mob_over_std": 0.7384615384615385,
+          "segment_total_mass_std": 0.11548566818237305,
+          "segment_total_mass_mobius": 0.09953713417053223
+        },
+        {
+          "segment_r": 4,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 443,
+          "token_text": " K",
+          "attn_std": 0.000751495361328125,
+          "attn_mobius": 0.0007653236389160156,
+          "amplification_ratio_mob_over_std": 1.0184010152284264,
+          "segment_total_mass_std": 0.15789127349853516,
+          "segment_total_mass_mobius": 0.165496826171875
+        }
+      ]
+    },
+    "K_5": {
+      "num_reversals_K": 5,
+      "seq_len": 693,
+      "in_phase_active_mass_std": 0.003699779510498047,
+      "in_phase_active_mass_mobius": 0.0034112930297851562,
+      "anti_phase_revoked_mass_std": 0.005213260650634766,
+      "anti_phase_revoked_mass_mobius": 0.0025458335876464844,
+      "multi_turn_acr_std": 0.7096862709228939,
+      "multi_turn_acr_mobius": 1.3399513017418991,
+      "multi_turn_acr_gain_factor": 1.8880896484011063,
+      "segment_mass_acr_std": 0.8400690886274655,
+      "segment_mass_acr_mobius": 0.9145238685481041,
+      "segment_mass_acr_gain_factor": 1.0886293531431865,
+      "segments": [
+        {
+          "segment_r": 0,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 15,
+          "token_text": " ACTIVE",
+          "attn_std": 0.0027256011962890625,
+          "attn_mobius": 0.0011463165283203125,
+          "amplification_ratio_mob_over_std": 0.4205738278516445,
+          "segment_total_mass_std": 0.3170781135559082,
+          "segment_total_mass_mobius": 0.21546411514282227
+        },
+        {
+          "segment_r": 1,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 111,
+          "token_text": " K",
+          "attn_std": 0.0018377304077148438,
+          "attn_mobius": 0.0013446807861328125,
+          "amplification_ratio_mob_over_std": 0.7317073170731707,
+          "segment_total_mass_std": 0.18934249877929688,
+          "segment_total_mass_mobius": 0.18337059020996094
+        },
+        {
+          "segment_r": 2,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 242,
+          "token_text": " VALID",
+          "attn_std": 0.001972198486328125,
+          "attn_mobius": 0.000926971435546875,
+          "amplification_ratio_mob_over_std": 0.4700193423597679,
+          "segment_total_mass_std": 0.08017635345458984,
+          "segment_total_mass_mobius": 0.07940983772277832
+        },
+        {
+          "segment_r": 3,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 351,
+          "token_text": " INVALID",
+          "attn_std": 0.0012359619140625,
+          "attn_mobius": 0.0014104843139648438,
+          "amplification_ratio_mob_over_std": 1.1412037037037037,
+          "segment_total_mass_std": 0.11896800994873047,
+          "segment_total_mass_mobius": 0.12797021865844727
+        },
+        {
+          "segment_r": 4,
+          "relative_parity_pi_r": 1,
+          "role": "anti_phase_revoked",
+          "token_index": 443,
+          "token_text": " K",
+          "attn_std": 0.0005154609680175781,
+          "attn_mobius": 0.0004725456237792969,
+          "amplification_ratio_mob_over_std": 0.9167437557816837,
+          "segment_total_mass_std": 0.11762118339538574,
+          "segment_total_mass_mobius": 0.19080734252929688
+        },
+        {
+          "segment_r": 5,
+          "relative_parity_pi_r": 0,
+          "role": "in_phase_active",
+          "token_index": 558,
+          "token_text": " K",
+          "attn_std": 0.0006260871887207031,
+          "attn_mobius": 0.0006561279296875,
+          "amplification_ratio_mob_over_std": 1.047981721249048,
+          "segment_total_mass_std": 0.12422060966491699,
+          "segment_total_mass_mobius": 0.1328263282775879
+        }
+      ]
+    }
+  },
+  "multi_domain_variance_benchmarks": {
+    "num_domains": 5,
+    "mean_acr_gain_factor": 2.5609438289139748,
+    "std_acr_gain_factor": 0.8274842219027474,
+    "domains": {
+      "Cloud_Security": {
+        "seq_len": 608,
+        "acr_std": 0.13750635087490082,
+        "acr_mobius": 0.15979380905628204,
+        "acr_gain_factor": 1.1620831186310638
+      },
+      "Legal_Contract": {
+        "seq_len": 611,
+        "acr_std": 0.32300135493278503,
+        "acr_mobius": 0.8362832069396973,
+        "acr_gain_factor": 2.5891012349274
+      },
+      "Clinical_Protocol": {
+        "seq_len": 615,
+        "acr_std": 0.5847047567367554,
+        "acr_mobius": 2.0308823585510254,
+        "acr_gain_factor": 3.4733467363689763
+      },
+      "Financial_Credit": {
+        "seq_len": 610,
+        "acr_std": 0.09807604551315308,
+        "acr_mobius": 0.22322286665439606,
+        "acr_gain_factor": 2.276018221232823
+      },
+      "Compiler_Config": {
+        "seq_len": 617,
+        "acr_std": 0.5468594431877136,
+        "acr_mobius": 1.8069164752960205,
+        "acr_gain_factor": 3.3041698334096115
+      }
     }
   }
 }

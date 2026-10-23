@@ -11,10 +11,10 @@
 1. **Zero Hallucination Policy**:
    - Never invent line numbers, functions, or file paths.
    - Actual file lengths:
-     - `src/gauge_predictor.py`: 612 lines
-     - `paper/main.tex`: 521 lines
-     - `tests/test_gauge_gate_definition1.py`: 97 lines
-     - `formal_verification/MobiusAttention.lean`: 9 theorems
+     - `src/gauge_predictor.py`: 615 lines
+     - `paper/main.tex`: 578 lines
+     - `tests/test_gauge_gate_definition1.py`: 138 lines
+     - `formal_verification/MobiusAttention.lean`: 17 theorems
    - Never cite line numbers beyond the actual length of the file.
 
 2. **Definition 1 Gating Integrity**:
@@ -35,7 +35,7 @@
      - Decoy suppression ratio: $1.62\times$
      - Target amplification ratio: $3.49\times$
      - WikiText-103 perplexity: $7.48$ ($0.0\%$ degradation)
-     - Test suite: **407 passed**
+     - Test suite: **453 passed**
 
 5. **Formal Verification Guardrails**:
    - `formal_verification/MobiusAttention.lean` must maintain:
@@ -55,7 +55,7 @@
 Before committing or completing any turn, run the following verification pipeline in powershell:
 
 ```powershell
-# 1. Full 407-test suite
+# 1. Full 453-test suite
 pytest tests/ -n auto -q
 
 # 2. Zero-trust paper claim & terminology linter
