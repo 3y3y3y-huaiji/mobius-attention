@@ -149,13 +149,7 @@ $$
 ### Two-Stage Parallel Associative Scan & FP16 Numerical Stability
 
 During long-context Prefill ($L \gg 1$), calculating $\Phi_t$ sequentially would degrade computational complexity from $\mathcal{O}(1)$ parallel time to $\mathcal{O}(L)$. We formulate phase evolution as a **Two-Stage Parallel Associative Scan**:
-1. **Stage 1 (Affine EMA Associative Scan)**: The first-order autoregressive update $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ defines an affine semigroup with associative binary operator:
-
-$$
-(a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, a_2 b_1 + b_2)
-$$
-
-   with input tuples $(1-\nu, \nu g_t)$, evaluable via parallel prefix scan in $\mathcal{O}(\log L)$ parallel depth.
+1. **Stage 1 (Affine EMA Associative Scan)**: The first-order autoregressive update $\omega_t = (1-\nu)\omega_{t-1} + \nu g_t$ defines an affine semigroup with associative binary operator $(a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, a_2 b_1 + b_2)$ and input tuples $(1-\nu, \nu g_t)$, evaluable via parallel prefix scan in $\mathcal{O}(\log L)$ parallel depth.
 2. **Stage 2 (Additive Prefix Sum)**: The unconstrained phase accumulation $\bar{\Phi}_t = \bar{\Phi}_{t-1} + \omega_t$ operates over the standard associative addition operator $(\mathbb{R}, +)$, evaluable in $\mathcal{O}(\log L)$ parallel depth.
 3. **Stage 3 (Pointwise Phase-Locking)**: $\Phi_t = \bar{\Phi}_t - \eta\sin(2\bar{\Phi}_t)$ executes pointwise in $\mathcal{O}(1)$ depth.
 
@@ -165,7 +159,7 @@ $$
 |\Delta \Phi_L| \le 2 D \epsilon_{\text{mach}} + \mathcal{O}(\epsilon_{\text{mach}}^2) = \mathcal{O}(\epsilon_{\text{mach}} \log L)
 $$
 
-For $L \le 18,030$ ($D = 15$), maximum floating-point drift satisfies $|\Delta \Phi_L| \le 0.029\text{ rad} \approx 1.68^\circ$, remaining strictly within the phase-locking attractor basin $|\delta| < \frac{\pi}{6}$, where the potential gradient $-\eta\sin(2\bar{\Phi})$ actively suppresses floating-point drift.
+For $L \le 18,030$ ($D = 15$), maximum floating-point drift satisfies $|\Delta \Phi_L| \le 0.029\text{ rad} \approx 1.68^\circ$, remaining strictly within the phase-locking attractor basin $|\delta| < \frac{\pi}{6}$, where the potential gradient $\nabla V(\bar{\Phi}) = -\eta\sin(2\bar{\Phi})$ actively suppresses floating-point drift.
 
 ### Theorems on Relative Invariance, Lipschitz Continuity, and Odds Attenuation
 
