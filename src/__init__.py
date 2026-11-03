@@ -22,6 +22,13 @@ from .mobius_attention import (
     nonnegative_feature_map,
     set_model_holonomy_phase,
 )
+from .phase_attention import (
+    apply_phase,
+    attention_scores,
+    causal_attention_weights,
+    reversal_phase,
+    rope_tables,
+)
 
 __all__ = [
     "SGMobiusRotaryEmbedding",
@@ -33,6 +40,11 @@ __all__ = [
     "parallel_affine_scan",
     "two_stage_associative_scan",
     "SGMobiusKVCache",
+    "apply_phase",
+    "attention_scores",
+    "causal_attention_weights",
+    "reversal_phase",
+    "rope_tables",
     "nonnegative_feature_map",
     "apply_rotary_angle_addition",
     "inject_mobius_attention",

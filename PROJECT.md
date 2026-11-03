@@ -1,11 +1,9 @@
 # Project: Semantic Gauge Möbius Attention (SG-Möbius-RoPE)
 ## Continuous Subspace Anti-Phase Rotary Modulation for LLMs
 
-> **Status**: Completed, Formally Verified, and Publication-Ready (NeurIPS / ICLR Format)  
-> **Target Model**: Qwen3.5-9B  
-> **Evaluation Span**: $L \in [545, 18,030]$ tokens  
-> **Test Suite**: 453 / 453 passed (100%)  
-> **Formal Verification**: Lean 4 (17 theorems, 0 sorry, 0 custom axioms, 1946 jobs)
+> **Status (2026-11)**: Historical formulation, retained for algebraic regression and audit.
+> The current research path is the minimal one in [README.md](README.md) and [RESEARCH_PLAN.md](RESEARCH_PLAN.md).
+> Benchmark numbers, model names, and test counts below describe the archived SG-Möbius run and are not current validation.
 
 ---
 

@@ -1,5 +1,9 @@
 # .cursorrules - Cursor AI System Directives for SG-Möbius Attention
 
+> **STATUS (2026-11)**: Historical SG-Möbius contract for the retained `src/` modules and `paper/`.
+> The current research path is `src/phase_attention.py` plus the two `python -m experiments...` entry points;
+> see `README.md` and `RESEARCH_PLAN.md`. File lengths, counts, and metrics below are archived, not current validation.
+
 You are working on the Subspace Anti-Phase Attention (SG-Möbius-RoPE) repository.
 Before generating or modifying any code or paper text, consult AI_HANDOVER.md and AGENTS.md.
 

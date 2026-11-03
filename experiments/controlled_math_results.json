@@ -1,0 +1,77 @@
+{
+  "experiment_type": "controlled_tensor_math_not_an_llm_benchmark",
+  "key_roles": [
+    "old_positive",
+    "old_negative",
+    "new_positive"
+  ],
+  "score_formula": "q dot k / sqrt(4)",
+  "variants": {
+    "standard": {
+      "scores": [
+        1.40625,
+        -1.40625,
+        1.40625
+      ],
+      "attention": [
+        0.48542398,
+        0.02915198,
+        0.48542398
+      ]
+    },
+    "query_global": {
+      "scores": [
+        -1.40625,
+        1.40625,
+        -1.40625
+      ],
+      "attention": [
+        0.053615,
+        0.89276999,
+        0.053615
+      ]
+    },
+    "segment_phase": {
+      "scores": [
+        -1.40625,
+        1.40625,
+        1.40625
+      ],
+      "attention": [
+        0.02915198,
+        0.48542398,
+        0.48542398
+      ]
+    },
+    "segment_phase_half_channels": {
+      "scores": [
+        0.59375,
+        -0.59375,
+        1.40625
+      ],
+      "attention": [
+        0.2810159,
+        0.085705,
+        0.63327909
+      ]
+    },
+    "segment_additive_control": {
+      "scores": [
+        -0.59375,
+        -3.40625,
+        1.40625
+      ],
+      "attention": [
+        0.11835565,
+        0.00710781,
+        0.87453657
+      ]
+    }
+  },
+  "falsification_checks": {
+    "query_global_preserves_new_positive": false,
+    "phase_flip_suppresses_every_old_token": false,
+    "partial_phase_flip_guarantees_negative_logits": false,
+    "additive_control_can_suppress_both_old_tokens": true
+  }
+}

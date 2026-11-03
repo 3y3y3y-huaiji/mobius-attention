@@ -1,6 +1,10 @@
 # SG-Möbius Attention (子空间反相注意力)
 ## 🤖 AI 开发者与全自动 Agent 终极工作交接规范 (AI Handover & Maintenance Guide)
 
+> **状态（2026-11）**：本文档记录的是历史 SG-Möbius 方案，不再是当前研究路径。
+> 当前最小路径见 [README.md](README.md) 与 [RESEARCH_PLAN.md](RESEARCH_PLAN.md)；
+> 下文的模型效果数字与门禁数字属于历史材料，不计为当前证据。
+
 > **版本**：v4.0 (Production & Camera-Ready Grade)  
 > **更新时间**：2026-10-18  
 > **适用对象**：接手本项目的后续 AI Assistant (Cursor, Claude Code, Antigravity, Devin, Codex, Windsurf, Copilot 等) 及人类维护者。  

@@ -1,8 +1,10 @@
 # AGENTS.md - Autonomous AI Agent Operational Protocol
 
 > **CRITICAL DIRECTIVE FOR ALL AI AGENTS**:  
-> Read [AI_HANDOVER.md](file:///AI_HANDOVER.md) before making any modifications to this repository.  
-> This repository implements **Subspace Anti-Phase Attention (SG-Möbius-RoPE)** on Qwen3.5-9B. It is under strict Zero-Trust regression audit for top-tier publication (NeurIPS / ICLR).
+> Read [README.md](README.md) and [RESEARCH_PLAN.md](RESEARCH_PLAN.md) before making any modifications.
+> The current research path is `src/phase_attention.py` plus the two module entry points in `experiments/`.
+> The SG-Möbius rules below are a historical algebraic-regression contract for the retained `src/` modules and `paper/`;
+> they are not evidence of model quality, and [AI_HANDOVER.md](AI_HANDOVER.md) is likewise historical.
 
 ---
 
