@@ -34,7 +34,7 @@ exclude = [
     ".git",
     ".pytest_cache",
     "kaggle_*",
-    "experiments",
+    "legacy",
     "*.ipynb",
 ]
 
