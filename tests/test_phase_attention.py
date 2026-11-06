@@ -8,6 +8,7 @@ from src.phase_attention import (
     attention_scores,
     causal_attention_weights,
     entity_reversal_phase,
+    harmonic_entity_phase,
     low_frequency_channel_mask,
     reversal_phase,
 )
@@ -171,6 +172,42 @@ def test_low_frequency_channel_mask_and_per_plane_phase():
     via_plane = _scores(q, k, plane_phase_q, plane_phase_k, "segment")
     via_mask = _scores(q, k, torch.tensor([math.pi]), torch.tensor([0.0]), "segment", mask=mask)
     torch.testing.assert_close(via_plane, via_mask, atol=1e-6, rtol=1e-6)
+
+
+def test_harmonic_entity_phase_eliminates_2pi_resurrection():
+    # Tokens: 0=X1 (initial), 1=X2 (update 1), 2=X3 (update 2), 3=Query(X)
+    entities = [1, 1, 1, 1]
+    reversals = [(1, 1), (2, 1)]
+    q, k_elem = _vectors(4)
+    k = torch.cat((k_elem, k_elem, k_elem), dim=-2)
+
+    # Scalar pi phase wraps 2*pi -> 0 at X3, resurrecting X1 (score(X1) == score(X3) > 0)
+    scalar_phase = entity_reversal_phase(entities, reversals)
+    scalar_scores = attention_scores(
+        q,
+        k,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0, 0]),
+        q_phase=scalar_phase[-1:],
+        k_phase=scalar_phase[:3],
+        mode="segment",
+    ).flatten()
+    assert scalar_scores[0].item() == pytest.approx(scalar_scores[2].item(), abs=1e-5)
+
+    # Order-3 harmonic phase suppresses BOTH X1 (< 0) and X2 (< 0) while preserving X3 (> 0)
+    harm_phase = harmonic_entity_phase(entities, reversals, head_dim=4, order=3)
+    harm_scores = attention_scores(
+        q,
+        k,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0, 0]),
+        q_phase=harm_phase[-1:],
+        k_phase=harm_phase[:3],
+        mode="segment",
+    ).flatten()
+    assert harm_scores[0].item() < 0
+    assert harm_scores[1].item() < 0
+    assert harm_scores[2].item() > 0
 
 
 def test_causal_attention_masks_future_keys():

@@ -90,6 +90,26 @@ def entity_reversal_phase(
     return phase
 
 
+def harmonic_entity_phase(
+    token_entities: torch.Tensor | list[int] | tuple[int, ...],
+    reversals: list[tuple[int, int]] | tuple[tuple[int, int], ...],
+    head_dim: int,
+    order: int = 3,
+    *,
+    device: torch.device | str | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """Return [tokens, head_dim // 2] root-of-unity phases avoiding 2*pi wrap-around for < order updates."""
+    if head_dim % 2:
+        raise ValueError("The head dimension must be even.")
+    if order < 2:
+        raise ValueError("order must be at least 2.")
+    steps = entity_reversal_phase(token_entities, reversals, device=device, dtype=dtype) / math.pi
+    planes = head_dim // 2
+    harmonics = (torch.arange(planes, device=steps.device, dtype=dtype) % (order - 1)) + 1.0
+    return steps.unsqueeze(-1) * harmonics.unsqueeze(0) * (2.0 * math.pi / order)
+
+
 def low_frequency_channel_mask(
     head_dim: int,
     rotate_fraction: float = 0.25,
@@ -215,6 +235,7 @@ __all__ = [
     "attention_scores",
     "causal_attention_weights",
     "entity_reversal_phase",
+    "harmonic_entity_phase",
     "low_frequency_channel_mask",
     "reversal_phase",
     "rope_tables",

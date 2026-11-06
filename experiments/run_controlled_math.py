@@ -16,6 +16,7 @@ from src.phase_attention import (
     attention_scores,
     causal_attention_weights,
     entity_reversal_phase,
+    harmonic_entity_phase,
     reversal_phase,
 )
 
@@ -74,6 +75,29 @@ def run() -> dict:
         mode="segment",
     )
 
+    # Multi-update 2*pi resurrection falsification: 0 = X1, 1 = X2, 2 = X3, 3 = Query(X)
+    k_multi = torch.cat((q, q, q), dim=-2)
+    scalar_multi = entity_reversal_phase([1, 1, 1, 1], [(1, 1), (2, 1)])
+    harmonic_multi = harmonic_entity_phase([1, 1, 1, 1], [(1, 1), (2, 1)], head_dim=4, order=3)
+    scalar_multi_scores = attention_scores(
+        q,
+        k_multi,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0, 0]),
+        q_phase=scalar_multi[-1:],
+        k_phase=scalar_multi[:3],
+        mode="segment",
+    )
+    harmonic_multi_scores = attention_scores(
+        q,
+        k_multi,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0, 0]),
+        q_phase=harmonic_multi[-1:],
+        k_phase=harmonic_multi[:3],
+        mode="segment",
+    )
+
     result = {
         "experiment_type": "controlled_tensor_math_not_an_llm_benchmark",
         "key_roles": ["old_positive", "old_negative", "new_positive"],
@@ -83,6 +107,11 @@ def run() -> dict:
             "key_roles": ["alpha_premise", "beta_revision_distractor"],
             "global_segment_scores": [round(v, 6) for v in global_unrel_scores.flatten().tolist()],
             "entity_segment_scores": [round(v, 6) for v in entity_unrel_scores.flatten().tolist()],
+        },
+        "multi_update_2pi_check": {
+            "key_roles": ["x1_oldest", "x2_middle", "x3_latest"],
+            "scalar_pi_scores": [round(v, 6) for v in scalar_multi_scores.flatten().tolist()],
+            "harmonic_order3_scores": [round(v, 6) for v in harmonic_multi_scores.flatten().tolist()],
         },
     }
     for name, variant_scores in variants.items():
@@ -98,6 +127,10 @@ def run() -> dict:
         "additive_control_can_suppress_both_old_tokens": True,
         "global_segment_phase_protects_unrelated_entity": bool(global_unrel_scores[0, 0, 0, 0].item() > 0),
         "entity_bound_phase_protects_unrelated_entity": bool(entity_unrel_scores[0, 0, 0, 0].item() > 0),
+        "scalar_pi_avoids_2pi_resurrection_on_3_states": bool(scalar_multi_scores[0, 0, 0, 0].item() < 0),
+        "harmonic_order3_avoids_2pi_resurrection_on_3_states": bool(
+            harmonic_multi_scores[0, 0, 0, 0].item() < 0 and harmonic_multi_scores[0, 0, 0, 1].item() < 0
+        ),
     }
     return result
 
@@ -119,6 +152,11 @@ def main() -> None:
     unrel = result["unrelated_entity_check"]
     print(f"unrelated (global_segment)     alpha={unrel['global_segment_scores'][0]:+8.4f}  beta_rev={unrel['global_segment_scores'][1]:+8.4f}")
     print(f"unrelated (entity_segment)     alpha={unrel['entity_segment_scores'][0]:+8.4f}  beta_rev={unrel['entity_segment_scores'][1]:+8.4f}")
+    multi = result["multi_update_2pi_check"]
+    s_row = multi["scalar_pi_scores"]
+    h_row = multi["harmonic_order3_scores"]
+    print(f"3-state (scalar_pi)            x1={s_row[0]:+8.4f}  x2={s_row[1]:+8.4f}  x3={s_row[2]:+8.4f}")
+    print(f"3-state (harmonic_order3)      x1={h_row[0]:+8.4f}  x2={h_row[1]:+8.4f}  x3={h_row[2]:+8.4f}")
     print(f"Saved: {output}")
 
 

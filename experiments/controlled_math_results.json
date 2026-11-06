@@ -82,12 +82,31 @@
       -1.40625
     ]
   },
+  "multi_update_2pi_check": {
+    "key_roles": [
+      "x1_oldest",
+      "x2_middle",
+      "x3_latest"
+    ],
+    "scalar_pi_scores": [
+      1.40625,
+      -1.40625,
+      1.40625
+    ],
+    "harmonic_order3_scores": [
+      -0.703125,
+      -0.703125,
+      1.40625
+    ]
+  },
   "falsification_checks": {
     "query_global_preserves_new_positive": false,
     "phase_flip_suppresses_every_old_token": false,
     "partial_phase_flip_guarantees_negative_logits": false,
     "additive_control_can_suppress_both_old_tokens": true,
     "global_segment_phase_protects_unrelated_entity": false,
-    "entity_bound_phase_protects_unrelated_entity": true
+    "entity_bound_phase_protects_unrelated_entity": true,
+    "scalar_pi_avoids_2pi_resurrection_on_3_states": false,
+    "harmonic_order3_avoids_2pi_resurrection_on_3_states": true
   }
 }
