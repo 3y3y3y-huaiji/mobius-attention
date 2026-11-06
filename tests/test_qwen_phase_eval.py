@@ -181,8 +181,47 @@ def test_qwen3_and_qwen35_patch_matches_original_for_zero_phase(builder):
     input_ids = torch.tensor([[1, 2, 3, 4, 5, 6]])
     with torch.no_grad():
         expected = model(input_ids, use_cache=False).logits
-        for mode in ("standard", "query", "segment", "additive"):
+        for mode in (
+            "standard",
+            "query",
+            "segment",
+            "entity_segment",
+            "lowfreq_segment",
+            "entity_lowfreq",
+            "additive",
+            "entity_additive",
+        ):
             phase = torch.zeros(input_ids.shape[1])
             with PhaseAttentionController(model, mode, phase):
                 actual = model(input_ids, use_cache=False).logits
-            torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+            torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_entity_segment_matches_segment_on_single_and_protects_unrelated():
+    class AnswerTokenizer:
+        answers = {" valid": [10], " invalid": [11]}
+
+        def __call__(self, text, add_special_tokens=False):
+            return types.SimpleNamespace(input_ids=self.answers[text])
+
+    torch.manual_seed(9)
+    model = _tiny_qwen35_model()
+    tok = AnswerTokenizer()
+    # On single reversal of entity 1, entity_segment and segment have identical phases
+    seg_single = paired_answer_logprobs(
+        model, tok, [1, 2, 3, 4], " invalid", " valid", [2], "segment", 2.0, [1, 0, 1, 1], [(2, 1)]
+    )
+    ent_single = paired_answer_logprobs(
+        model, tok, [1, 2, 3, 4], " invalid", " valid", [2], "entity_segment", 2.0, [1, 0, 1, 1], [(2, 1)]
+    )
+    assert ent_single[:2] == pytest.approx(seg_single[:2], abs=1e-5)
+
+    # On unrelated reversal (entity 2 revised at token 2, query at token 3 asks about entity 1),
+    # entity_segment differs from blind global segment because token 3 keeps entity 1's 0 phase
+    seg_unrel = paired_answer_logprobs(
+        model, tok, [1, 2, 3, 4], " valid", " invalid", [2], "segment", 2.0, [1, 0, 2, 1], [(2, 2)]
+    )
+    ent_unrel = paired_answer_logprobs(
+        model, tok, [1, 2, 3, 4], " valid", " invalid", [2], "entity_segment", 2.0, [1, 0, 2, 1], [(2, 2)]
+    )
+    assert ent_unrel[:2] != seg_unrel[:2]

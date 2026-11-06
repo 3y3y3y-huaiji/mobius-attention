@@ -7,6 +7,8 @@ from src.phase_attention import (
     apply_phase,
     attention_scores,
     causal_attention_weights,
+    entity_reversal_phase,
+    low_frequency_channel_mask,
     reversal_phase,
 )
 
@@ -131,6 +133,44 @@ def test_reversal_phase_is_causal_and_has_pi_steps():
     phase = reversal_phase(6, [2, 4])
     expected = torch.tensor([0.0, 0.0, 1.0, 1.0, 2.0, 2.0]) * math.pi
     torch.testing.assert_close(phase, expected)
+
+
+def test_entity_reversal_phase_protects_unrelated_entity():
+    # Tokens: 0=ALPHA premise, 1=filler, 2=BETA revision, 3=ALPHA query
+    token_entities = [1, 0, 2, 1]
+    global_phase = reversal_phase(4, [2])
+    entity_phase = entity_reversal_phase(token_entities, [(2, 2)])
+    # Under global phase, ALPHA query (token 3) gets pi, clashing with ALPHA premise (token 0, phase 0)
+    assert global_phase[3].item() == pytest.approx(math.pi)
+    # Under entity phase, only BETA revision (token 2) gets pi; ALPHA premise & query stay at 0
+    expected = torch.tensor([0.0, 0.0, math.pi, 0.0])
+    torch.testing.assert_close(entity_phase, expected)
+
+    q, k_elem = _vectors()
+    k = torch.cat((k_elem, k_elem), dim=-2)  # [ALPHA premise at t=0, BETA revision at t=2]
+    scores_entity = attention_scores(
+        q,
+        k,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0]),
+        q_phase=entity_phase[-1:],
+        k_phase=torch.stack((entity_phase[0], entity_phase[2])),
+        mode="segment",
+    )
+    # ALPHA premise (index 0) is preserved (> 0), BETA distractor (index 1) is flipped (< 0)
+    assert scores_entity[0, 0, 0, 0].item() > 0 > scores_entity[0, 0, 0, 1].item()
+
+
+def test_low_frequency_channel_mask_and_per_plane_phase():
+    mask = low_frequency_channel_mask(8, 0.25)
+    torch.testing.assert_close(mask, torch.tensor([0.0, 0.0, 0.0, 1.0]))
+    q = torch.tensor([1.0, 0.5, -0.25, 0.75, 0.2, -0.4, 0.8, -0.1]).view(1, 1, 1, 8)
+    k = q.clone()
+    plane_phase_q = torch.tensor([[0.0, 0.0, 0.0, math.pi]])
+    plane_phase_k = torch.zeros(1, 4)
+    via_plane = _scores(q, k, plane_phase_q, plane_phase_k, "segment")
+    via_mask = _scores(q, k, torch.tensor([math.pi]), torch.tensor([0.0]), "segment", mask=mask)
+    torch.testing.assert_close(via_plane, via_mask, atol=1e-6, rtol=1e-6)
 
 
 def test_causal_attention_masks_future_keys():

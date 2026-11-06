@@ -1,4 +1,4 @@
-"""Qwen2.5 paired-answer evaluation for phase interventions.
+"""Qwen2.5 / Qwen3 / Qwen3.5 paired-answer evaluation for phase interventions.
 
 This measures answer log-likelihood, not attention-map aesthetics. It uses Oracle
 revision boundaries and no KV cache, so it isolates the intervention from detector
@@ -11,11 +11,11 @@ Example (Kaggle or local GPU):
         --output experiments/qwen25_reversal_results.json
 
 Every (length, scenario, case_index) group is a distinct prompt. --shard-file
-lets a driver split whole groups across GPUs; the four modes of one group are
+lets a driver split whole groups across GPUs; the modes of one group are
 never split, so paired mode comparisons stay on a single device.
 
-Validated against the Transformers 5.x Qwen2 forward contract. The tiny-config
-unit tests do not download model weights.
+Validated against the Transformers 5.x Qwen2/Qwen3/Qwen3.5 forward contracts.
+The tiny-config unit tests do not download model weights.
 """
 
 import argparse
@@ -33,19 +33,45 @@ import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, repeat_kv
 
-from src.phase_attention import apply_phase, reversal_phase
+from src.phase_attention import (
+    apply_phase,
+    entity_reversal_phase,
+    low_frequency_channel_mask,
+    reversal_phase,
+)
+
+VALID_MODES = {
+    "standard",
+    "query",
+    "segment",
+    "entity_segment",
+    "lowfreq_segment",
+    "entity_lowfreq",
+    "additive",
+    "entity_additive",
+}
 
 
 class PhaseAttentionController:
-    """Temporarily replace Qwen2 attention with a minimal eager intervention."""
+    """Temporarily replace Qwen attention with a minimal eager intervention."""
 
-    def __init__(self, model, mode: str, phase: torch.Tensor, penalty: float = 2.0):
-        if mode not in {"standard", "query", "segment", "additive"}:
+    def __init__(
+        self,
+        model,
+        mode: str,
+        phase: torch.Tensor,
+        penalty: float = 2.0,
+        rotate_fraction: float | None = None,
+    ):
+        if mode not in VALID_MODES:
             raise ValueError(f"Unknown mode: {mode}")
         self.model = model
         self.mode = mode
         self.phase = phase
         self.penalty = penalty
+        if rotate_fraction is None:
+            rotate_fraction = 0.25 if mode in {"lowfreq_segment", "entity_lowfreq"} else 1.0
+        self.rotate_fraction = rotate_fraction
         self.originals = []
 
     def install(self) -> None:
@@ -121,14 +147,19 @@ class PhaseAttentionController:
         q_rot, k_rot = apply_rotary_pos_emb(q_rot, k_rot, cos, sin)
 
         seq_len = q.shape[-2]
-        if self.phase.numel() < seq_len:
+        if self.phase.shape[0] < seq_len:
             raise ValueError("The phase tensor is shorter than the input sequence.")
         phase = self.phase[:seq_len].to(device=q.device, dtype=q.dtype)
+        mask = None
+        if self.rotate_fraction < 1.0:
+            mask = low_frequency_channel_mask(
+                rotary_dim, self.rotate_fraction, device=q.device, dtype=q.dtype
+            )
         if self.mode == "query":
-            q_rot = apply_phase(q_rot, phase)
-        elif self.mode == "segment":
-            q_rot = apply_phase(q_rot, phase)
-            k_rot = apply_phase(k_rot, phase)
+            q_rot = apply_phase(q_rot, phase, mask)
+        elif self.mode in {"segment", "entity_segment", "lowfreq_segment", "entity_lowfreq"}:
+            q_rot = apply_phase(q_rot, phase, mask)
+            k_rot = apply_phase(k_rot, phase, mask)
         q = torch.cat((q_rot, q_pass), dim=-1)
         k = torch.cat((k_rot, k_pass), dim=-1)
 
@@ -136,7 +167,7 @@ class PhaseAttentionController:
         v = repeat_kv(v, attention.num_key_value_groups)
         scores = torch.matmul(q, k.transpose(-1, -2)) * attention.scaling
 
-        if self.mode == "additive":
+        if self.mode in {"additive", "entity_additive"}:
             anti_phase = torch.cos(phase.view(1, 1, -1, 1) - phase.view(1, 1, 1, -1)) < 0
             scores = scores + anti_phase.to(scores.dtype) * (-self.penalty)
 
@@ -262,22 +293,44 @@ def build_case(tokenizer, scenario: str, target_tokens: int, case_index: int) ->
         else:
             del filler[-min(step, len(filler)):]
     prefix = premise + "".join(filler)
-    prefix_tokens = len(encode(tokenizer, prefix))
+    prompt = prefix + middle + query
+    prompt_ids = encode(tokenizer, prompt)
+    total_tokens = len(prompt_ids)
+    premise_tokens = min(total_tokens, len(encode(tokenizer, premise)))
+    prefix_tokens = min(total_tokens, len(encode(tokenizer, prefix)))
+    prefix_middle_tokens = min(total_tokens, len(encode(tokenizer, prefix + middle)))
 
-    if scenario in ("single", "unrelated"):
+    token_entities = [0] * total_tokens
+    for idx in range(premise_tokens):
+        token_entities[idx] = 1
+    middle_entity = 1 if scenario in ("single", "double") else (2 if scenario == "unrelated" else 0)
+    for idx in range(prefix_tokens, prefix_middle_tokens):
+        token_entities[idx] = middle_entity
+    for idx in range(prefix_middle_tokens, total_tokens):
+        token_entities[idx] = 1
+
+    if scenario == "single":
         reversals = [prefix_tokens]
+        entity_reversals = [(prefix_tokens, 1)]
+    elif scenario == "unrelated":
+        reversals = [prefix_tokens]
+        entity_reversals = [(prefix_tokens, 2)]
     elif scenario == "double":
-        reversals = [prefix_tokens, len(encode(tokenizer, prefix + revision))]
+        second = min(total_tokens - 1, len(encode(tokenizer, prefix + revision)))
+        reversals = [prefix_tokens, second]
+        entity_reversals = [(prefix_tokens, 1), (second, 1)]
     else:
         reversals = []
+        entity_reversals = []
 
-    prompt = prefix + middle + query
     return {
         "scenario": scenario,
         "case_index": case_index,
         "entity": entity,
-        "prompt_ids": encode(tokenizer, prompt),
+        "prompt_ids": prompt_ids,
         "reversals": reversals,
+        "token_entities": token_entities,
+        "entity_reversals": entity_reversals,
         "correct": correct,
         "stale": " invalid" if correct == " valid" else " valid",
     }
@@ -292,12 +345,19 @@ def paired_answer_logprobs(
     reversals: list[int],
     mode: str,
     penalty: float,
+    token_entities: list[int] | None = None,
+    entity_reversals: list[tuple[int, int]] | None = None,
 ) -> tuple[float, float, int, float]:
     correct_id = encode(tokenizer, correct)
     stale_id = encode(tokenizer, stale)
     if len(correct_id) != 1 or len(stale_id) != 1:
         raise ValueError(f"Both answers must tokenize to one token, got {correct_id} and {stale_id}.")
-    phase = reversal_phase(len(prompt_ids), reversals)
+    if mode in {"entity_segment", "entity_lowfreq", "entity_additive"}:
+        if token_entities is None or entity_reversals is None:
+            raise ValueError(f"{mode} requires token_entities and entity_reversals.")
+        phase = entity_reversal_phase(token_entities, entity_reversals)
+    else:
+        phase = reversal_phase(len(prompt_ids), reversals)
     device = next(model.parameters()).device
     ids = torch.tensor([prompt_ids], device=device)
     # Only the final position is scored. Computing logits for all L positions
@@ -411,6 +471,8 @@ def main() -> None:
                             case["reversals"],
                             mode,
                             args.penalty,
+                            case["token_entities"],
+                            case["entity_reversals"],
                         )
                         records.append({
                             "scenario": case["scenario"],

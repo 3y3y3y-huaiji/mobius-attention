@@ -4,7 +4,7 @@
 > Read [README.md](README.md) and [RESEARCH_PLAN.md](RESEARCH_PLAN.md) before making any modifications.
 > The current research path is `src/phase_attention.py` plus the two module entry points in `experiments/`.
 > The SG-Möbius rules below are a historical algebraic-regression contract for the retained `src/` modules and `paper/`;
-> they are not evidence of model quality, and [AI_HANDOVER.md](AI_HANDOVER.md) is likewise historical.
+> they are not evidence of model quality, and [legacy/AI_HANDOVER.md](legacy/AI_HANDOVER.md) is likewise historical.
 
 ---
 
@@ -57,7 +57,7 @@
 Before committing or completing any turn, run the following verification pipeline in powershell:
 
 ```powershell
-# 1. Full 453-test suite
+# 1. Full test suite
 pytest tests/ -n auto -q
 
 # 2. Zero-trust paper claim & terminology linter

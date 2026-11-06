@@ -64,22 +64,74 @@ def reversal_phase(
     return (positions.unsqueeze(0) >= boundaries).sum(dim=0).to(dtype) * math.pi
 
 
+def entity_reversal_phase(
+    token_entities: torch.Tensor | list[int] | tuple[int, ...],
+    reversals: list[tuple[int, int]] | tuple[tuple[int, int], ...],
+    *,
+    device: torch.device | str | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """Return causal per-token phase bound to each token's entity ID (0 = neutral)."""
+    entities = torch.as_tensor(token_entities, device=device, dtype=torch.long)
+    if entities.ndim != 1:
+        raise ValueError("token_entities must have shape [tokens].")
+    seq_len = entities.numel()
+    phase = torch.zeros(seq_len, device=entities.device, dtype=dtype)
+    if not reversals:
+        return phase
+    positions = torch.arange(seq_len, device=entities.device)
+    for boundary, entity_id in reversals:
+        if boundary < 0 or boundary >= seq_len:
+            raise ValueError("Every reversal index must be inside the sequence.")
+        if entity_id <= 0:
+            raise ValueError("Reversal entity_id must be positive (0 is neutral).")
+        active = (positions >= boundary) & (entities == entity_id)
+        phase = phase + active.to(dtype) * math.pi
+    return phase
+
+
+def low_frequency_channel_mask(
+    head_dim: int,
+    rotate_fraction: float = 0.25,
+    *,
+    device: torch.device | str | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """Select the lowest-frequency RoPE planes (last planes in standard RoPE ordering)."""
+    if head_dim % 2:
+        raise ValueError("The head dimension must be even.")
+    if not 0.0 <= rotate_fraction <= 1.0:
+        raise ValueError("rotate_fraction must be in [0.0, 1.0].")
+    planes = head_dim // 2
+    active = round(planes * rotate_fraction)
+    mask = torch.zeros(planes, device=device, dtype=dtype)
+    if active > 0:
+        mask[planes - active :] = 1.0
+    return mask
+
+
 def _expand_phase(phase: torch.Tensor, reference: torch.Tensor) -> torch.Tensor:
-    """Expand [T], [B,T], or [B,H,T] to [B,H,T,1]."""
+    """Expand scalar or per-plane phase to [B,H,T,1] or [B,H,T,dim//2]."""
     if reference.ndim != 4:
         raise ValueError("Q and K must have shape [batch, heads, tokens, dim].")
+    planes = reference.shape[-1] // 2
+    seq_len = reference.shape[-2]
     if phase.ndim == 1:
-        phase = phase.view(1, 1, -1, 1)
-    elif phase.ndim == 2:
+        if phase.shape[0] != seq_len:
+            raise ValueError("The phase and token dimensions must match.")
+        phase = phase.view(1, 1, seq_len, 1)
+    elif phase.ndim == 2 and phase.shape[1] == seq_len:
         phase = phase.unsqueeze(1).unsqueeze(-1)
-    elif phase.ndim == 3:
+    elif phase.ndim == 2 and phase.shape == (seq_len, planes):
+        phase = phase.view(1, 1, seq_len, planes)
+    elif phase.ndim == 3 and phase.shape[2] == seq_len:
         phase = phase.unsqueeze(-1)
-    elif phase.ndim == 4 and phase.shape[-1] == 1:
+    elif phase.ndim == 3 and phase.shape[1:] == (seq_len, planes):
+        phase = phase.unsqueeze(1)
+    elif phase.ndim == 4 and phase.shape[2] == seq_len and phase.shape[3] in (1, planes):
         pass
     else:
-        raise ValueError("phase must have shape [T], [B,T], or [B,H,T].")
-    if phase.shape[-2] != reference.shape[-2]:
-        raise ValueError("The phase and token dimensions must match.")
+        raise ValueError("phase must have shape [T], [B,T], [B,H,T], or [...,T,dim//2].")
     return phase.to(device=reference.device, dtype=reference.dtype)
 
 
@@ -162,6 +214,8 @@ __all__ = [
     "apply_rotary",
     "attention_scores",
     "causal_attention_weights",
+    "entity_reversal_phase",
+    "low_frequency_channel_mask",
     "reversal_phase",
     "rope_tables",
     "rotate_half",

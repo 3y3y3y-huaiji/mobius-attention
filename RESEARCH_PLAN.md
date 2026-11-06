@@ -103,8 +103,6 @@ $$
 
 分段相位的额外旋转是逐 token、逐通道操作，理论开销为 $O(Ld)$，不需要保存 $L\times L$ 的相位矩阵。但实际 wall-clock 必须测量，不能由复杂度直接宣称“零开销”。
 
-Qwen3.5 是混合架构，只有部分层是全注意力，并且使用部分旋转维度。第一轮应选择结构更简单的 Qwen2.5-0.5B-Instruct；通过后再处理 Qwen3.5 的全注意力层，不能无差别替换所有模块。
-
 ## 5. 实验矩阵
 
 ### E0：代数与反证测试（已完成）
@@ -135,18 +133,20 @@ Qwen3.5 是混合架构，只有部分层是全注意力，并且使用部分旋
 - 训练：至少 5 个随机种子；训练、验证、测试使用不同模板和实体词。
 - 指标：最终状态准确率、答案 NLL、泛化长度、误触发率、梯度 p50/p99、loss spike、吞吐和显存。
 
-### E2：预训练模型 Oracle 边界实验（Kaggle 第一跑）
+### E2：预训练模型 Oracle 边界实验（已完成三代架构对比）
 
-目的：在暂时不要求模型学门控的情况下，验证“如果有完美边界，旋转是否有用”。
+目的：在暂时不要求模型学门控的情况下，验证“如果有完美边界，旋转是否有用”，并检验不同 RoPE 架构对零样本相位翻转的敏感性。
 
-- 模型：Qwen2.5-0.5B-Instruct，单张 T4 即可；先单卡，避免多卡引入无关变量。
-- 方法：同一批提示词分别运行 standard / query / segment / additive。
-- 数据：每个长度至少 32 个样本；长度从 512、2,048、8,192 起步。
-- 主指标：正确答案与过期答案的对数概率差、正确答案 NLL、答案准确率。
-- 安全指标：无反转文本、无关实体反转文本的性能变化。
-- 工程指标：prefill 时间、峰值显存；不只测注意力权重。
-
-若 Oracle 分段都不能超过加法基线，就没有理由先训练一个复杂旋转门控。
+- 模型与对照矩阵：
+  - `Qwen/Qwen2.5-0.5B-Instruct`（24 层全注意力，`partial_rotary_factor = 1.0`，无 QK-Norm）：[`experiments/qwen25_reversal_results.json`](experiments/qwen25_reversal_results.json) / [`experiments/qwen25_reversal_report.md`](experiments/qwen25_reversal_report.md)
+  - `Qwen/Qwen3-0.6B`（28 层全注意力，`partial_rotary_factor = 1.0`，含 QK-Norm）：[`experiments/qwen3_06b_reversal_results.json`](experiments/qwen3_06b_reversal_results.json) / [`experiments/qwen3_06b_reversal_report.md`](experiments/qwen3_06b_reversal_report.md)
+  - `Qwen/Qwen3.5-0.8B`（6 层全注意力 + 18 层线性注意力 GatedDeltaNet，`partial_rotary_factor = 0.25`，含 QK-Norm 与输出门控）：[`experiments/qwen35_08b_reversal_results.json`](experiments/qwen35_08b_reversal_results.json) / [`experiments/qwen35_08b_reversal_report.md`](experiments/qwen35_08b_reversal_report.md)
+- 方法：同一批提示词分别运行 `standard` / `query` / `segment` / `additive`（每个长度 32 个独立样本，长度 512、2,048、8,192，总计每模型 384 次前向）。
+- 实证结论：
+  1. **部分旋转子空间（25% RoPE + 75% 语义锚定）是零样本相位翻转不破坏底座的关键**：在 `partial_rotary_factor = 1.0` 的 `Qwen2.5-0.5B` 和 `Qwen3-0.6B` 上，翻转全部 100% 旋转通道会破坏基础语法与定位特征（`Qwen3-0.6B` 在撤销场景下跌 12.50 pp）；而在 `partial_rotary_factor = 0.25` 的 `Qwen3.5-0.8B` 上，仅前 64/256 维参与旋转、后 192 维保留为不旋转语义锚点，`segment` 将撤销场景准确率从 `0.500` 提升至 **`1.000`（+50.00 pp）**，其中 `double` 二次推翻从 `0.000` 恢复至 `1.000`，`single` 单次推翻的 Margin 全面扩大。
+  2. **「只转 Query」被实验证伪**：`query` 模式在 `Qwen3-0.6B` 和 `Qwen3.5-0.8B` 的 `single` 场景准确率均为 `0.000`，因为只转 Query 会对前文所有 Key（无论旧前提还是新更正）一视同仁地反相。
+  3. **一维全局时间轴相位必然误伤无关实体（`unrelated` 场景）**：在 `Qwen3.5-0.8B` 上，当无关实体 `BETA` 在后文反转时，全局相位阶梯同样把早期定义的 `ALPHA` 置于反相（准确率 `0.000`，Margin 从 `-0.39` 降至 `-1.42`）；同时同边界的 `additive` 加法对照在 `Qwen3.5-0.8B` 撤销场景同样达到 `1.000`（`segment - additive = 0.00 pp`）。
+- 下一步前置条件（进入 E3 之前）：必须将一维全局时间相位升级为**实体绑定相位（Key-Bound Phase）**，并消除测试集中 `REVISION` 紧贴末尾的位置偏差，验证在保全无关实体 `unrelated` 的前提下旋转是否真正优于加法偏置。
 
 ### E3：学习门控与公平对照
 

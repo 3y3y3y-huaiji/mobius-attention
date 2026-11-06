@@ -2,9 +2,9 @@
 
 这是一个最小研究仓库，用来验证：语义驱动的旋转能否真正压制长上下文里已经作废的前提。
 
-**当前状态：研究重启，不是已经验证的论文结论。** 我们把“代数正确”“注意力发生变化”“下游任务变好”分成三层证据。没有结果 JSON 和复现命令，就不宣称新的模型实验成功。
+**当前状态：研究重启与真实模型压力测试。** 我们把“代数正确”“注意力发生变化”“下游任务变好”分成三层证据。所有模型结论均附带原始 JSON 数据与复现命令，绝不隐瞒负结果或边界条件。
 
-[English](README.md) · [完整研究计划](RESEARCH_PLAN.md) · [受控数学结果](experiments/controlled_math_results.json)
+[English](README.md) · [完整研究计划](RESEARCH_PLAN.md) · [受控数学结果](experiments/controlled_math_results.json) · [Qwen2.5 报告](experiments/qwen25_reversal_report.md) · [Qwen3 报告](experiments/qwen3_06b_reversal_report.md) · [Qwen3.5 报告](experiments/qwen35_08b_reversal_report.md)
 
 ## 要解决的问题
 
@@ -16,9 +16,9 @@
 | --- | --- | --- | --- |
 | 只转 Query | 给当前 Q 加一个额外旋转 | 所有历史 Key 一起受影响 | 不变 |
 | QK 分段相位 | Q、K 保留各自 token 的相位 | 同段不变，跨段调制 | 写入一次，之后不改 |
-| 点对点门控 | 每个 Query-Key 对单独计算门控或偏置 | token 对级 | 取决于实现 |
+| 点对点 / 实体绑定门控 | 每个 Query-Key 对或实体子空间单独计算门控 | 实体级或 token 对级 | 取决于实现 |
 
-当前主假设是第二种。它是全局 Query 旋转和 CoPE 式点对点控制之间的工程折中，但只能表达“分段 / 状态版本”的选择性，不能任意抹除某个实体。
+当前测试的主假设是第二种（`segment`）。它是全局 Query 旋转和 CoPE 式点对点控制之间的 O(Ld) 工程折中，但一维全局时间阶梯只能表达“时间分段 / 状态版本”的选择性，不能自动区分同一时间段内的不同实体。
 
 ## 数学能证明什么
 
@@ -30,8 +30,9 @@
 - 旧 token 一定被压制，因为原本为负的分量可能被反向放大；
 - Softmax 权重会严格归零；
 - Value 会发生抵消，或信息被真正删除；
+- 一维全局时间相位能避免误伤同时间段定义的无关实体；
 - 模型能学会实体级的反转识别；
-- 下游答案正确率会提高。
+- 下游答案正确率会优于同边界的加法偏置。
 
 精确公式、训练风险、工程约束和停止条件见 [RESEARCH_PLAN.md](RESEARCH_PLAN.md)。
 
@@ -46,17 +47,15 @@
 
 核心模块没有语义检测器、拓扑包装、自定义缓存管理器、关联扫描、绘图依赖或模型动态补丁。
 
-`experiments/kaggle_reversal_eval.py` 是独立的 Qwen2 评测适配器，刻意不放进核心数学模块。
+`experiments/kaggle_reversal_eval.py` 是独立的评测适配器，支持 `Qwen2`、`Qwen3` 和 `Qwen3.5`（含 QK-Norm、`partial_rotary_factor` 部分旋转维度，以及混合架构中的全注意力层筛选），刻意不放进核心数学模块。
 
 ## 已完成的受控反证实验
 
-运行：
+在仓库根目录运行：
 
 ```bash
 python -m experiments.run_controlled_math
 ```
-
-必须在仓库根目录运行：模块入口让 `src` 可直接导入，不需要 `sys.path` 补丁。
 
 例子包含一个旧正分 Key、一个旧负分 Key 和一个新正分 Key：
 
@@ -79,50 +78,75 @@ python -m pytest tests/test_qwen_phase_eval.py -q
 
 第一组覆盖相对位置性质、同段等价、负分反向放大、部分通道、梯度有限性和 prefill / decode 等价。
 
-第二组使用随机初始化的微型 Qwen2，不下载权重，验证评测补丁在零相位时与原模型输出一致，并能在退出后恢复原前向函数。它还固定了成对评分的单次前向契约：两个候选答案的对数概率都必须有限、非正，并且共享同一个 Softmax 归一化因子。
+第二组使用随机初始化的微型 `Qwen2`、`Qwen3` 与 `Qwen3.5` 模型，不下载权重，验证评测补丁在零相位时与原模型输出严格一致，并能在退出后恢复原前向函数。
 
-## Kaggle 模型实验
+## Kaggle 预训练模型三代架构对比实验（Qwen2.5 vs Qwen3 vs Qwen3.5）
 
-第一轮使用 Qwen2.5-0.5B-Instruct。四种方案共用相同的 Oracle 反转边界：标准、Query 全局、QK 分段、同门控加法对照。
+我们在 Kaggle 双卡 T4 上使用相同的 Oracle 反转边界，在上下文长度 512、2048、8192 下评测了三代 Qwen 架构（每个模型 3 个长度 × 4 个场景 × 8 个独立样本 × 4 种模式 = **384 次成对前向**）：
 
 ```bash
 python -m experiments.kaggle_reversal_eval \
-  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --model Qwen/Qwen3.5-0.8B \
   --lengths 512 2048 8192 \
   --cases 8 \
-  --output experiments/qwen25_reversal_results.json
+  --output experiments/qwen35_08b_reversal_results.json
 ```
 
-每个 case 都是**不同的 Prompt**（实体名、填充文本相位、措辞都会变化），运行器会断言不存在重复 Prompt；重复样本只会带来空转计算。前向过程只计算最后一个位置的 logits。
+每个样本只做**一次前向**：正确与过期两个候选答案取自同一个 next-token Softmax，报告的 Margin 是成对对数概率差（正确减过期）。同一 `(长度, 场景, 样本)` 组的四种模式始终在同一张 GPU 上完成。
 
-在 Kaggle 上，`scripts/build_kaggle_kernel.py` 把两个模块打包成单文件 kernel（Kaggle 只上传 `code_file`）。smoke 阶段先验证 Transformers 前向契约并实测各长度的单次前向耗时，再按成本把完整的 `(长度, 场景, 样本)` 组贪心装箱到两张 T4；同一组的四种模式绝不拆卡，因此模式间配对比较始终在同一张卡上完成。`scripts/monitor_kaggle_e2.py` 负责取回输出，`scripts/summarize_kaggle_e2.py` 负责核对预注册判据。
+### 三代模型主结果汇总（跨 L = 512, 2048, 8192 的准确率 / 平均 Margin）
 
-每个样本只做**一次前向**：正确与过期两个候选答案取自同一个 next-token Softmax，因此报告的 margin 是成对对数概率差，而不是两次独立归一化后再相减。
+| 模型与旋转架构特性 | 场景 | `standard`（原模型） | `query`（只转 Query） | `segment`（QK 分段旋转） | `additive`（同边界减分） |
+| --- | --- | :---: | :---: | :---: | :---: |
+| **Qwen2.5-0.5B-Instruct**<br>*(24 层全注意力，100% 维度旋转，无 QK-Norm)*<br>[JSON](experiments/qwen25_reversal_results.json) · [报告](experiments/qwen25_reversal_report.md) | `single`（单次推翻） | 1.000 / +3.49 | 0.792 / +1.37 | 0.833 / +1.75 | 0.000 / -2.90 |
+| | `double`（二次推翻） | 1.000 / +1.85 | 1.000 / +1.20 | 1.000 / +1.69 | 1.000 / +2.71 |
+| | `unrelated`（无关实体推翻） | 0.208 / -0.86 | 0.250 / -1.21 | 0.167 / -1.56 | 1.000 / +6.35 |
+| | `none`（无推翻） | 1.000 / +4.41 | 1.000 / +4.41 | 1.000 / +4.41 | 1.000 / +4.41 |
+| **Qwen3-0.6B**<br>*(28 层全注意力，100% 维度旋转，含 QK-Norm)*<br>[JSON](experiments/qwen3_06b_reversal_results.json) · [报告](experiments/qwen3_06b_reversal_report.md) | `single`（单次推翻） | 1.000 / +3.44 | 0.000 / -1.01 | 0.292 / -0.80 | 0.750 / +2.10 |
+| | `double`（二次推翻） | 0.000 / -1.72 | 0.625 / +0.50 | 0.458 / -0.57 | 0.792 / +0.55 |
+| | `unrelated`（无关实体推翻） | 0.000 / -1.40 | 1.000 / +1.13 | 0.708 / +0.70 | 0.458 / -0.33 |
+| | `none`（无推翻） | 0.917 / +1.35 | 0.917 / +1.35 | 0.917 / +1.35 | 0.917 / +1.35 |
+| **Qwen3.5-0.8B**<br>*(6 层全注意力 + 18 层线性注意力，25% 维度旋转)*<br>[JSON](experiments/qwen35_08b_reversal_results.json) · [报告](experiments/qwen35_08b_reversal_report.md) | `single`（单次推翻） | 1.000 / +1.37 | 0.000 / -1.05 | **1.000 / +1.82** | 1.000 / +2.17 |
+| | `double`（二次推翻） | 0.000 / -0.48 | 0.625 / +0.04 | **1.000 / +0.65** | 1.000 / +0.30 |
+| | `unrelated`（无关实体推翻） | 0.042 / -0.39 | 1.000 / +1.04 | 0.000 / -1.42 | 0.000 / -1.29 |
+| | `none`（无推翻） | 1.000 / +0.48 | 1.000 / +0.48 | **1.000 / +0.48** | 1.000 / +0.48 |
 
-主指标是正确答案相对过期答案的对数概率差、答案 NLL 和准确率。数据包含双重反转、无反转和无关实体反转，用来测量误伤。注意力对比度不再充当任务成功的替代指标。
+### 三个核心实证发现
 
-首轮 0.5B 实验已记录在 [`experiments/qwen25_reversal_results.json`](experiments/qwen25_reversal_results.json)（384 次成对前向、双 T4、Oracle 边界），预注册判据核对见 [`experiments/qwen25_reversal_report.md`](experiments/qwen25_reversal_report.md)。
-
-**结论：主假设未获支持。** QK 分段相位没有带来答案级收益（撤销场景相对标准 RoPE 为 −8.3 pp，且标准基线已接近满分，存在天花板效应）。同门控加法对照在单次撤销场景崩塌（0%），所以表面上的「旋转必要性 +41.7 pp」只是 `penalty=2.0` 未标定造成的假象，不能证明旋转是必要的；无关实体反转场景的误伤也超过 1 pp 预算。按 [停止条件](RESEARCH_PLAN.md)，本轮结果不支持进入 E3 门控训练，应先重标定加法对照或提高任务难度。
+1. **为什么 `Qwen3.5-0.8B`（25% 部分旋转）零样本直接生效，而 `Qwen2.5` / `Qwen3`（100% 旋转）会退化**：
+   `Qwen2.5` 和 `Qwen3` 的 `partial_rotary_factor = 1.0`（每个注意力头 100% 的维度都参与 RoPE 旋转）。在未经微调的模型上把全部 100% 通道直接翻转半圈，会连带破坏负责基础语法和局部定位的注意力特征（`Qwen3-0.6B` 在 `single` 场景从 `1.000` 跌至 `0.292`）。
+   相反，`Qwen3.5-0.8B` 原生采用 `partial_rotary_factor = 0.25`（256 维 head_dim 中仅前 64 维参与 RoPE 旋转，后 192 维即 75% 是完全不旋转的语义锚定子空间），且仅在 6 层全注意力层做几何旋转。在 `Qwen3.5-0.8B` 上，`segment` 分段旋转将撤销场景准确率从 **0.500 提升至 1.000（+50.00 pp）**：不仅把原模型完全答错的 `double`（二次反转：valid -> invalid -> valid）从 `0.000` 恢复到 `1.000`，还让 `single` 场景的正向 Margin 在所有长度上全面扩大（`+1.37 -> +1.82`）。
+2. **定量验证了两个核心理论批评**：
+   - **「只转 Query 相当于让全体 Key 一起转」**：`query` 模式在 `Qwen3-0.6B` 和 `Qwen3.5-0.8B` 的 `single` 场景下准确率均为 **`0.000`**。因为只转 Query 时，前文的旧前提与后文的修订句同时相对 Query 反相，无法区分新旧段落。
+   - **「一维全局时间相位必然误伤无关实体（`unrelated` 场景）」**：当 `ALPHA` 在开头第 0 段定义、后文插入无关实体 `BETA` 的反转（将全局相位推至半圈），最后提问 `ALPHA` 时，`ALPHA` 同样承受了跨段反相惩罚（`Qwen3.5-0.8B` 上 `unrelated` 准确率为 `0.000`，Margin 从 `-0.39` 恶化至 `-1.42`）。
+3. **为什么当前仍触发停止条件、暂不进入 E3 门控训练**：
+   在 `Qwen3.5-0.8B` 上，同边界的加法偏置对照 `additive` 在撤销场景同样取得了 `1.000` 准确率（`segment - additive = 0.00 pp`，尽管 `segment` 在 `double` 场景的 Margin `+0.65` 高于 `additive` 的 `+0.30`）。这说明只要相位还是不区分实体的一维全局时间阶梯，它就还只是一个时间段掩码。下一步必须先利用 `Qwen3.5` 现成的 75% 不旋转语义子空间实现**实体绑定相位（Key-Bound Phase）**，解决 `unrelated` 误伤问题，再讨论训练检测门控。
 
 ## 仓库结构
 
 ```text
-src/phase_attention.py                  最小可微干预
-experiments/run_controlled_math.py      确定性反证矩阵
-experiments/kaggle_reversal_eval.py     预训练 Qwen2 评测
-experiments/controlled_math_results.json
-tests/test_phase_attention.py
-tests/test_qwen_phase_eval.py
-RESEARCH_PLAN.md                       假设、实验阶段和停止条件
-legacy/                                旧 Agent 原型与交接材料
-paper/                                 历史论文，不代表当前已验证
-formal_verification/                   历史代数证明
+src/phase_attention.py                       最小可微相位干预算子
+experiments/run_controlled_math.py           确定性张量反证矩阵
+experiments/kaggle_reversal_eval.py          Qwen2 / Qwen3 / Qwen3.5 评测框架
+experiments/controlled_math_results.json     受控数学实验输出
+experiments/qwen25_reversal_results.json     Qwen2.5-0.5B-Instruct Kaggle E2 结果
+experiments/qwen25_reversal_report.md        Qwen2.5-0.5B-Instruct 预注册判据报告
+experiments/qwen3_06b_reversal_results.json  Qwen3-0.6B Kaggle E2 结果
+experiments/qwen3_06b_reversal_report.md     Qwen3-0.6B 预注册判据报告
+experiments/qwen35_08b_reversal_results.json Qwen3.5-0.8B Kaggle E2 结果
+experiments/qwen35_08b_reversal_report.md    Qwen3.5-0.8B 预注册判据报告
+scripts/build_kaggle_kernel.py               Kaggle 双 T4 单文件打包脚本
+scripts/monitor_kaggle_e2.py                 Kaggle 任务轮询与结果下载
+scripts/summarize_kaggle_e2.py               预注册判据核对与报告生成
+tests/test_phase_attention.py                核心相位算子单元测试
+tests/test_qwen_phase_eval.py                Qwen2 / Qwen3 / Qwen3.5 零相位等价测试
+RESEARCH_PLAN.md                             假设、实验阶段和停止条件
+legacy/                                      旧版 Agent 原型与历史交接文档归档
+paper/                                       历史论文手稿（不代表当前路径结论）
+formal_verification/                         Lean 4 历史代数形式化证明（17 条定理）
 ```
 
-旧 SG-Möbius 模块和论文完整性门禁仍保留用于追溯。它们的测试和证明应被理解为代数回归检查，不是“模型学会失效前提”或“下游准确率提升”的证据。重复原型和叙事性交接文档已经移入 `legacy/`，没有删除历史。
-
-`experiments/` 下还保留 `kaggle_experiment_results.json`、`benchmark_results.json`、`kernel-metadata.json`、`data/` 和两张 `fig_*.png`。它们是冻结论文表格的输入，属于历史 SG-Möbius 材料，不是当前路径的结果。
+旧版 SG-Möbius 模块（`src/mobius_attention.py`、`src/gauge_predictor.py`、`src/kv_cache.py`）、`paper/` 和 `formal_verification/` 仍保留用于回归追溯。它们的测试和证明是代数自洽性回归检查，不代表“模型学会失效前提”或“下游准确率提升”的证据。
 
 ## 相关真实论文
 
