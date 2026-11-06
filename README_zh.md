@@ -119,8 +119,10 @@ python -m experiments.kaggle_reversal_eval \
 2. **定量验证了两个核心理论批评**：
    - **「只转 Query 相当于让全体 Key 一起转」**：`query` 模式在 `Qwen3-0.6B` 和 `Qwen3.5-0.8B` 的 `single` 场景下准确率均为 **`0.000`**。因为只转 Query 时，前文的旧前提与后文的修订句同时相对 Query 反相，无法区分新旧段落。
    - **「一维全局时间相位必然误伤无关实体（`unrelated` 场景）」**：当 `ALPHA` 在开头第 0 段定义、后文插入无关实体 `BETA` 的反转（将全局相位推至半圈），最后提问 `ALPHA` 时，`ALPHA` 同样承受了跨段反相惩罚（`Qwen3.5-0.8B` 上 `unrelated` 准确率为 `0.000`，Margin 从 `-0.39` 恶化至 `-1.42`）。
-3. **为什么当前仍触发停止条件、暂不进入 E3 门控训练**：
-   在 `Qwen3.5-0.8B` 上，同边界的加法偏置对照 `additive` 在撤销场景同样取得了 `1.000` 准确率（`segment - additive = 0.00 pp`，尽管 `segment` 在 `double` 场景的 Margin `+0.65` 高于 `additive` 的 `+0.30`）。这说明只要相位还是不区分实体的一维全局时间阶梯，它就还只是一个时间段掩码。下一步必须先利用 `Qwen3.5` 现成的 75% 不旋转语义子空间实现**实体绑定相位（Key-Bound Phase）**，解决 `unrelated` 误伤问题，再讨论训练检测门控。
+3. **实体绑定相位（`entity_segment`）在 `Qwen3.5-0.8B` 上彻底解决跨实体误伤并击败同边界加法偏置（[JSON](experiments/qwen35_08b_entity_results.json) · [报告](experiments/qwen35_08b_entity_report.md)）**：
+   当每个 token 的静态标量相位绑定到其所属实体的版本计数（[`src/phase_attention.py`](src/phase_attention.py) 中的 `entity_reversal_phase`，依然在写入 KV Cache 时一次性旋转、复杂度保持 $O(Ld)$ 且无需 $O(L^2)$ 矩阵）时，`Entity BETA` 的反转只会将 `BETA` 段落旋转半圈，而 `Entity ALPHA` 的早期定义与末尾提问均保持 0 相位：
+   - 在 `single`、`double`、`unrelated`、`none` **全部四个场景与全部三个长度（512 / 2048 / 8192）上，`entity_segment` 取得 1.000 准确率（96/96 全对）**。
+   - 在 `unrelated` 场景下，同样给定完全相同的 Oracle 实体边界，同边界加法偏置对照（`entity_additive`）准确率仅为 **0.500（Margin -0.02）**，而 `entity_segment` 相位旋转达到 **1.000（Margin +0.68，领先 +50.00 pp）**，从而使预注册的四项判据全部通过（有效性 +50.00 pp、全场景旋转必要性 +12.50 pp、安全场景退化 -47.92 pp、延迟开销 -4.24%）。下一步的核心问题是脱离 Oracle 边界训练该实体状态门控（E3）。
 
 ## 仓库结构
 

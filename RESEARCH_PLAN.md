@@ -146,7 +146,8 @@ $$
   1. **部分旋转子空间（25% RoPE + 75% 语义锚定）是零样本相位翻转不破坏底座的关键**：在 `partial_rotary_factor = 1.0` 的 `Qwen2.5-0.5B` 和 `Qwen3-0.6B` 上，翻转全部 100% 旋转通道会破坏基础语法与定位特征（`Qwen3-0.6B` 在撤销场景下跌 12.50 pp）；而在 `partial_rotary_factor = 0.25` 的 `Qwen3.5-0.8B` 上，仅前 64/256 维参与旋转、后 192 维保留为不旋转语义锚点，`segment` 将撤销场景准确率从 `0.500` 提升至 **`1.000`（+50.00 pp）**，其中 `double` 二次推翻从 `0.000` 恢复至 `1.000`，`single` 单次推翻的 Margin 全面扩大。
   2. **「只转 Query」被实验证伪**：`query` 模式在 `Qwen3-0.6B` 和 `Qwen3.5-0.8B` 的 `single` 场景准确率均为 `0.000`，因为只转 Query 会对前文所有 Key（无论旧前提还是新更正）一视同仁地反相。
   3. **一维全局时间轴相位必然误伤无关实体（`unrelated` 场景）**：在 `Qwen3.5-0.8B` 上，当无关实体 `BETA` 在后文反转时，全局相位阶梯同样把早期定义的 `ALPHA` 置于反相（准确率 `0.000`，Margin 从 `-0.39` 降至 `-1.42`）；同时同边界的 `additive` 加法对照在 `Qwen3.5-0.8B` 撤销场景同样达到 `1.000`（`segment - additive = 0.00 pp`）。
-- 下一步前置条件（进入 E3 之前）：必须将一维全局时间相位升级为**实体绑定相位（Key-Bound Phase）**，并消除测试集中 `REVISION` 紧贴末尾的位置偏差，验证在保全无关实体 `unrelated` 的前提下旋转是否真正优于加法偏置。
+  4. **实体绑定相位（`entity_segment`）解决跨实体误伤并击败同边界加法偏置**（[`experiments/qwen35_08b_entity_results.json`](experiments/qwen35_08b_entity_results.json) / [`experiments/qwen35_08b_entity_report.md`](experiments/qwen35_08b_entity_report.md)）：将每 token 的静态标量相位绑定到其所属实体的版本计数（`entity_reversal_phase`）后，`Qwen3.5-0.8B` 在 `single`、`double`、`unrelated`、`none` 全场景、全长度（512/2048/8192）均达到 **`1.000` 准确率（96/96）**；在 `unrelated` 场景下，同样给定该实体边界的加法偏置对照（`entity_additive`）准确率仅为 `0.500`（Margin `-0.02`），而 `entity_segment` 相位旋转达到 `1.000`（Margin `+0.68`，领先 **`+50.00 pp`**），预注册四项判据全部通过（有效性 `+50.00 pp`、全场景旋转必要性 `+12.50 pp`、安全场景变化 `-47.92 pp`、额外延迟 `-4.24%`）。
+- 下一步前置条件（进入 E3）：训练轻量级实体状态门控，检验在不使用 Oracle 实体边界时能否学出上述实体绑定相位。
 
 ### E3：学习门控与公平对照
 
