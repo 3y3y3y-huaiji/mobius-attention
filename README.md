@@ -4,7 +4,7 @@ A minimal research workspace for testing whether semantic phase rotations can su
 
 **Status: research reset and empirical stress-test.** The current path separates algebraic correctness, attention changes, and downstream task improvement. No LLM benchmark claim is made without its raw output JSON and exact reproduction command.
 
-[中文说明](README_zh.md) · [Research plan](RESEARCH_PLAN.md) · [Controlled math result](experiments/controlled_math_results.json) · [Qwen2.5 report](experiments/qwen25_reversal_report.md) · [Qwen3 report](experiments/qwen3_06b_reversal_report.md) · [Qwen3.5 report](experiments/qwen35_08b_reversal_report.md)
+[中文说明](README_zh.md) · [Research plan](RESEARCH_PLAN.md) · [Controlled math result](experiments/controlled_math_results.json) · [Learned PoC result](experiments/learned_poc_results.json) · [Qwen2.5 report](experiments/qwen25_reversal_report.md) · [Qwen3 report](experiments/qwen3_06b_reversal_report.md) · [Qwen3.5 report](experiments/qwen35_08b_reversal_report.md) · [Qwen3.5 entity report](experiments/qwen35_08b_entity_report.md)
 
 ## The question
 
@@ -43,7 +43,7 @@ See [RESEARCH_PLAN.md](RESEARCH_PLAN.md) for the exact equations, training risks
 - standard RoPE tables and rotation;
 - Query-only and QK-segment phase interventions;
 - causal attention normalization with an optional additive control;
-- a causal reversal-phase staircase.
+- causal reversal-phase staircases (`reversal_phase`, `entity_reversal_phase`, `harmonic_entity_phase`, and `low_frequency_channel_mask`).
 
 There is no semantic detector, topological terminology, custom cache manager, associative scan, plotting stack, or model monkey-patching in this core module.
 
@@ -57,7 +57,7 @@ Run from the repository root:
 python -m experiments.run_controlled_math
 ```
 
-The deterministic example contains an old positive-logit key, an old negative-logit key, and a new positive-logit key:
+1. **Single-revision logit check** (old positive-logit key, old negative-logit key, new positive-logit key):
 
 | Variant | Old positive | Old negative | New positive |
 | --- | ---: | ---: | ---: |
@@ -67,7 +67,28 @@ The deterministic example contains an old positive-logit key, an old negative-lo
 | Segment phase, half channels | 0.5938 | -0.5938 | 1.4062 |
 | Segment additive control | -0.5938 | -3.4062 | 1.4062 |
 
-This is a tensor-level sanity check, **not an LLM-quality result**. It exposes two failure modes immediately: global Query rotation harms new information, and phase inversion can amplify an old negative logit.
+2. **Unrelated-entity collateral check** (`Y` valid at pos 0, `Y_noise` distractor at pos 1, `X` revised at pos 3, query `Y` at pos 5):
+   - Global 1D `segment` phase flips `Y` (`-1.4062`) below its distractor `Y_noise` (`-0.7031`).
+   - Entity-bound `entity_segment` phase keeps `Y` at `+1.4062` while `X`'s revision stays isolated to `X`.
+3. **Multi-update `2*pi` resurrection check** (`X1 -> X2 -> X3` across two revisions):
+   - Scalar `pi` phase wraps `2*pi == 0` on the second revision (`x1 = +1.4062, x2 = -1.4062, x3 = +1.4062`), resurrecting the earliest obsolete premise `X1`.
+   - Order-3 harmonic entity phase (`harmonic_entity_phase`, assigning roots-of-unity steps `2*pi/3` and `4*pi/3` across RoPE planes) keeps both superseded states strictly negative (`x1 = -0.7031, x2 = -0.7031, x3 = +1.4062`).
+
+## End-to-end learned-gate PoC (no weight copy)
+
+Run from the repository root:
+
+```bash
+python -m experiments.run_learned_poc
+```
+
+Trains a tiny 1-layer RoPE Transformer from random initialization across 3 seeds (`0, 1, 2`) using pure Cross-Entropy loss (**zero manual weight injection / no `proj.weight.copy_`**) on three simultaneous conditions: single update (`X1 -> X2`), double update (`X1 -> X2 -> X3` with `X3 != X1`), and neutral entity `Y` with a hard semantic distractor `Y_noise`:
+
+| Variant | `X` (1-update) | `X` (2-update / `2*pi`) | `Y` (w/ `Y_noise` distractor) | Overall Mean |
+| --- | :---: | :---: | :---: | :---: |
+| `standard` (Standard RoPE) | 0.4811 | 0.3511 | 0.5222 | 0.4515 |
+| `scalar_global` (1D global `pi` phase) | 0.6667 | 0.4211 | 0.5266 | 0.5381 |
+| `key_harmonic` (Learned entity-routed order-3 harmonic phase) | **1.0000** | **1.0000** | **1.0000** | **1.0000** |
 
 ## Tests
 
@@ -126,25 +147,29 @@ Each case is scored with **one prompt forward**: the correct and stale candidate
 ## Repository map
 
 ```text
-src/phase_attention.py                      Minimal differentiable phase intervention
-experiments/run_controlled_math.py          Deterministic tensor falsification matrix
-experiments/kaggle_reversal_eval.py         Qwen2 / Qwen3 / Qwen3.5 evaluation harness
-experiments/controlled_math_results.json    Output of run_controlled_math.py
-experiments/qwen25_reversal_results.json    Qwen2.5-0.5B-Instruct Kaggle E2 results
-experiments/qwen25_reversal_report.md       Qwen2.5-0.5B-Instruct preregistered report
-experiments/qwen3_06b_reversal_results.json Qwen3-0.6B Kaggle E2 results
-experiments/qwen3_06b_reversal_report.md    Qwen3-0.6B preregistered report
+src/phase_attention.py                       Minimal differentiable phase intervention
+experiments/run_controlled_math.py           Deterministic tensor falsification matrix
+experiments/run_learned_poc.py               End-to-end learned-gate PoC (no weight copy)
+experiments/kaggle_reversal_eval.py          Qwen2 / Qwen3 / Qwen3.5 evaluation harness
+experiments/controlled_math_results.json     Output of run_controlled_math.py
+experiments/learned_poc_results.json         Output of run_learned_poc.py (3 seeds)
+experiments/qwen25_reversal_results.json     Qwen2.5-0.5B-Instruct Kaggle E2 results
+experiments/qwen25_reversal_report.md        Qwen2.5-0.5B-Instruct preregistered report
+experiments/qwen3_06b_reversal_results.json  Qwen3-0.6B Kaggle E2 results
+experiments/qwen3_06b_reversal_report.md     Qwen3-0.6B preregistered report
 experiments/qwen35_08b_reversal_results.json Qwen3.5-0.8B Kaggle E2 results
-experiments/qwen35_08b_reversal_report.md   Qwen3.5-0.8B preregistered report
-scripts/build_kaggle_kernel.py              Self-contained dual-T4 Kaggle kernel builder
-scripts/monitor_kaggle_e2.py                Kaggle kernel polling and downloader
-scripts/summarize_kaggle_e2.py              Preregistered criteria evaluator
-tests/test_phase_attention.py               Unit tests for core phase operators
-tests/test_qwen_phase_eval.py               Zero-phase equivalence tests (Qwen2/3/3.5)
-RESEARCH_PLAN.md                            Hypotheses, stages, and stop criteria
-legacy/                                     Superseded Agent prototypes and handovers
-paper/                                      Historical manuscript, not current validation
-formal_verification/                        Lean 4 algebraic proofs (17 theorems)
+experiments/qwen35_08b_reversal_report.md    Qwen3.5-0.8B preregistered report
+experiments/qwen35_08b_entity_results.json   Qwen3.5-0.8B entity-bound phase results
+experiments/qwen35_08b_entity_report.md      Qwen3.5-0.8B entity-bound phase report
+scripts/build_kaggle_kernel.py               Self-contained dual-T4 Kaggle kernel builder
+scripts/monitor_kaggle_e2.py                 Kaggle kernel polling and downloader
+scripts/summarize_kaggle_e2.py               Preregistered criteria evaluator
+tests/test_phase_attention.py                Unit tests for core phase operators
+tests/test_qwen_phase_eval.py                Zero-phase equivalence tests (Qwen2/3/3.5)
+RESEARCH_PLAN.md                             Hypotheses, stages, and stop criteria
+legacy/                                      Superseded Agent prototypes and handovers
+paper/                                       Historical manuscript, not current validation
+formal_verification/                         Lean 4 algebraic proofs (17 theorems)
 ```
 
 The older SG-Möbius modules (`src/mobius_attention.py`, `src/gauge_predictor.py`, `src/kv_cache.py`), `paper/`, and `formal_verification/` remain traceable because the regression and paper-integrity pipelines verify them. Their tests and proofs are algebraic regression checks, not evidence of learned premise invalidation or downstream LLM accuracy.

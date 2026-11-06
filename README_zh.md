@@ -4,7 +4,7 @@
 
 **当前状态：研究重启与真实模型压力测试。** 我们把“代数正确”“注意力发生变化”“下游任务变好”分成三层证据。所有模型结论均附带原始 JSON 数据与复现命令，绝不隐瞒负结果或边界条件。
 
-[English](README.md) · [完整研究计划](RESEARCH_PLAN.md) · [受控数学结果](experiments/controlled_math_results.json) · [Qwen2.5 报告](experiments/qwen25_reversal_report.md) · [Qwen3 报告](experiments/qwen3_06b_reversal_report.md) · [Qwen3.5 报告](experiments/qwen35_08b_reversal_report.md)
+[English](README.md) · [完整研究计划](RESEARCH_PLAN.md) · [受控数学结果](experiments/controlled_math_results.json) · [自学习 PoC 结果](experiments/learned_poc_results.json) · [Qwen2.5 报告](experiments/qwen25_reversal_report.md) · [Qwen3 报告](experiments/qwen3_06b_reversal_report.md) · [Qwen3.5 报告](experiments/qwen35_08b_reversal_report.md) · [Qwen3.5 实体报告](experiments/qwen35_08b_entity_report.md)
 
 ## 要解决的问题
 
@@ -43,7 +43,7 @@
 - 标准 RoPE 表和旋转；
 - Query 全局相位与 QK 分段相位；
 - 带可选加法对照的因果注意力归一化；
-- 因果反转相位阶梯。
+- 因果反转相位阶梯（`reversal_phase`、`entity_reversal_phase`、`harmonic_entity_phase` 与 `low_frequency_channel_mask`）。
 
 核心模块没有语义检测器、拓扑包装、自定义缓存管理器、关联扫描、绘图依赖或模型动态补丁。
 
@@ -57,7 +57,7 @@
 python -m experiments.run_controlled_math
 ```
 
-例子包含一个旧正分 Key、一个旧负分 Key 和一个新正分 Key：
+1. **单次修订张量检查**（包含一个旧正分 Key、一个旧负分 Key 和一个新正分 Key）：
 
 | 方案 | 旧正分 | 旧负分 | 新正分 |
 | --- | ---: | ---: | ---: |
@@ -67,7 +67,28 @@ python -m experiments.run_controlled_math
 | 分段反相，一半通道 | 0.5938 | -0.5938 | 1.4062 |
 | 分段加法对照 | -0.5938 | -3.4062 | 1.4062 |
 
-这是张量级检查，**不是大模型效果结果**。它直接暴露两个问题：全局 Query 反相会误伤新信息；反相也可能把旧的负分抬高。
+2. **中立实体 `Y` 强干扰项防误杀检查**（位置 0 定义 `Y`，位置 1 插入强干扰项 `Y_noise`，位置 3 推翻 `X`，位置 5 提问 `Y`）：
+   - 全局一维时间相位（`segment`）使 `Y`（`-1.4062`）同样遭受反相抑制，得分低于干扰项 `Y_noise`（`-0.7031`）。
+   - 实体绑定相位（`entity_segment`）将相位翻转严格隔离在实体 `X` 内部，使 `Y` 保持 `+1.4062` 正常检索。
+3. **多轮更新 `2*pi` 幽灵复活检查**（`X1 -> X2 -> X3` 连续两次推翻）：
+   - 标量 `pi` 累积在第二次更新时累积至 `2*pi`（等价于 `0`），导致最早作废的 `X1` 满血复活（`x1 = +1.4062, x2 = -1.4062, x3 = +1.4062`）。
+   - 3 阶分频谐波实体相位（`harmonic_entity_phase`，在不同 RoPE 平面分配单位根步长 `2*pi/3` 与 `4*pi/3`）使两个历史作废状态同时保持严格负分（`x1 = -0.7031, x2 = -0.7031, x3 = +1.4062`）。
+
+## 端到端无权重注入自学习门控验证（`run_learned_poc.py`）
+
+在仓库根目录运行：
+
+```bash
+python -m experiments.run_learned_poc
+```
+
+移除所有人工权重拷贝（**零 `proj.weight.copy_`**），在 3 个随机初始化种子（`0, 1, 2`）下仅凭标准 Cross-Entropy 损失端到端训练单层 RoPE Transformer，同时评测单次更新（`X1 -> X2`）、二次更新（`X1 -> X2 -> X3` 且 `X3 != X1`）以及带硬负例 `Y_noise` 的中立实体 `Y`：
+
+| 方案 | `X`（单次更新） | `X`（二次更新防 `2*pi` 复活） | `Y`（含 `Y_noise` 硬负例） | 三场景平均准确率 |
+| --- | :---: | :---: | :---: | :---: |
+| `standard`（标准 RoPE） | 0.4811 | 0.3511 | 0.5222 | 0.4515 |
+| `scalar_global`（全局一维 `pi` 相位） | 0.6667 | 0.4211 | 0.5266 | 0.5381 |
+| `key_harmonic`（自学习实体绑定 3 阶谐波相位） | **1.0000** | **1.0000** | **1.0000** | **1.0000** |
 
 ## 测试
 
@@ -129,14 +150,18 @@ python -m experiments.kaggle_reversal_eval \
 ```text
 src/phase_attention.py                       最小可微相位干预算子
 experiments/run_controlled_math.py           确定性张量反证矩阵
+experiments/run_learned_poc.py               无权重拷贝的端到端自学习门控验证
 experiments/kaggle_reversal_eval.py          Qwen2 / Qwen3 / Qwen3.5 评测框架
 experiments/controlled_math_results.json     受控数学实验输出
+experiments/learned_poc_results.json         端到端自学习门控 3 种子输出
 experiments/qwen25_reversal_results.json     Qwen2.5-0.5B-Instruct Kaggle E2 结果
 experiments/qwen25_reversal_report.md        Qwen2.5-0.5B-Instruct 预注册判据报告
 experiments/qwen3_06b_reversal_results.json  Qwen3-0.6B Kaggle E2 结果
 experiments/qwen3_06b_reversal_report.md     Qwen3-0.6B 预注册判据报告
 experiments/qwen35_08b_reversal_results.json Qwen3.5-0.8B Kaggle E2 结果
 experiments/qwen35_08b_reversal_report.md    Qwen3.5-0.8B 预注册判据报告
+experiments/qwen35_08b_entity_results.json   Qwen3.5-0.8B 实体绑定相位结果
+experiments/qwen35_08b_entity_report.md      Qwen3.5-0.8B 实体绑定相位报告
 scripts/build_kaggle_kernel.py               Kaggle 双 T4 单文件打包脚本
 scripts/monitor_kaggle_e2.py                 Kaggle 任务轮询与结果下载
 scripts/summarize_kaggle_e2.py               预注册判据核对与报告生成
