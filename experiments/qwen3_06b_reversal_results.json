@@ -1,0 +1,7022 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "transformers_version": "5.20.2",
+  "device": "cuda (cost-balanced shards)",
+  "dtype": "torch.float16",
+  "penalty": 2.0,
+  "seed": 0,
+  "cases_are_unique": true,
+  "oracle_boundaries": true,
+  "uses_kv_cache": false,
+  "command": "python -m experiments.kaggle_reversal_eval --model Qwen/Qwen3-0.6B --lengths 512 2048 8192 --cases 8 --modes standard query segment additive --output experiments/qwen3_06b_reversal_results.json (executed as GPU shards)",
+  "summary": [
+    {
+      "mode": "additive",
+      "scenario": "double",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 0.2695312425494194,
+      "mean_correct_logprob": -0.698135107755661,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 66.39027212499826
+    },
+    {
+      "mode": "additive",
+      "scenario": "double",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.625,
+      "mean_margin": 0.2597656287252903,
+      "mean_correct_logprob": -0.7079030089080334,
+      "mean_prompt_tokens": 2050.875,
+      "mean_forward_ms": 565.4069386250171
+    },
+    {
+      "mode": "additive",
+      "scenario": "double",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.1289062444120646,
+      "mean_correct_logprob": -0.35704117082059383,
+      "mean_prompt_tokens": 8190.5,
+      "mean_forward_ms": 6737.22320875001
+    },
+    {
+      "mode": "additive",
+      "scenario": "none",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.3437500335276127,
+      "mean_correct_logprob": -0.9968306832015514,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 67.38428462500679
+    },
+    {
+      "mode": "additive",
+      "scenario": "none",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.5273437313735485,
+      "mean_correct_logprob": -0.8602797575294971,
+      "mean_prompt_tokens": 2048.0,
+      "mean_forward_ms": 611.8223527500036
+    },
+    {
+      "mode": "additive",
+      "scenario": "none",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 1.1699218675494194,
+      "mean_correct_logprob": -1.0778810158371925,
+      "mean_prompt_tokens": 8193.25,
+      "mean_forward_ms": 6807.220253999986
+    },
+    {
+      "mode": "additive",
+      "scenario": "single",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.375,
+      "mean_margin": -0.228515628259629,
+      "mean_correct_logprob": -1.433229062706232,
+      "mean_prompt_tokens": 515.625,
+      "mean_forward_ms": 66.55274749999762
+    },
+    {
+      "mode": "additive",
+      "scenario": "single",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.875,
+      "mean_margin": 2.1718749911524355,
+      "mean_correct_logprob": -0.46511550387367606,
+      "mean_prompt_tokens": 2049.125,
+      "mean_forward_ms": 540.7070970000163
+    },
+    {
+      "mode": "additive",
+      "scenario": "single",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 4.352539062034339,
+      "mean_correct_logprob": -0.19563746498897672,
+      "mean_prompt_tokens": 8191.625,
+      "mean_forward_ms": 6212.515254999986
+    },
+    {
+      "mode": "additive",
+      "scenario": "unrelated",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.625,
+      "mean_margin": 0.8867187378928065,
+      "mean_correct_logprob": -0.6980013595893979,
+      "mean_prompt_tokens": 515.375,
+      "mean_forward_ms": 70.29512625000933
+    },
+    {
+      "mode": "additive",
+      "scenario": "unrelated",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.625,
+      "mean_margin": -0.14257814176380634,
+      "mean_correct_logprob": -1.229732159525156,
+      "mean_prompt_tokens": 2047.625,
+      "mean_forward_ms": 539.1821995000043
+    },
+    {
+      "mode": "additive",
+      "scenario": "unrelated",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.125,
+      "mean_margin": -1.7451171912252903,
+      "mean_correct_logprob": -3.129126250743866,
+      "mean_prompt_tokens": 8191.375,
+      "mean_forward_ms": 6941.440589249993
+    },
+    {
+      "mode": "query",
+      "scenario": "double",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -0.7597655951976776,
+      "mean_correct_logprob": -2.053536757826805,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 68.96706862499968
+    },
+    {
+      "mode": "query",
+      "scenario": "double",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.875,
+      "mean_margin": 0.9023437611758709,
+      "mean_correct_logprob": -0.43263760581612587,
+      "mean_prompt_tokens": 2050.875,
+      "mean_forward_ms": 515.136755625015
+    },
+    {
+      "mode": "query",
+      "scenario": "double",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.367187486961484,
+      "mean_correct_logprob": -0.2838656287640333,
+      "mean_prompt_tokens": 8190.5,
+      "mean_forward_ms": 5723.737904125002
+    },
+    {
+      "mode": "query",
+      "scenario": "none",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.3437500335276127,
+      "mean_correct_logprob": -0.9968306832015514,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 70.87543712501088
+    },
+    {
+      "mode": "query",
+      "scenario": "none",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.5273437313735485,
+      "mean_correct_logprob": -0.8602797575294971,
+      "mean_prompt_tokens": 2048.0,
+      "mean_forward_ms": 566.8241455
+    },
+    {
+      "mode": "query",
+      "scenario": "none",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 1.1699218675494194,
+      "mean_correct_logprob": -1.0778810158371925,
+      "mean_prompt_tokens": 8193.25,
+      "mean_forward_ms": 5805.101511749982
+    },
+    {
+      "mode": "query",
+      "scenario": "single",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -0.64398193359375,
+      "mean_correct_logprob": -11.906392097473145,
+      "mean_prompt_tokens": 515.625,
+      "mean_forward_ms": 76.64015812500935
+    },
+    {
+      "mode": "query",
+      "scenario": "single",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.109375,
+      "mean_correct_logprob": -11.532777070999146,
+      "mean_prompt_tokens": 2049.125,
+      "mean_forward_ms": 493.27332462500095
+    },
+    {
+      "mode": "query",
+      "scenario": "single",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.27197265625,
+      "mean_correct_logprob": -10.751055359840393,
+      "mean_prompt_tokens": 8191.625,
+      "mean_forward_ms": 5246.828882125002
+    },
+    {
+      "mode": "query",
+      "scenario": "unrelated",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 0.881378173828125,
+      "mean_correct_logprob": -10.428938865661621,
+      "mean_prompt_tokens": 515.375,
+      "mean_forward_ms": 73.62807262500581
+    },
+    {
+      "mode": "query",
+      "scenario": "unrelated",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.2373046875,
+      "mean_correct_logprob": -10.363062500953674,
+      "mean_prompt_tokens": 2047.625,
+      "mean_forward_ms": 494.35136825000825
+    },
+    {
+      "mode": "query",
+      "scenario": "unrelated",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.283203125,
+      "mean_correct_logprob": -9.342876553535461,
+      "mean_prompt_tokens": 8191.375,
+      "mean_forward_ms": 5962.061937375011
+    },
+    {
+      "mode": "segment",
+      "scenario": "double",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 0.7275390625,
+      "mean_correct_logprob": -7.066213369369507,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 72.37006699999426
+    },
+    {
+      "mode": "segment",
+      "scenario": "double",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.5,
+      "mean_margin": 0.11621095612645149,
+      "mean_correct_logprob": -6.2601305060088634,
+      "mean_prompt_tokens": 2050.875,
+      "mean_forward_ms": 526.2842316249987
+    },
+    {
+      "mode": "segment",
+      "scenario": "double",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.125,
+      "mean_margin": -2.566894441843033,
+      "mean_correct_logprob": -7.214449763298035,
+      "mean_prompt_tokens": 8190.5,
+      "mean_forward_ms": 5772.022627124997
+    },
+    {
+      "mode": "segment",
+      "scenario": "none",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.3437500335276127,
+      "mean_correct_logprob": -0.9968306832015514,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 74.18711062499739
+    },
+    {
+      "mode": "segment",
+      "scenario": "none",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.5273437313735485,
+      "mean_correct_logprob": -0.8602797575294971,
+      "mean_prompt_tokens": 2048.0,
+      "mean_forward_ms": 573.0515157499951
+    },
+    {
+      "mode": "segment",
+      "scenario": "none",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 1.1699218675494194,
+      "mean_correct_logprob": -1.0778810158371925,
+      "mean_prompt_tokens": 8193.25,
+      "mean_forward_ms": 5844.457028750014
+    },
+    {
+      "mode": "segment",
+      "scenario": "single",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.375,
+      "mean_margin": -0.6552734375,
+      "mean_correct_logprob": -6.859769761562347,
+      "mean_prompt_tokens": 515.625,
+      "mean_forward_ms": 76.46575512499965
+    },
+    {
+      "mode": "segment",
+      "scenario": "single",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.5,
+      "mean_margin": -0.34033203125,
+      "mean_correct_logprob": -7.337349891662598,
+      "mean_prompt_tokens": 2049.125,
+      "mean_forward_ms": 499.64062025001255
+    },
+    {
+      "mode": "segment",
+      "scenario": "single",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.4038086533546448,
+      "mean_correct_logprob": -10.748700737953186,
+      "mean_prompt_tokens": 8191.625,
+      "mean_forward_ms": 5281.375061375002
+    },
+    {
+      "mode": "segment",
+      "scenario": "unrelated",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 0.744140625,
+      "mean_correct_logprob": -6.423854172229767,
+      "mean_prompt_tokens": 515.375,
+      "mean_forward_ms": 80.48617174999606
+    },
+    {
+      "mode": "segment",
+      "scenario": "unrelated",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.625,
+      "mean_margin": 0.5312501192092896,
+      "mean_correct_logprob": -6.854427814483643,
+      "mean_prompt_tokens": 2047.625,
+      "mean_forward_ms": 499.1343069999914
+    },
+    {
+      "mode": "segment",
+      "scenario": "unrelated",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 0.81396484375,
+      "mean_correct_logprob": -10.115209817886353,
+      "mean_prompt_tokens": 8191.375,
+      "mean_forward_ms": 5998.36040400001
+    },
+    {
+      "mode": "standard",
+      "scenario": "double",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -2.179687472525984,
+      "mean_correct_logprob": -2.3457812070846558,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 63.43117162499823
+    },
+    {
+      "mode": "standard",
+      "scenario": "double",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.7207031091675162,
+      "mean_correct_logprob": -1.9389207065105438,
+      "mean_prompt_tokens": 2050.875,
+      "mean_forward_ms": 500.49407987501127
+    },
+    {
+      "mode": "standard",
+      "scenario": "double",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.263671868480742,
+      "mean_correct_logprob": -1.574060246348381,
+      "mean_prompt_tokens": 8190.5,
+      "mean_forward_ms": 5651.492824250027
+    },
+    {
+      "mode": "standard",
+      "scenario": "none",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.3437500335276127,
+      "mean_correct_logprob": -0.9968306832015514,
+      "mean_prompt_tokens": 514.5,
+      "mean_forward_ms": 65.6679047499864
+    },
+    {
+      "mode": "standard",
+      "scenario": "none",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 1.5273437313735485,
+      "mean_correct_logprob": -0.8602797575294971,
+      "mean_prompt_tokens": 2048.0,
+      "mean_forward_ms": 550.3255282499993
+    },
+    {
+      "mode": "standard",
+      "scenario": "none",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.75,
+      "mean_margin": 1.1699218675494194,
+      "mean_correct_logprob": -1.0778810158371925,
+      "mean_prompt_tokens": 8193.25,
+      "mean_forward_ms": 5749.435217125011
+    },
+    {
+      "mode": "standard",
+      "scenario": "single",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 3.873046866385266,
+      "mean_correct_logprob": -0.05669463542290032,
+      "mean_prompt_tokens": 515.625,
+      "mean_forward_ms": 155.9499112499907
+    },
+    {
+      "mode": "standard",
+      "scenario": "single",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 3.3808594269212335,
+      "mean_correct_logprob": -0.06673205667175353,
+      "mean_prompt_tokens": 2049.125,
+      "mean_forward_ms": 477.13734762499627
+    },
+    {
+      "mode": "standard",
+      "scenario": "single",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 1.0,
+      "mean_margin": 3.0722656418802217,
+      "mean_correct_logprob": -0.08744366269093007,
+      "mean_prompt_tokens": 8191.625,
+      "mean_forward_ms": 5222.392638000017
+    },
+    {
+      "mode": "standard",
+      "scenario": "unrelated",
+      "target_tokens": 512,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.5742187164723873,
+      "mean_correct_logprob": -1.8598273396492004,
+      "mean_prompt_tokens": 515.375,
+      "mean_forward_ms": 66.31877937500263
+    },
+    {
+      "mode": "standard",
+      "scenario": "unrelated",
+      "target_tokens": 2048,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.24609375,
+      "mean_correct_logprob": -1.5871156454086304,
+      "mean_prompt_tokens": 2047.625,
+      "mean_forward_ms": 471.9725003749957
+    },
+    {
+      "mode": "standard",
+      "scenario": "unrelated",
+      "target_tokens": 8192,
+      "count": 8,
+      "accuracy": 0.0,
+      "mean_margin": -1.376953136175871,
+      "mean_correct_logprob": -1.6998488754034042,
+      "mean_prompt_tokens": 8191.375,
+      "mean_forward_ms": 5877.542465375001
+    }
+  ],
+  "records": [
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -0.023469509556889534,
+      "stale_logprob": -5.0859694480896,
+      "margin": 5.06249993853271,
+      "elapsed_ms": 419.2767319999575
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -12.269083976745605,
+      "stale_logprob": -11.936320304870605,
+      "margin": -0.332763671875,
+      "elapsed_ms": 90.42209599999751
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -11.188488006591797,
+      "stale_logprob": -8.579113006591797,
+      "margin": -2.609375,
+      "elapsed_ms": 78.16337600002043
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -3.563711166381836,
+      "stale_logprob": -0.03246106579899788,
+      "margin": -3.531250100582838,
+      "elapsed_ms": 62.001032000011946
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -0.07226547598838806,
+      "stale_logprob": -3.791015386581421,
+      "margin": 3.718749910593033,
+      "elapsed_ms": 65.6072619999577
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -11.280221939086914,
+      "stale_logprob": -9.373971939086914,
+      "margin": -1.90625,
+      "elapsed_ms": 71.27169099999264
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -5.62061071395874,
+      "stale_logprob": -5.84717321395874,
+      "margin": 0.2265625,
+      "elapsed_ms": 74.39846399995531
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -0.9815726280212402,
+      "stale_logprob": -0.6221976280212402,
+      "margin": -0.359375,
+      "elapsed_ms": 69.23637400001326
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -0.039766713976860046,
+      "stale_logprob": -4.383516788482666,
+      "margin": 4.343750074505806,
+      "elapsed_ms": 74.24517100002959
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -11.695405960083008,
+      "stale_logprob": -11.637056350708008,
+      "margin": -0.058349609375,
+      "elapsed_ms": 78.65561800002752
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -4.906342029571533,
+      "stale_logprob": -5.789154529571533,
+      "margin": 0.8828125,
+      "elapsed_ms": 82.57549300003575
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -2.0946455001831055,
+      "stale_logprob": -2.8133955001831055,
+      "margin": 0.71875,
+      "elapsed_ms": 75.62408899997308
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -0.06326169520616531,
+      "stale_logprob": -3.3913867473602295,
+      "margin": 3.328125052154064,
+      "elapsed_ms": 74.22291900002165
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -12.369352340698242,
+      "stale_logprob": -11.908903121948242,
+      "margin": -0.46044921875,
+      "elapsed_ms": 78.66037200000164
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -6.191978454589844,
+      "stale_logprob": -5.871665954589844,
+      "margin": -0.3203125,
+      "elapsed_ms": 82.5117449999766
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -2.034775972366333,
+      "stale_logprob": -0.14415089786052704,
+      "margin": -1.890625074505806,
+      "elapsed_ms": 76.54390300001523
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        463,
+        478
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -3.102849006652832,
+      "stale_logprob": -0.0715990886092186,
+      "margin": -3.0312499180436134,
+      "elapsed_ms": 73.19632600001569
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        463,
+        478
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -2.750356912612915,
+      "stale_logprob": -1.406606912612915,
+      "margin": -1.34375,
+      "elapsed_ms": 80.10372799998322
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        463,
+        478
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -5.685150146484375,
+      "stale_logprob": -6.700775146484375,
+      "margin": 1.015625,
+      "elapsed_ms": 82.92750800001158
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        463,
+        478
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -0.8671159744262695,
+      "stale_logprob": -0.7421159744262695,
+      "margin": -0.125,
+      "elapsed_ms": 76.0318659999939
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -2.352719783782959,
+      "stale_logprob": -0.18084479868412018,
+      "margin": -2.171874985098839,
+      "elapsed_ms": 60.25294700003769
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -2.1571860313415527,
+      "stale_logprob": -1.3134360313415527,
+      "margin": -0.84375,
+      "elapsed_ms": 65.1466580000033
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -8.309442520141602,
+      "stale_logprob": -9.293817520141602,
+      "margin": 0.984375,
+      "elapsed_ms": 68.47966599997335
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -0.7841355800628662,
+      "stale_logprob": -0.8935105800628662,
+      "margin": 0.109375,
+      "elapsed_ms": 62.777527000037026
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        455,
+        471
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -3.2636959552764893,
+      "stale_logprob": -0.060570988804101944,
+      "margin": -3.2031249664723873,
+      "elapsed_ms": 66.41779099999212
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        455,
+        471
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -1.4440217018127441,
+      "stale_logprob": -1.2408967018127441,
+      "margin": -0.203125,
+      "elapsed_ms": 72.61937199996282
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        455,
+        471
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -5.736027240753174,
+      "stale_logprob": -7.157902240753174,
+      "margin": 1.421875,
+      "elapsed_ms": 75.87523200004398
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        455,
+        471
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -0.9493023157119751,
+      "stale_logprob": -0.6211773157119751,
+      "margin": -0.328125,
+      "elapsed_ms": 70.69546200000332
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -2.3553247451782227,
+      "stale_logprob": -0.13657478988170624,
+      "margin": -2.2187499552965164,
+      "elapsed_ms": 73.2842749999918
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -2.503500461578369,
+      "stale_logprob": -1.5972505807876587,
+      "margin": -0.9062498807907104,
+      "elapsed_ms": 78.8284410000415
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -5.892038822174072,
+      "stale_logprob": -6.813913822174072,
+      "margin": 0.921875,
+      "elapsed_ms": 82.56529300001603
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -0.43274837732315063,
+      "stale_logprob": -1.3233733177185059,
+      "margin": 0.8906249403953552,
+      "elapsed_ms": 77.09216799997876
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 513,
+      "correct_logprob": -1.4925111532211304,
+      "stale_logprob": -0.383136123418808,
+      "margin": -1.1093750298023224,
+      "elapsed_ms": 73.92738900000495
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 513,
+      "correct_logprob": -10.2152099609375,
+      "stale_logprob": -11.3756103515625,
+      "margin": 1.160400390625,
+      "elapsed_ms": 77.92953099999522
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 513,
+      "correct_logprob": -9.818558692932129,
+      "stale_logprob": -13.216996192932129,
+      "margin": 3.3984375,
+      "elapsed_ms": 84.27153600001702
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 513,
+      "correct_logprob": -0.1713617593050003,
+      "stale_logprob": -2.1244866847991943,
+      "margin": 1.953124925494194,
+      "elapsed_ms": 77.1421020000389
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -1.7292653322219849,
+      "stale_logprob": -0.29176536202430725,
+      "margin": -1.4374999701976776,
+      "elapsed_ms": 65.41710900000908
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -9.364217758178711,
+      "stale_logprob": -11.172811508178711,
+      "margin": 1.80859375,
+      "elapsed_ms": 88.49381800001765
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -6.058426856994629,
+      "stale_logprob": -5.659989356994629,
+      "margin": -0.3984375,
+      "elapsed_ms": 84.12970899996708
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -0.12565895915031433,
+      "stale_logprob": -2.1881589889526367,
+      "margin": 2.0625000298023224,
+      "elapsed_ms": 67.49417300000005
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -2.9716227054595947,
+      "stale_logprob": -0.11224766075611115,
+      "margin": -2.8593750447034836,
+      "elapsed_ms": 74.92371499995443
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -11.600811004638672,
+      "stale_logprob": -11.659893035888672,
+      "margin": 0.05908203125,
+      "elapsed_ms": 78.94800399998303
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -5.229291915893555,
+      "stale_logprob": -4.198041915893555,
+      "margin": -1.03125,
+      "elapsed_ms": 82.55700699999124
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.1996690034866333,
+      "stale_logprob": -1.7465440034866333,
+      "margin": 0.546875,
+      "elapsed_ms": 77.02185299996245
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -1.4107160568237305,
+      "stale_logprob": -0.37946611642837524,
+      "margin": -1.0312499403953552,
+      "elapsed_ms": 66.58253200004083
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -11.488045692443848,
+      "stale_logprob": -12.190682411193848,
+      "margin": 0.70263671875,
+      "elapsed_ms": 74.04495800000177
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -6.4594807624816895,
+      "stale_logprob": -7.0141682624816895,
+      "margin": 0.5546875,
+      "elapsed_ms": 76.43945500001337
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        477
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -0.29342347383499146,
+      "stale_logprob": -1.6371734142303467,
+      "margin": 1.3437499403953552,
+      "elapsed_ms": 69.73199800000884
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.269360065460205,
+      "stale_logprob": -1.800610065460205,
+      "margin": 0.53125,
+      "elapsed_ms": 74.68776599995408
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.269360065460205,
+      "stale_logprob": -1.800610065460205,
+      "margin": 0.53125,
+      "elapsed_ms": 78.99564999996755
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.269360065460205,
+      "stale_logprob": -1.800610065460205,
+      "margin": 0.53125,
+      "elapsed_ms": 81.94074400000773
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.269360065460205,
+      "stale_logprob": -1.800610065460205,
+      "margin": 0.53125,
+      "elapsed_ms": 77.54986599996982
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -1.178183913230896,
+      "stale_logprob": -2.5688090324401855,
+      "margin": 1.3906251192092896,
+      "elapsed_ms": 66.25255099999094
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -1.178183913230896,
+      "stale_logprob": -2.5688090324401855,
+      "margin": 1.3906251192092896,
+      "elapsed_ms": 74.8903770000311
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -1.178183913230896,
+      "stale_logprob": -2.5688090324401855,
+      "margin": 1.3906251192092896,
+      "elapsed_ms": 77.65428799996243
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 514,
+      "correct_logprob": -1.178183913230896,
+      "stale_logprob": -2.5688090324401855,
+      "margin": 1.3906251192092896,
+      "elapsed_ms": 70.11283500003174
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -1.479845404624939,
+      "stale_logprob": -1.667345404624939,
+      "margin": 0.1875,
+      "elapsed_ms": 70.55164700000205
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -1.479845404624939,
+      "stale_logprob": -1.667345404624939,
+      "margin": 0.1875,
+      "elapsed_ms": 73.35427700002128
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -1.479845404624939,
+      "stale_logprob": -1.667345404624939,
+      "margin": 0.1875,
+      "elapsed_ms": 75.90472300000783
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -1.479845404624939,
+      "stale_logprob": -1.667345404624939,
+      "margin": 0.1875,
+      "elapsed_ms": 69.39037300003292
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 509,
+      "correct_logprob": -0.41606226563453674,
+      "stale_logprob": -2.759812355041504,
+      "margin": 2.343750089406967,
+      "elapsed_ms": 69.75497199999836
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 509,
+      "correct_logprob": -0.41606226563453674,
+      "stale_logprob": -2.759812355041504,
+      "margin": 2.343750089406967,
+      "elapsed_ms": 75.94437400001652
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 509,
+      "correct_logprob": -0.41606226563453674,
+      "stale_logprob": -2.759812355041504,
+      "margin": 2.343750089406967,
+      "elapsed_ms": 78.89208699998562
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 509,
+      "correct_logprob": -0.41606226563453674,
+      "stale_logprob": -2.759812355041504,
+      "margin": 2.343750089406967,
+      "elapsed_ms": 72.33150700000124
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2015
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -0.01383536122739315,
+      "stale_logprob": -5.466960430145264,
+      "margin": 5.4531250689178705,
+      "elapsed_ms": 573.2295459999932
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2015
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -10.508013725280762,
+      "stale_logprob": -9.230669975280762,
+      "margin": -1.27734375,
+      "elapsed_ms": 588.5698170000069
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2015
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -6.270648002624512,
+      "stale_logprob": -6.786273002624512,
+      "margin": 0.515625,
+      "elapsed_ms": 605.0586700000053
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2015
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -1.2251331806182861,
+      "stale_logprob": -0.4438832402229309,
+      "margin": -0.7812499403953552,
+      "elapsed_ms": 644.4661749999909
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.0986265167593956,
+      "stale_logprob": -3.2392516136169434,
+      "margin": 3.1406250968575478,
+      "elapsed_ms": 465.0130979999858
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -10.319807052612305,
+      "stale_logprob": -9.765119552612305,
+      "margin": -0.5546875,
+      "elapsed_ms": 493.5010350000084
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -8.036142349243164,
+      "stale_logprob": -6.504892349243164,
+      "margin": -1.53125,
+      "elapsed_ms": 498.0483490000438
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.264972060918808,
+      "stale_logprob": -2.483721971511841,
+      "margin": 2.218749910593033,
+      "elapsed_ms": 547.8734559999907
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.038288574665784836,
+      "stale_logprob": -3.8664135932922363,
+      "margin": 3.8281250186264515,
+      "elapsed_ms": 557.7499259999854
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -12.922941207885742,
+      "stale_logprob": -11.567472457885742,
+      "margin": -1.35546875,
+      "elapsed_ms": 565.62476900001
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -7.379261016845703,
+      "stale_logprob": -6.465198516845703,
+      "margin": -0.9140625,
+      "elapsed_ms": 563.7239530000215
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -1.5065619945526123,
+      "stale_logprob": -3.3815619945526123,
+      "margin": 1.875,
+      "elapsed_ms": 594.2096670000296
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -0.09414614737033844,
+      "stale_logprob": -2.672271251678467,
+      "margin": 2.5781251043081284,
+      "elapsed_ms": 487.4413399999753
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -11.224407196044922,
+      "stale_logprob": -9.681438446044922,
+      "margin": -1.54296875,
+      "elapsed_ms": 502.58679800003847
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -6.207962989807129,
+      "stale_logprob": -6.809525489807129,
+      "margin": 0.6015625,
+      "elapsed_ms": 509.11149699999214
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -0.23331069946289062,
+      "stale_logprob": -1.7020606994628906,
+      "margin": 1.46875,
+      "elapsed_ms": 566.8242420000524
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        1994,
+        2009
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -2.511817216873169,
+      "stale_logprob": -0.10556728392839432,
+      "margin": -2.4062499329447746,
+      "elapsed_ms": 494.04473700002427
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        1994,
+        2009
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -0.5368342399597168,
+      "stale_logprob": -0.9430842399597168,
+      "margin": 0.40625,
+      "elapsed_ms": 504.69099800000095
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        1994,
+        2009
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -5.418578147888184,
+      "stale_logprob": -6.020140647888184,
+      "margin": 0.6015625,
+      "elapsed_ms": 522.0508710000331
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        1994,
+        2009
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.1560580730438232,
+      "stale_logprob": -0.48418307304382324,
+      "margin": -0.671875,
+      "elapsed_ms": 559.0726570000015
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        1994,
+        2010
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -2.2228150367736816,
+      "stale_logprob": -0.16031509637832642,
+      "margin": -2.0624999403953552,
+      "elapsed_ms": 601.3893790000111
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        1994,
+        2010
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -0.5615663528442383,
+      "stale_logprob": -1.0459413528442383,
+      "margin": 0.484375,
+      "elapsed_ms": 615.3468610000346
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        1994,
+        2010
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -9.988663673400879,
+      "stale_logprob": -7.262101650238037,
+      "margin": -2.726562023162842,
+      "elapsed_ms": 634.54662099997
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        1994,
+        2010
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2053,
+      "correct_logprob": -0.7118853330612183,
+      "stale_logprob": -0.9150103330612183,
+      "margin": 0.203125,
+      "elapsed_ms": 679.3095440000343
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -2.359982967376709,
+      "stale_logprob": -0.12560807168483734,
+      "margin": -2.2343748956918716,
+      "elapsed_ms": 513.1010769999875
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.7796401977539062,
+      "stale_logprob": -0.7171401977539062,
+      "margin": -0.0625,
+      "elapsed_ms": 540.472560000012
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -4.639109134674072,
+      "stale_logprob": -3.9672341346740723,
+      "margin": -0.671875,
+      "elapsed_ms": 533.5878170000115
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.9421297907829285,
+      "stale_logprob": -0.5983797907829285,
+      "margin": -0.34375,
+      "elapsed_ms": 565.1445630000467
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -1.5932989120483398,
+      "stale_logprob": -0.2651739716529846,
+      "margin": -1.3281249403953552,
+      "elapsed_ms": 569.775782000022
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.2129793018102646,
+      "stale_logprob": -1.9473543167114258,
+      "margin": 1.7343750149011612,
+      "elapsed_ms": 564.143764999983
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -1.3818408250808716,
+      "stale_logprob": -2.756840705871582,
+      "margin": 1.3749998807907104,
+      "elapsed_ms": 590.7256950000033
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.3006400167942047,
+      "stale_logprob": -1.6131399869918823,
+      "margin": 1.3124999701976776,
+      "elapsed_ms": 654.6513730000356
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2044,
+      "correct_logprob": -1.4918323755264282,
+      "stale_logprob": -0.30433234572410583,
+      "margin": -1.1875000298023224,
+      "elapsed_ms": 492.19431399995983
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2044,
+      "correct_logprob": -9.522194862365723,
+      "stale_logprob": -11.209694862365723,
+      "margin": 1.6875,
+      "elapsed_ms": 515.979907999963
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2044,
+      "correct_logprob": -6.948261260986328,
+      "stale_logprob": -8.838886260986328,
+      "margin": 1.890625,
+      "elapsed_ms": 518.415989999994
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2044,
+      "correct_logprob": -0.8830513954162598,
+      "stale_logprob": -1.1018013954162598,
+      "margin": 0.21875,
+      "elapsed_ms": 573.1409919999919
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -1.5521674156188965,
+      "stale_logprob": -0.3334174156188965,
+      "margin": -1.21875,
+      "elapsed_ms": 551.8105409999521
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -9.765571594238281,
+      "stale_logprob": -10.320259094238281,
+      "margin": 0.5546875,
+      "elapsed_ms": 570.2507970000283
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -6.3235368728637695,
+      "stale_logprob": -7.3938493728637695,
+      "margin": 1.0703125,
+      "elapsed_ms": 566.0785190000297
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        2014
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.6206737160682678,
+      "stale_logprob": -1.105048656463623,
+      "margin": 0.4843749403953552,
+      "elapsed_ms": 587.2125370000276
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -2.5321812629699707,
+      "stale_logprob": -0.12593132257461548,
+      "margin": -2.4062499403953552,
+      "elapsed_ms": 574.92780299998
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -11.563015937805176,
+      "stale_logprob": -12.922390937805176,
+      "margin": 1.359375,
+      "elapsed_ms": 627.8200890000107
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -7.0558342933654785,
+      "stale_logprob": -7.4855217933654785,
+      "margin": 0.4296875,
+      "elapsed_ms": 643.2552989999749
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -1.9348946809768677,
+      "stale_logprob": -2.059894561767578,
+      "margin": 0.12499988079071045,
+      "elapsed_ms": 689.7691759999702
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -1.2317378520965576,
+      "stale_logprob": -0.40361279249191284,
+      "margin": -0.8281250596046448,
+      "elapsed_ms": 675.5051250000292
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -10.27879810333252,
+      "stale_logprob": -12.16551685333252,
+      "margin": 1.88671875,
+      "elapsed_ms": 694.7121900000184
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -5.936459541320801,
+      "stale_logprob": -5.842709541320801,
+      "margin": -0.09375,
+      "elapsed_ms": 695.1569419999828
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.884375274181366,
+      "stale_logprob": -0.915625274181366,
+      "margin": 0.03125,
+      "elapsed_ms": 752.3891860000163
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.9091861248016357,
+      "stale_logprob": -1.5966861248016357,
+      "margin": 0.6875,
+      "elapsed_ms": 624.3259309999871
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.9091861248016357,
+      "stale_logprob": -1.5966861248016357,
+      "margin": 0.6875,
+      "elapsed_ms": 654.9777900000322
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.9091861248016357,
+      "stale_logprob": -1.5966861248016357,
+      "margin": 0.6875,
+      "elapsed_ms": 668.894067999986
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.9091861248016357,
+      "stale_logprob": -1.5966861248016357,
+      "margin": 0.6875,
+      "elapsed_ms": 726.0949280000659
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.8716461658477783,
+      "stale_logprob": -2.6060211658477783,
+      "margin": 1.734375,
+      "elapsed_ms": 630.5887729999995
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.8716461658477783,
+      "stale_logprob": -2.6060211658477783,
+      "margin": 1.734375,
+      "elapsed_ms": 663.2070989999193
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.8716461658477783,
+      "stale_logprob": -2.6060211658477783,
+      "margin": 1.734375,
+      "elapsed_ms": 667.0947879999858
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.8716461658477783,
+      "stale_logprob": -2.6060211658477783,
+      "margin": 1.734375,
+      "elapsed_ms": 704.375071999948
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.47929048538208,
+      "stale_logprob": -1.77616548538208,
+      "margin": 0.296875,
+      "elapsed_ms": 569.6788760000118
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.47929048538208,
+      "stale_logprob": -1.77616548538208,
+      "margin": 0.296875,
+      "elapsed_ms": 566.3785799999914
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.47929048538208,
+      "stale_logprob": -1.77616548538208,
+      "margin": 0.296875,
+      "elapsed_ms": 564.3080910000435
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.47929048538208,
+      "stale_logprob": -1.77616548538208,
+      "margin": 0.296875,
+      "elapsed_ms": 609.4063819999747
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2051,
+      "correct_logprob": -0.5152384042739868,
+      "stale_logprob": -2.7027382850646973,
+      "margin": 2.1874998807907104,
+      "elapsed_ms": 672.0821110000088
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2051,
+      "correct_logprob": -0.5152384042739868,
+      "stale_logprob": -2.7027382850646973,
+      "margin": 2.1874998807907104,
+      "elapsed_ms": 671.3165620000154
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2051,
+      "correct_logprob": -0.5152384042739868,
+      "stale_logprob": -2.7027382850646973,
+      "margin": 2.1874998807907104,
+      "elapsed_ms": 679.7962929999812
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2051,
+      "correct_logprob": -0.5152384042739868,
+      "stale_logprob": -2.7027382850646973,
+      "margin": 2.1874998807907104,
+      "elapsed_ms": 726.8017930000497
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.015391617082059383,
+      "stale_logprob": -5.015391826629639,
+      "margin": 5.000000209547579,
+      "elapsed_ms": 5333.364994000021
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -9.911104202270508,
+      "stale_logprob": -8.336885452270508,
+      "margin": -1.57421875,
+      "elapsed_ms": 5129.482112999995
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -9.602346420288086,
+      "stale_logprob": -7.258595943450928,
+      "margin": -2.343750476837158,
+      "elapsed_ms": 4993.352658000049
+    },
+    {
+      "scenario": "single",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.4636703133583069,
+      "stale_logprob": -3.588670253753662,
+      "margin": 3.1249999403953552,
+      "elapsed_ms": 5770.273006000025
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.15295729041099548,
+      "stale_logprob": -2.4029572010040283,
+      "margin": 2.249999910593033,
+      "elapsed_ms": 4767.111791000048
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -10.21799087524414,
+      "stale_logprob": -9.47580337524414,
+      "margin": -0.7421875,
+      "elapsed_ms": 4831.514931000015
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -9.713376998901367,
+      "stale_logprob": -8.451658248901367,
+      "margin": -1.26171875,
+      "elapsed_ms": 4884.377147000009
+    },
+    {
+      "scenario": "single",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.29179608821868896,
+      "stale_logprob": -4.4714837074279785,
+      "margin": 4.1796876192092896,
+      "elapsed_ms": 5821.204856999998
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.08445240557193756,
+      "stale_logprob": -3.1469523906707764,
+      "margin": 3.062499985098839,
+      "elapsed_ms": 6707.906760000014
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -10.98419189453125,
+      "stale_logprob": -9.92559814453125,
+      "margin": -1.05859375,
+      "elapsed_ms": 6905.954894000047
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -11.568267822265625,
+      "stale_logprob": -11.283111572265625,
+      "margin": -0.28515625,
+      "elapsed_ms": 7203.457918999902
+    },
+    {
+      "scenario": "single",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.19814573228359222,
+      "stale_logprob": -4.627833366394043,
+      "margin": 4.429687634110451,
+      "elapsed_ms": 8547.791830999926
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.13321106135845184,
+      "stale_logprob": -2.383211135864258,
+      "margin": 2.250000074505806,
+      "elapsed_ms": 7360.761907999972
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -11.06471061706543,
+      "stale_logprob": -9.80689811706543,
+      "margin": -1.2578125,
+      "elapsed_ms": 7182.022726000014
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -11.528602600097656,
+      "stale_logprob": -9.348915100097656,
+      "margin": -2.1796875,
+      "elapsed_ms": 7063.386103000084
+    },
+    {
+      "scenario": "single",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.11114808171987534,
+      "stale_logprob": -4.579897880554199,
+      "margin": 4.468749798834324,
+      "elapsed_ms": 8023.996344000011
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8139,
+        8154
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -2.453061819076538,
+      "stale_logprob": -0.10931190103292465,
+      "margin": -2.3437499180436134,
+      "elapsed_ms": 6897.577644999956
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8139,
+        8154
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.37866097688674927,
+      "stale_logprob": -1.2849109172821045,
+      "margin": 0.9062499403953552,
+      "elapsed_ms": 7028.620526000054
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8139,
+        8154
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -8.54700756072998,
+      "stale_logprob": -3.5470080375671387,
+      "margin": -4.999999523162842,
+      "elapsed_ms": 7151.301227999966
+    },
+    {
+      "scenario": "double",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8139,
+        8154
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.5541985630989075,
+      "stale_logprob": -0.9916985630989075,
+      "margin": 0.4375,
+      "elapsed_ms": 8371.672826000009
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -1.4226813316345215,
+      "stale_logprob": -0.3445563316345215,
+      "margin": -1.078125,
+      "elapsed_ms": 5190.280059999964
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.370519757270813,
+      "stale_logprob": -1.433019757270813,
+      "margin": 1.0625,
+      "elapsed_ms": 5305.247082000051
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -8.464573860168457,
+      "stale_logprob": -3.792699098587036,
+      "margin": -4.671874761581421,
+      "elapsed_ms": 5342.179781000027
+    },
+    {
+      "scenario": "double",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.3215591013431549,
+      "stale_logprob": -1.5403090715408325,
+      "margin": 1.2187499701976776,
+      "elapsed_ms": 6331.052228999965
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8131,
+        8147
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -1.5570619106292725,
+      "stale_logprob": -0.27581191062927246,
+      "margin": -1.28125,
+      "elapsed_ms": 5188.8603030000695
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8131,
+        8147
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.34052062034606934,
+      "stale_logprob": -1.3405206203460693,
+      "margin": 1.0,
+      "elapsed_ms": 5203.119622000031
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8131,
+        8147
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -6.233404636383057,
+      "stale_logprob": -2.9912171363830566,
+      "margin": -3.2421875,
+      "elapsed_ms": 5194.114623000019
+    },
+    {
+      "scenario": "double",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8131,
+        8147
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.5454594492912292,
+      "stale_logprob": -0.9985844492912292,
+      "margin": 0.453125,
+      "elapsed_ms": 6149.957013000062
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -1.203078269958496,
+      "stale_logprob": -0.4218282699584961,
+      "margin": -0.78125,
+      "elapsed_ms": 6802.620881000053
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.12069649994373322,
+      "stale_logprob": -2.511321544647217,
+      "margin": 2.3906250447034836,
+      "elapsed_ms": 6874.171658000023
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -5.390085220336914,
+      "stale_logprob": -1.468209981918335,
+      "margin": -3.921875238418579,
+      "elapsed_ms": 6934.7246840000025
+    },
+    {
+      "scenario": "double",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.24330484867095947,
+      "stale_logprob": -1.8214298486709595,
+      "margin": 1.578125,
+      "elapsed_ms": 7949.147326000002
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8189,
+      "correct_logprob": -2.1437578201293945,
+      "stale_logprob": -0.15938271582126617,
+      "margin": -1.9843751043081284,
+      "elapsed_ms": 6867.984524999997
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8189,
+      "correct_logprob": -8.091399192810059,
+      "stale_logprob": -9.489836692810059,
+      "margin": 1.3984375,
+      "elapsed_ms": 6982.306605000076
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8189,
+      "correct_logprob": -9.414244651794434,
+      "stale_logprob": -10.261900901794434,
+      "margin": 0.84765625,
+      "elapsed_ms": 7019.940980999991
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8189,
+      "correct_logprob": -3.6693999767303467,
+      "stale_logprob": -1.6928374767303467,
+      "margin": -1.9765625,
+      "elapsed_ms": 8018.621060999976
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -1.2703574895858765,
+      "stale_logprob": -0.44223248958587646,
+      "margin": -0.828125,
+      "elapsed_ms": 5095.658491999984
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -9.474431037902832,
+      "stale_logprob": -10.208806037902832,
+      "margin": 0.734375,
+      "elapsed_ms": 5189.6186440000065
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -9.382074356079102,
+      "stale_logprob": -11.030511856079102,
+      "margin": 1.6484375,
+      "elapsed_ms": 5238.78136899998
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -3.588686943054199,
+      "stale_logprob": -1.8933743238449097,
+      "margin": -1.6953126192092896,
+      "elapsed_ms": 6229.012362999924
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -2.4174721240997314,
+      "stale_logprob": -0.16747215390205383,
+      "margin": -2.2499999701976776,
+      "elapsed_ms": 6844.481866000024
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -9.918787002563477,
+      "stale_logprob": -10.981287002563477,
+      "margin": 1.0625,
+      "elapsed_ms": 6912.813120999999
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -12.529440879821777,
+      "stale_logprob": -11.877097129821777,
+      "margin": -0.65234375,
+      "elapsed_ms": 6929.369877999989
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -2.86053204536438,
+      "stale_logprob": -0.9855321049690247,
+      "margin": -1.8749999403953552,
+      "elapsed_ms": 7940.1287379999985
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -1.6713099479675293,
+      "stale_logprob": -0.2963099181652069,
+      "margin": -1.3750000298023224,
+      "elapsed_ms": 5145.476626000004
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -9.516962051391602,
+      "stale_logprob": -11.309930801391602,
+      "margin": 1.79296875,
+      "elapsed_ms": 5257.355587000006
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -9.810907363891602,
+      "stale_logprob": -10.697626113891602,
+      "margin": 0.88671875,
+      "elapsed_ms": 5287.370158000044
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [
+        8153
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -3.373257637023926,
+      "stale_logprob": -1.4748201370239258,
+      "margin": -1.8984375,
+      "elapsed_ms": 6251.062730000058
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -1.3203716278076172,
+      "stale_logprob": -1.3047466278076172,
+      "margin": -0.015625,
+      "elapsed_ms": 6828.606975000071
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -1.3203716278076172,
+      "stale_logprob": -1.3047466278076172,
+      "margin": -0.015625,
+      "elapsed_ms": 6883.901506000029
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -1.3203716278076172,
+      "stale_logprob": -1.3047466278076172,
+      "margin": -0.015625,
+      "elapsed_ms": 6936.86457299998
+    },
+    {
+      "scenario": "none",
+      "case_index": 0,
+      "entity": "ALPHA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -1.3203716278076172,
+      "stale_logprob": -1.3047466278076172,
+      "margin": -0.015625,
+      "elapsed_ms": 7917.192365999995
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.9953868985176086,
+      "stale_logprob": -2.511011838912964,
+      "margin": 1.5156249403953552,
+      "elapsed_ms": 5105.079660000001
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.9953868985176086,
+      "stale_logprob": -2.511011838912964,
+      "margin": 1.5156249403953552,
+      "elapsed_ms": 5151.213003999942
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.9953868985176086,
+      "stale_logprob": -2.511011838912964,
+      "margin": 1.5156249403953552,
+      "elapsed_ms": 5187.7870679999205
+    },
+    {
+      "scenario": "none",
+      "case_index": 2,
+      "entity": "DELTA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8190,
+      "correct_logprob": -0.9953868985176086,
+      "stale_logprob": -2.511011838912964,
+      "margin": 1.5156249403953552,
+      "elapsed_ms": 6196.518402000038
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -1.4645116329193115,
+      "stale_logprob": -1.9801366329193115,
+      "margin": 0.515625,
+      "elapsed_ms": 5155.469426999957
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -1.4645116329193115,
+      "stale_logprob": -1.9801366329193115,
+      "margin": 0.515625,
+      "elapsed_ms": 5261.138236999955
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -1.4645116329193115,
+      "stale_logprob": -1.9801366329193115,
+      "margin": 0.515625,
+      "elapsed_ms": 5293.877122000026
+    },
+    {
+      "scenario": "none",
+      "case_index": 4,
+      "entity": "SIGMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -1.4645116329193115,
+      "stale_logprob": -1.9801366329193115,
+      "margin": 0.515625,
+      "elapsed_ms": 6306.353373999968
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8196,
+      "correct_logprob": -1.1672205924987793,
+      "stale_logprob": -2.0265955924987793,
+      "margin": 0.859375,
+      "elapsed_ms": 5261.566060000064
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8196,
+      "correct_logprob": -1.1672205924987793,
+      "stale_logprob": -2.0265955924987793,
+      "margin": 0.859375,
+      "elapsed_ms": 5232.442100999947
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8196,
+      "correct_logprob": -1.1672205924987793,
+      "stale_logprob": -2.0265955924987793,
+      "margin": 0.859375,
+      "elapsed_ms": 5272.850464000044
+    },
+    {
+      "scenario": "none",
+      "case_index": 6,
+      "entity": "KAPPA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8196,
+      "correct_logprob": -1.1672205924987793,
+      "stale_logprob": -2.0265955924987793,
+      "margin": 0.859375,
+      "elapsed_ms": 6297.122523999974
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -0.05684148520231247,
+      "stale_logprob": -3.6349663734436035,
+      "margin": 3.578124888241291,
+      "elapsed_ms": 441.0727540000039
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -11.343282699584961,
+      "stale_logprob": -10.503438949584961,
+      "margin": -0.83984375,
+      "elapsed_ms": 103.91902400004938
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -5.254307270050049,
+      "stale_logprob": -5.004307270050049,
+      "margin": -0.25,
+      "elapsed_ms": 94.84598000000233
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -0.27909722924232483,
+      "stale_logprob": -3.654097318649292,
+      "margin": 3.375000089406967,
+      "elapsed_ms": 65.79724899995654
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.05101164057850838,
+      "stale_logprob": -3.738511562347412,
+      "margin": 3.6874999217689037,
+      "elapsed_ms": 57.726213999956144
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -13.579115867614746,
+      "stale_logprob": -12.313490867614746,
+      "margin": -1.265625,
+      "elapsed_ms": 63.205938000010065
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -7.346098899841309,
+      "stale_logprob": -6.353911399841309,
+      "margin": -0.9921875,
+      "elapsed_ms": 65.81936200001337
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -1.1422739028930664,
+      "stale_logprob": -0.3922739028930664,
+      "margin": -0.75,
+      "elapsed_ms": 62.15440699997998
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.04444214329123497,
+      "stale_logprob": -4.263192176818848,
+      "margin": 4.218750033527613,
+      "elapsed_ms": 57.53153399996336
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -10.632229804992676,
+      "stale_logprob": -10.440823554992676,
+      "margin": -0.19140625,
+      "elapsed_ms": 63.62695499996107
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -4.742375373840332,
+      "stale_logprob": -4.883000373840332,
+      "margin": 0.140625,
+      "elapsed_ms": 66.88152899999977
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.4968695044517517,
+      "stale_logprob": -1.4187445640563965,
+      "margin": 0.9218750596046448,
+      "elapsed_ms": 59.888446000002205
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -0.10249841958284378,
+      "stale_logprob": -3.1493735313415527,
+      "margin": 3.046875111758709,
+      "elapsed_ms": 57.91670400003568
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -12.082444190979004,
+      "stale_logprob": -11.985276222229004,
+      "margin": -0.09716796875,
+      "elapsed_ms": 63.359571000034975
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -9.627957344055176,
+      "stale_logprob": -7.307644844055176,
+      "margin": -2.3203125,
+      "elapsed_ms": 66.5300919999936
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 518,
+      "correct_logprob": -0.872886598110199,
+      "stale_logprob": -0.560386598110199,
+      "margin": -0.3125,
+      "elapsed_ms": 61.17648000002873
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -1.8457101583480835,
+      "stale_logprob": -0.20508520305156708,
+      "margin": -1.6406249552965164,
+      "elapsed_ms": 54.90123999999241
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -1.7322560548782349,
+      "stale_logprob": -0.8885060548782349,
+      "margin": -0.84375,
+      "elapsed_ms": 58.23988000003055
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -10.149402618408203,
+      "stale_logprob": -9.782215118408203,
+      "margin": -0.3671875,
+      "elapsed_ms": 62.28025799998704
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -0.6103417277336121,
+      "stale_logprob": -0.9384667277336121,
+      "margin": 0.328125,
+      "elapsed_ms": 55.455267000013464
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        455,
+        472
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -1.619307041168213,
+      "stale_logprob": -0.2599319815635681,
+      "margin": -1.3593750596046448,
+      "elapsed_ms": 62.96547299996291
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        455,
+        472
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -1.7830066680908203,
+      "stale_logprob": -1.4548816680908203,
+      "margin": -0.328125,
+      "elapsed_ms": 69.74376400000892
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        455,
+        472
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -5.683213233947754,
+      "stale_logprob": -7.120713233947754,
+      "margin": 1.4375,
+      "elapsed_ms": 72.79240200000459
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        455,
+        472
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -0.4823124408721924,
+      "stale_logprob": -1.1385624408721924,
+      "margin": 0.65625,
+      "elapsed_ms": 67.47357099999363
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -2.312628984451294,
+      "stale_logprob": -0.1407540738582611,
+      "margin": -2.171874910593033,
+      "elapsed_ms": 52.52487799998562
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -2.2591304779052734,
+      "stale_logprob": -0.946630597114563,
+      "margin": -1.3124998807907104,
+      "elapsed_ms": 58.29267499996149
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -9.117820739746094,
+      "stale_logprob": -9.719383239746094,
+      "margin": 0.6015625,
+      "elapsed_ms": 62.278153999955066
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        453,
+        469
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 512,
+      "correct_logprob": -0.6212579011917114,
+      "stale_logprob": -0.9493829011917114,
+      "margin": 0.328125,
+      "elapsed_ms": 55.17167499999687
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.9140139818191528,
+      "stale_logprob": -0.27338895201683044,
+      "margin": -1.6406250298023224,
+      "elapsed_ms": 63.906443000007584
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.7988357543945312,
+      "stale_logprob": -1.5019607543945312,
+      "margin": -0.296875,
+      "elapsed_ms": 68.76203100000566
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -5.956611633300781,
+      "stale_logprob": -5.761299133300781,
+      "margin": -0.1953125,
+      "elapsed_ms": 71.76202299996248
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        453,
+        470
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -0.8378665447235107,
+      "stale_logprob": -1.1347415447235107,
+      "margin": 0.296875,
+      "elapsed_ms": 66.42464099996914
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.4853007793426514,
+      "stale_logprob": -0.34467583894729614,
+      "margin": -1.1406249403953552,
+      "elapsed_ms": 63.178923999998915
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -10.227860450744629,
+      "stale_logprob": -11.114579200744629,
+      "margin": 0.88671875,
+      "elapsed_ms": 67.9386809999869
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -4.203067302703857,
+      "stale_logprob": -4.328067302703857,
+      "margin": 0.125,
+      "elapsed_ms": 72.7726889999758
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        475
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.7034411430358887,
+      "stale_logprob": -0.31281614303588867,
+      "margin": -1.390625,
+      "elapsed_ms": 66.14432800000714
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -1.3747227191925049,
+      "stale_logprob": -0.37472274899482727,
+      "margin": -0.9999999701976776,
+      "elapsed_ms": 63.57237800000348
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -11.251073837280273,
+      "stale_logprob": -12.192480087280273,
+      "margin": 0.94140625,
+      "elapsed_ms": 68.11877000001232
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -6.602025985717773,
+      "stale_logprob": -6.641088485717773,
+      "margin": 0.0390625,
+      "elapsed_ms": 78.56335399998216
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        474
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 515,
+      "correct_logprob": -0.08008455485105515,
+      "stale_logprob": -2.9707095623016357,
+      "margin": 2.8906250074505806,
+      "elapsed_ms": 63.95784099998991
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -2.1724038124084473,
+      "stale_logprob": -0.20365391671657562,
+      "margin": -1.9687498956918716,
+      "elapsed_ms": 59.29882700002054
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -10.3521728515625,
+      "stale_logprob": -10.5435791015625,
+      "margin": 0.19140625,
+      "elapsed_ms": 63.745603000029405
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -4.6746439933776855,
+      "stale_logprob": -4.8074564933776855,
+      "margin": 0.1328125,
+      "elapsed_ms": 92.54538900000853
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -1.0736156702041626,
+      "stale_logprob": -0.7611156702041626,
+      "margin": -0.3125,
+      "elapsed_ms": 75.19304000004468
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -2.2420761585235596,
+      "stale_logprob": -0.19520121812820435,
+      "margin": -2.0468749403953552,
+      "elapsed_ms": 63.64936099998886
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -8.932119369506836,
+      "stale_logprob": -10.232900619506836,
+      "margin": 1.30078125,
+      "elapsed_ms": 69.80521600002021
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -8.345337867736816,
+      "stale_logprob": -11.478150367736816,
+      "margin": 3.1328125,
+      "elapsed_ms": 72.61023500001329
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        476
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -0.9367563128471375,
+      "stale_logprob": -0.9367563128471375,
+      "margin": 0.0,
+      "elapsed_ms": 65.6756750000227
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.7623543739318848,
+      "stale_logprob": -2.4967293739318848,
+      "margin": 1.734375,
+      "elapsed_ms": 58.31796199998962
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.7623543739318848,
+      "stale_logprob": -2.4967293739318848,
+      "margin": 1.734375,
+      "elapsed_ms": 63.99570700000368
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.7623543739318848,
+      "stale_logprob": -2.4967293739318848,
+      "margin": 1.734375,
+      "elapsed_ms": 68.98470999999518
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 516,
+      "correct_logprob": -0.7623543739318848,
+      "stale_logprob": -2.4967293739318848,
+      "margin": 1.734375,
+      "elapsed_ms": 59.8064800000202
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -1.1418964862823486,
+      "stale_logprob": -2.7512714862823486,
+      "margin": 1.609375,
+      "elapsed_ms": 63.59663799997861
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -1.1418964862823486,
+      "stale_logprob": -2.7512714862823486,
+      "margin": 1.609375,
+      "elapsed_ms": 70.07732199997463
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -1.1418964862823486,
+      "stale_logprob": -2.7512714862823486,
+      "margin": 1.609375,
+      "elapsed_ms": 72.32990799997197
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 517,
+      "correct_logprob": -1.1418964862823486,
+      "stale_logprob": -2.7512714862823486,
+      "margin": 1.609375,
+      "elapsed_ms": 66.2350200000219
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -1.2590737342834473,
+      "stale_logprob": -2.0246987342834473,
+      "margin": 0.765625,
+      "elapsed_ms": 65.00064799996608
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -1.2590737342834473,
+      "stale_logprob": -2.0246987342834473,
+      "margin": 0.765625,
+      "elapsed_ms": 69.312051000054
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -1.2590737342834473,
+      "stale_logprob": -2.0246987342834473,
+      "margin": 0.765625,
+      "elapsed_ms": 73.08518500002492
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 519,
+      "correct_logprob": -1.2590737342834473,
+      "stale_logprob": -2.0246987342834473,
+      "margin": 0.765625,
+      "elapsed_ms": 66.14709799998764
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 512,
+      "prompt_tokens": 508,
+      "correct_logprob": -0.46786922216415405,
+      "stale_logprob": -2.655369281768799,
+      "margin": 2.1875000596046448,
+      "elapsed_ms": 57.1810540000115
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 512,
+      "prompt_tokens": 508,
+      "correct_logprob": -0.46786922216415405,
+      "stale_logprob": -2.655369281768799,
+      "margin": 2.1875000596046448,
+      "elapsed_ms": 60.43373900001825
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 512,
+      "prompt_tokens": 508,
+      "correct_logprob": -0.46786922216415405,
+      "stale_logprob": -2.655369281768799,
+      "margin": 2.1875000596046448,
+      "elapsed_ms": 64.70524000002342
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 512,
+      "prompt_tokens": 508,
+      "correct_logprob": -0.46786922216415405,
+      "stale_logprob": -2.655369281768799,
+      "margin": 2.1875000596046448,
+      "elapsed_ms": 57.501097999988815
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.053240444511175156,
+      "stale_logprob": -3.1938655376434326,
+      "margin": 3.1406250931322575,
+      "elapsed_ms": 451.7517319999911
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -12.77580451965332,
+      "stale_logprob": -11.57267951965332,
+      "margin": -1.203125,
+      "elapsed_ms": 464.8177849999797
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -6.576092720031738,
+      "stale_logprob": -6.888592720031738,
+      "margin": 0.3125,
+      "elapsed_ms": 473.8700890000018
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.12274011224508286,
+      "stale_logprob": -3.3883650302886963,
+      "margin": 3.2656249180436134,
+      "elapsed_ms": 507.7169690000005
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.08477641642093658,
+      "stale_logprob": -2.7722764015197754,
+      "margin": 2.687499985098839,
+      "elapsed_ms": 455.0505860000271
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -12.684090614318848,
+      "stale_logprob": -11.414559364318848,
+      "margin": -1.26953125,
+      "elapsed_ms": 469.3025569999918
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -9.865757942199707,
+      "stale_logprob": -8.674351692199707,
+      "margin": -1.19140625,
+      "elapsed_ms": 474.9120019999964
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.22955197095870972,
+      "stale_logprob": -1.8389270305633545,
+      "margin": 1.6093750596046448,
+      "elapsed_ms": 511.25681900003883
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -0.09315615147352219,
+      "stale_logprob": -2.890031099319458,
+      "margin": 2.796874947845936,
+      "elapsed_ms": 325.7108740000376
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -11.777921676635742,
+      "stale_logprob": -10.500577926635742,
+      "margin": -1.27734375,
+      "elapsed_ms": 341.4957929999787
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -6.3469038009643555,
+      "stale_logprob": -7.1906538009643555,
+      "margin": 0.84375,
+      "elapsed_ms": 347.47736200000645
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -0.11586080491542816,
+      "stale_logprob": -2.7408607006073,
+      "margin": 2.6249998956918716,
+      "elapsed_ms": 385.58894400000554
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.057786840945482254,
+      "stale_logprob": -3.4796619415283203,
+      "margin": 3.421875100582838,
+      "elapsed_ms": 501.1516789999746
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -10.049230575561523,
+      "stale_logprob": -9.654699325561523,
+      "margin": -0.39453125,
+      "elapsed_ms": 520.2880429999936
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -8.016030311584473,
+      "stale_logprob": -6.656655311584473,
+      "margin": -1.359375,
+      "elapsed_ms": 524.9230400000329
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.022793207317590714,
+      "stale_logprob": -5.116543292999268,
+      "margin": 5.093750085681677,
+      "elapsed_ms": 567.7205040000217
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -1.4484481811523438,
+      "stale_logprob": -0.292198121547699,
+      "margin": -1.1562500596046448,
+      "elapsed_ms": 398.3714350000014
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.4545987844467163,
+      "stale_logprob": -1.1420987844467163,
+      "margin": 0.6875,
+      "elapsed_ms": 416.8543140000338
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -7.348715782165527,
+      "stale_logprob": -7.192465782165527,
+      "margin": -0.15625,
+      "elapsed_ms": 422.8574789999584
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        1995,
+        2011
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2054,
+      "correct_logprob": -0.44501614570617676,
+      "stale_logprob": -1.1637661457061768,
+      "margin": 0.71875,
+      "elapsed_ms": 455.9216289999881
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -1.1964809894561768,
+      "stale_logprob": -0.399605929851532,
+      "margin": -0.7968750596046448,
+      "elapsed_ms": 457.98698900000545
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.2876640260219574,
+      "stale_logprob": -1.5220390558242798,
+      "margin": 1.2343750298023224,
+      "elapsed_ms": 475.56536199999755
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.4173557460308075,
+      "stale_logprob": -5.159543037414551,
+      "margin": 4.742187291383743,
+      "elapsed_ms": 484.9955980000118
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.4809717535972595,
+      "stale_logprob": -1.1215968132019043,
+      "margin": 0.6406250596046448,
+      "elapsed_ms": 516.7103710000447
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        1996,
+        2012
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2055,
+      "correct_logprob": -1.733208417892456,
+      "stale_logprob": -0.23320835828781128,
+      "margin": -1.5000000596046448,
+      "elapsed_ms": 507.9046220000123
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        1996,
+        2012
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2055,
+      "correct_logprob": -0.4081491231918335,
+      "stale_logprob": -1.4862741231918335,
+      "margin": 1.078125,
+      "elapsed_ms": 525.4913130000318
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        1996,
+        2012
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2055,
+      "correct_logprob": -11.678055763244629,
+      "stale_logprob": -9.342118263244629,
+      "margin": -2.3359375,
+      "elapsed_ms": 535.3086449999864
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        1996,
+        2012
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2055,
+      "correct_logprob": -0.546022355556488,
+      "stale_logprob": -1.0928974151611328,
+      "margin": 0.5468750596046448,
+      "elapsed_ms": 572.6550869999869
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -2.4453139305114746,
+      "stale_logprob": -0.1640639454126358,
+      "margin": -2.281249985098839,
+      "elapsed_ms": 461.3786180000261
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -0.21966882050037384,
+      "stale_logprob": -1.8759188652038574,
+      "margin": 1.6562500447034836,
+      "elapsed_ms": 478.5288720000267
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -9.208724975585938,
+      "stale_logprob": -9.310287475585938,
+      "margin": 0.1015625,
+      "elapsed_ms": 486.2011270000153
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        1985,
+        2002
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2047,
+      "correct_logprob": -1.080500602722168,
+      "stale_logprob": -0.7523755431175232,
+      "margin": -0.3281250596046448,
+      "elapsed_ms": 519.7902849999991
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -1.0438737869262695,
+      "stale_logprob": -0.4813738465309143,
+      "margin": -0.5624999403953552,
+      "elapsed_ms": 459.28392799999074
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -11.572283744812012,
+      "stale_logprob": -12.775408744812012,
+      "margin": 1.203125,
+      "elapsed_ms": 478.999884000018
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -6.947750091552734,
+      "stale_logprob": -6.197750091552734,
+      "margin": -0.75,
+      "elapsed_ms": 483.34187699998665
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -1.952073574066162,
+      "stale_logprob": -0.23332352936267853,
+      "margin": -1.7187500447034836,
+      "elapsed_ms": 520.8210609999924
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2046,
+      "correct_logprob": -1.0443055629730225,
+      "stale_logprob": -0.49743059277534485,
+      "margin": -0.5468749701976776,
+      "elapsed_ms": 355.06718300001694
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2046,
+      "correct_logprob": -10.287150382995605,
+      "stale_logprob": -11.337931632995605,
+      "margin": 1.05078125,
+      "elapsed_ms": 373.60669200000984
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2046,
+      "correct_logprob": -7.925652980804443,
+      "stale_logprob": -8.816278457641602,
+      "margin": 0.8906254768371582,
+      "elapsed_ms": 380.4746939999859
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        2005
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2046,
+      "correct_logprob": -0.36434879899024963,
+      "stale_logprob": -2.379973888397217,
+      "margin": 2.015625089406967,
+      "elapsed_ms": 413.9917169999876
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -1.2373067140579224,
+      "stale_logprob": -0.45605671405792236,
+      "margin": -0.78125,
+      "elapsed_ms": 331.6319240000212
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -10.497854232788086,
+      "stale_logprob": -11.771291732788086,
+      "margin": 1.2734375,
+      "elapsed_ms": 346.52920199999926
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -6.805595874786377,
+      "stale_logprob": -6.368095874786377,
+      "margin": -0.4375,
+      "elapsed_ms": 353.07038899998133
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        2008
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -1.5434651374816895,
+      "stale_logprob": -0.38721513748168945,
+      "margin": -1.15625,
+      "elapsed_ms": 388.1901720000087
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -2.5635201930999756,
+      "stale_logprob": -0.1260201334953308,
+      "margin": -2.4375000596046448,
+      "elapsed_ms": 335.3591850000157
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -9.417631149291992,
+      "stale_logprob": -10.300443649291992,
+      "margin": 0.8828125,
+      "elapsed_ms": 346.91218400001844
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -6.892331600189209,
+      "stale_logprob": -8.142332077026367,
+      "margin": 1.2500004768371582,
+      "elapsed_ms": 353.2807459999958
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        2007
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2048,
+      "correct_logprob": -1.6549746990203857,
+      "stale_logprob": -0.5143496990203857,
+      "margin": -1.140625,
+      "elapsed_ms": 387.94275500004005
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.43026092648506165,
+      "stale_logprob": -2.6490108966827393,
+      "margin": 2.2187499701976776,
+      "elapsed_ms": 465.3513490000023
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.43026092648506165,
+      "stale_logprob": -2.6490108966827393,
+      "margin": 2.2187499701976776,
+      "elapsed_ms": 480.7206990000168
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.43026092648506165,
+      "stale_logprob": -2.6490108966827393,
+      "margin": 2.2187499701976776,
+      "elapsed_ms": 488.73445800001036
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2045,
+      "correct_logprob": -0.43026092648506165,
+      "stale_logprob": -2.6490108966827393,
+      "margin": 2.2187499701976776,
+      "elapsed_ms": 520.4747199999815
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.7347503304481506,
+      "stale_logprob": -3.000375270843506,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 512.9111509999689
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.7347503304481506,
+      "stale_logprob": -3.000375270843506,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 534.0158380000162
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.7347503304481506,
+      "stale_logprob": -3.000375270843506,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 537.87202999996
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.7347503304481506,
+      "stale_logprob": -3.000375270843506,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 567.2405220000201
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.3852146863937378,
+      "stale_logprob": -2.4945898056030273,
+      "margin": 1.1093751192092896,
+      "elapsed_ms": 406.43221499999527
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.3852146863937378,
+      "stale_logprob": -2.4945898056030273,
+      "margin": 1.1093751192092896,
+      "elapsed_ms": 425.8353700000157
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.3852146863937378,
+      "stale_logprob": -2.4945898056030273,
+      "margin": 1.1093751192092896,
+      "elapsed_ms": 432.3346720000245
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2050,
+      "correct_logprob": -1.3852146863937378,
+      "stale_logprob": -2.4945898056030273,
+      "margin": 1.1093751192092896,
+      "elapsed_ms": 467.18703599998435
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.5566509366035461,
+      "stale_logprob": -2.2754008769989014,
+      "margin": 1.7187499403953552,
+      "elapsed_ms": 521.2338200000204
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.5566509366035461,
+      "stale_logprob": -2.2754008769989014,
+      "margin": 1.7187499403953552,
+      "elapsed_ms": 538.1412259999934
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.5566509366035461,
+      "stale_logprob": -2.2754008769989014,
+      "margin": 1.7187499403953552,
+      "elapsed_ms": 545.3777259999697
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 2048,
+      "prompt_tokens": 2049,
+      "correct_logprob": -0.5566509366035461,
+      "stale_logprob": -2.2754008769989014,
+      "margin": 1.7187499403953552,
+      "elapsed_ms": 572.998369000004
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.11065194755792618,
+      "stale_logprob": -2.485651969909668,
+      "margin": 2.375000022351742,
+      "elapsed_ms": 5795.4838660000405
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -11.07341480255127,
+      "stale_logprob": -10.56560230255127,
+      "margin": -0.5078125,
+      "elapsed_ms": 5871.71345999991
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -10.441240310668945,
+      "stale_logprob": -9.105302810668945,
+      "margin": -1.3359375,
+      "elapsed_ms": 5891.487789999928
+    },
+    {
+      "scenario": "single",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.20959894359111786,
+      "stale_logprob": -4.412724018096924,
+      "margin": 4.203125074505806,
+      "elapsed_ms": 6770.366573999922
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.05968610197305679,
+      "stale_logprob": -3.1690611839294434,
+      "margin": 3.1093750819563866,
+      "elapsed_ms": 3739.748420000069
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -10.257502555847168,
+      "stale_logprob": -9.183283805847168,
+      "margin": -1.07421875,
+      "elapsed_ms": 3810.2584639999577
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -9.939534187316895,
+      "stale_logprob": -9.552815437316895,
+      "margin": -0.38671875,
+      "elapsed_ms": 3847.4995410000474
+    },
+    {
+      "scenario": "single",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.1337723582983017,
+      "stale_logprob": -4.493147373199463,
+      "margin": 4.359375014901161,
+      "elapsed_ms": 4685.836555000037
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.08778838068246841,
+      "stale_logprob": -3.3377883434295654,
+      "margin": 3.249999962747097,
+      "elapsed_ms": 3785.151464000023
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -11.833670616149902,
+      "stale_logprob": -9.665701866149902,
+      "margin": -2.16796875,
+      "elapsed_ms": 3861.616421000008
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -11.385881423950195,
+      "stale_logprob": -10.178850173950195,
+      "margin": -1.20703125,
+      "elapsed_ms": 3911.6904059999342
+    },
+    {
+      "scenario": "single",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.09546602517366409,
+      "stale_logprob": -5.212653636932373,
+      "margin": 5.117187611758709,
+      "elapsed_ms": 4755.579321999903
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -0.05541049689054489,
+      "stale_logprob": -3.336660385131836,
+      "margin": 3.281249888241291,
+      "elapsed_ms": 4289.611900999944
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -10.665857315063477,
+      "stale_logprob": -8.872888565063477,
+      "margin": -1.79296875,
+      "elapsed_ms": 4382.068048000065
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -11.810356140136719,
+      "stale_logprob": -9.579887390136719,
+      "margin": -2.23046875,
+      "elapsed_ms": 4455.748927000059
+    },
+    {
+      "scenario": "single",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " invalid",
+      "stale": " valid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8194,
+      "correct_logprob": -0.06150217726826668,
+      "stale_logprob": -4.999001979827881,
+      "margin": 4.937499802559614,
+      "elapsed_ms": 5325.0735510000595
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -1.3102906942367554,
+      "stale_logprob": -0.34154072403907776,
+      "margin": -0.9687499701976776,
+      "elapsed_ms": 4292.9649940000445
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.33276158571243286,
+      "stale_logprob": -1.410886526107788,
+      "margin": 1.0781249403953552,
+      "elapsed_ms": 4342.294573999993
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -12.004191398620605,
+      "stale_logprob": -10.054972648620605,
+      "margin": -1.94921875,
+      "elapsed_ms": 4356.83922599992
+    },
+    {
+      "scenario": "double",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.25527167320251465,
+      "stale_logprob": -1.6302716732025146,
+      "margin": 1.375,
+      "elapsed_ms": 5196.852508999996
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8131,
+        8148
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -1.0661362409591675,
+      "stale_logprob": -0.4567612409591675,
+      "margin": -0.609375,
+      "elapsed_ms": 6249.50212300007
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8131,
+        8148
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.21865782141685486,
+      "stale_logprob": -1.6874078512191772,
+      "margin": 1.4687500298023224,
+      "elapsed_ms": 6312.131839000017
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8131,
+        8148
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.5032687187194824,
+      "stale_logprob": -4.518893718719482,
+      "margin": 4.015625,
+      "elapsed_ms": 6367.529962000049
+    },
+    {
+      "scenario": "double",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8131,
+        8148
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.17826543748378754,
+      "stale_logprob": -1.9751404523849487,
+      "margin": 1.7968750149011612,
+      "elapsed_ms": 7328.610377000018
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -1.2879494428634644,
+      "stale_logprob": -0.38169944286346436,
+      "margin": -0.90625,
+      "elapsed_ms": 4315.051708000055
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.31125032901763916,
+      "stale_logprob": -1.5300003290176392,
+      "margin": 1.21875,
+      "elapsed_ms": 4400.187983999899
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -7.637807846069336,
+      "stale_logprob": -3.919058084487915,
+      "margin": -3.718749761581421,
+      "elapsed_ms": 4461.505665000004
+    },
+    {
+      "scenario": "double",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8129,
+        8145
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8188,
+      "correct_logprob": -0.3443012237548828,
+      "stale_logprob": -1.4380512237548828,
+      "margin": 1.09375,
+      "elapsed_ms": 5320.858046000012
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -2.292222261428833,
+      "stale_logprob": -0.15159720182418823,
+      "margin": -2.1406250596046448,
+      "elapsed_ms": 6275.0848800000085
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.19785743951797485,
+      "stale_logprob": -2.01035737991333,
+      "margin": 1.8124999403953552,
+      "elapsed_ms": 6324.12994799995
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -8.935258865356445,
+      "stale_logprob": -6.888383865356445,
+      "margin": -2.046875,
+      "elapsed_ms": 6367.985847999989
+    },
+    {
+      "scenario": "double",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8129,
+        8146
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.4139690697193146,
+      "stale_logprob": -1.4920940399169922,
+      "margin": 1.0781249701976776,
+      "elapsed_ms": 7249.635344000012
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -0.8813424110412598,
+      "stale_logprob": -0.6157174110412598,
+      "margin": -0.265625,
+      "elapsed_ms": 6257.652725999947
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -10.566479682922363,
+      "stale_logprob": -11.078198432922363,
+      "margin": 0.51171875,
+      "elapsed_ms": 6309.112862999996
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -9.080070495605469,
+      "stale_logprob": -10.689445495605469,
+      "margin": 1.609375,
+      "elapsed_ms": 6342.987111999946
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [
+        8151
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -3.0218141078948975,
+      "stale_logprob": -0.34993913769721985,
+      "margin": -2.6718749701976776,
+      "elapsed_ms": 7236.513206000041
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -1.9598361253738403,
+      "stale_logprob": -0.20983614027500153,
+      "margin": -1.7499999850988388,
+      "elapsed_ms": 6252.869137999937
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -8.799365997314453,
+      "stale_logprob": -9.732959747314453,
+      "margin": 0.93359375,
+      "elapsed_ms": 6362.148666000053
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -9.715999603271484,
+      "stale_logprob": -9.505062103271484,
+      "margin": -0.2109375,
+      "elapsed_ms": 6408.902550999983
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [
+        8150
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8191,
+      "correct_logprob": -2.187354803085327,
+      "stale_logprob": -2.249854803085327,
+      "margin": 0.0625,
+      "elapsed_ms": 7308.915774999946
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -1.7318707704544067,
+      "stale_logprob": -0.37249577045440674,
+      "margin": -1.359375,
+      "elapsed_ms": 4019.2199870000422
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -9.673074722290039,
+      "stale_logprob": -11.833230972290039,
+      "margin": 2.16015625,
+      "elapsed_ms": 4092.4429689999897
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -10.268295288085938,
+      "stale_logprob": -11.655014038085938,
+      "margin": 1.38671875,
+      "elapsed_ms": 4129.147744000079
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -3.21431040763855,
+      "stale_logprob": -0.3705604076385498,
+      "margin": -2.84375,
+      "elapsed_ms": 4977.01838699993
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -1.5228443145751953,
+      "stale_logprob": -0.3197193145751953,
+      "margin": -1.203125,
+      "elapsed_ms": 6536.996363000071
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -8.702512741088867,
+      "stale_logprob": -10.374387741088867,
+      "margin": 1.671875,
+      "elapsed_ms": 6590.697043999967
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -10.720645904541016,
+      "stale_logprob": -11.716739654541016,
+      "margin": 0.99609375,
+      "elapsed_ms": 6630.38343900007
+    },
+    {
+      "scenario": "unrelated",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [
+        8152
+      ],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -3.1176540851593018,
+      "stale_logprob": -2.0551540851593018,
+      "margin": -1.0625,
+      "elapsed_ms": 7570.2524540000695
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.49808424711227417,
+      "stale_logprob": -2.748084306716919,
+      "margin": 2.2500000596046448,
+      "elapsed_ms": 4023.1676309999784
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.49808424711227417,
+      "stale_logprob": -2.748084306716919,
+      "margin": 2.2500000596046448,
+      "elapsed_ms": 4095.148917000074
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.49808424711227417,
+      "stale_logprob": -2.748084306716919,
+      "margin": 2.2500000596046448,
+      "elapsed_ms": 4127.561885000091
+    },
+    {
+      "scenario": "none",
+      "case_index": 1,
+      "entity": "GAMMA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8192,
+      "correct_logprob": -0.49808424711227417,
+      "stale_logprob": -2.748084306716919,
+      "margin": 2.2500000596046448,
+      "elapsed_ms": 4982.837589000042
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.5266833305358887,
+      "stale_logprob": -2.6516833305358887,
+      "margin": 2.125,
+      "elapsed_ms": 6549.84712800001
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.5266833305358887,
+      "stale_logprob": -2.6516833305358887,
+      "margin": 2.125,
+      "elapsed_ms": 6611.037629999942
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.5266833305358887,
+      "stale_logprob": -2.6516833305358887,
+      "margin": 2.125,
+      "elapsed_ms": 6660.197475000018
+    },
+    {
+      "scenario": "none",
+      "case_index": 3,
+      "entity": "OMEGA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8193,
+      "correct_logprob": -0.5266833305358887,
+      "stale_logprob": -2.6516833305358887,
+      "margin": 2.125,
+      "elapsed_ms": 7582.3500149999745
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -2.2844343185424805,
+      "stale_logprob": -2.1281843185424805,
+      "margin": -0.15625,
+      "elapsed_ms": 6537.026356999945
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -2.2844343185424805,
+      "stale_logprob": -2.1281843185424805,
+      "margin": -0.15625,
+      "elapsed_ms": 6597.738298999957
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -2.2844343185424805,
+      "stale_logprob": -2.1281843185424805,
+      "margin": -0.15625,
+      "elapsed_ms": 6632.8684879999855
+    },
+    {
+      "scenario": "none",
+      "case_index": 5,
+      "entity": "THETA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -2.2844343185424805,
+      "stale_logprob": -2.1281843185424805,
+      "margin": -0.15625,
+      "elapsed_ms": 7580.573731999948
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "standard",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.3663554787635803,
+      "stale_logprob": -2.6319804191589355,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 6534.718499000064
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "query",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.3663554787635803,
+      "stale_logprob": -2.6319804191589355,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 6608.192400000007
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "segment",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.3663554787635803,
+      "stale_logprob": -2.6319804191589355,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 6643.649155000048
+    },
+    {
+      "scenario": "none",
+      "case_index": 7,
+      "entity": "LAMBDA",
+      "reversals": [],
+      "correct": " valid",
+      "stale": " invalid",
+      "mode": "additive",
+      "target_tokens": 8192,
+      "prompt_tokens": 8195,
+      "correct_logprob": -0.3663554787635803,
+      "stale_logprob": -2.6319804191589355,
+      "margin": 2.2656249403953552,
+      "elapsed_ms": 7594.814029999952
+    }
+  ],
+  "run_metadata": {
+    "stage": "full",
+    "source_commit": "cff9f5d",
+    "source_files": [
+      "src/phase_attention.py",
+      "experiments/kaggle_reversal_eval.py"
+    ],
+    "build_script": "scripts/build_kaggle_kernel.py",
+    "kaggle_kernel": "tinacherry/phase-reversal-e2",
+    "kaggle_entry": "run_kaggle_phase_eval.py (single-file bundle of the two source modules)",
+    "seed": 0,
+    "model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "environment": {
+      "torch_version": "2.11.0+cu130",
+      "transformers_version": "5.20.2",
+      "python_version": "3.13.16",
+      "cuda_available": true,
+      "gpu_count": 2,
+      "gpu_names": [
+        "Tesla T4",
+        "Tesla T4"
+      ]
+    },
+    "started_utc": "2026-11-06T14:35:48.096838+00:00",
+    "finished_utc": "2026-11-06T14:43:26.034569+00:00",
+    "elapsed_seconds": 457.937736,
+    "measured_forward_ms_by_length": {
+      "512": 110.10539512501438,
+      "2048": 457.57966862500155,
+      "8192": 6296.542910250004
+    },
+    "shard_groups": [
+      48,
+      48
+    ],
+    "shard_estimated_ms": [
+      439310.6,
+      439310.6
+    ],
+    "shard_gpu_binding": [
+      "CUDA_VISIBLE_DEVICES=0",
+      "CUDA_VISIBLE_DEVICES=1"
+    ],
+    "control_variable_note": "A (length, scenario, case_index) group is never split: all four modes of a paired comparison run on the same GPU. Cross-length wall-clock comparisons may mix devices, so only mode-to-mode deltas are interpreted.",
+    "note": "Every case is a distinct prompt; no repeated forwards."
+  }
+}

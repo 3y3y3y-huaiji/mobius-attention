@@ -71,11 +71,13 @@ def mean_metric(rows, mode, scenarios, lengths, metric):
 
 def build_report(records, payload, rows) -> str:
     lengths = sorted({key[2] for key in rows})
+    model_name = payload.get("model", "Qwen/Qwen2.5-0.5B-Instruct")
+    short_model = model_name.split("/")[-1]
     lines = [
-        "# E2 Oracle 边界实验结果（Qwen2.5-0.5B-Instruct）",
+        f"# E2 Oracle 边界实验结果（{short_model}）",
         "",
         f"- 记录数：**{len(records)}**",
-        f"- 模型：`{payload.get('model', 'Qwen/Qwen2.5-0.5B-Instruct')}`",
+        f"- 模型：`{model_name}`",
         f"- 设备：{payload.get('device', 'n/a')}，dtype：{payload.get('dtype', 'n/a')}",
         f"- transformers：{payload.get('transformers_version', 'n/a')}",
         f"- Oracle 边界：{payload.get('oracle_boundaries', True)}；KV cache：{payload.get('uses_kv_cache', False)}",
@@ -160,20 +162,29 @@ def build_report(records, payload, rows) -> str:
     overhead = sum(overheads) / len(overheads) * 100 if overheads else float("nan")
     lines.append(f"| 工程价值：segment 相对 standard 额外延迟 | < 10% | {overhead:+.2f}% | {verdict(overhead < 10)} |")
     standard_ceiling = std_rev >= 0.999
+    if delta >= 5:
+        item1 = (
+            f"1. **有效性判据通过（{delta:+.2f} pp）**：Oracle 边界下 QK 分段相位将撤销场景准确率从 "
+            f"{std_rev:.3f} 提升至 {seg_rev:.3f}（主要来自 `double` 二次反转从 0.000 恢复并加强，`single` 的正 margin 也进一步扩大）。"
+        )
+    else:
+        item1 = (
+            "1. **主假设未获支持**：Oracle 边界下 QK 分段相位没有带来答案级收益"
+            f"（{delta:+.2f} pp）。"
+            + (
+                "standard 在撤销场景已接近满分，存在天花板效应，预注册的「+5 pp」判据在该任务上结构上不可满足；"
+                "这不等于证明机制无效，但也不构成支持它的证据。"
+                if standard_ceiling
+                else "未达到预注册的 +5 pp 门槛。"
+            )
+        )
     lines += [
         "",
         "## 结论",
         "",
         f"撤销场景 standard 准确率 {std_rev:.3f}、segment {seg_rev:.3f}、additive {add_rev:.3f}。",
         "",
-        "1. **主假设未获支持**：Oracle 边界下 QK 分段相位没有带来答案级收益"
-        f"（{delta:+.2f} pp）。"
-        + (
-            "standard 在撤销场景已接近满分，存在天花板效应，预注册的「+5 pp」判据在该任务上结构上不可满足；"
-            "这不等于证明机制无效，但也不构成支持它的证据。"
-            if standard_ceiling
-            else "未达到预注册的 +5 pp 门槛。"
-        ),
+        item1,
         (
             "2. **「旋转必要性」的通过不可采信**：additive 在 single 场景准确率 "
             f"{additive_single:.3f}，penalty=2.0 的加法偏置过强且未与旋转做等强度标定；"
@@ -203,13 +214,19 @@ def main() -> None:
         sys.stdout.reconfigure(encoding="utf-8")
     result_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_RESULT
     progress_path = Path(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_PROGRESS
+    if len(sys.argv) > 3:
+        report_path = Path(sys.argv[3])
+    elif len(sys.argv) > 1:
+        report_path = ROOT / "experiments" / (result_path.stem.replace("_results", "_report") + ".md")
+    else:
+        report_path = REPORT
     records, payload = load_records(result_path, progress_path)
     rows = aggregate(records)
     report = build_report(records, payload, rows)
-    REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text(report, encoding="utf-8")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(report, encoding="utf-8")
     print(report)
-    print(f"Report written to {REPORT}")
+    print(f"Report written to {report_path}")
 
 
 if __name__ == "__main__":
