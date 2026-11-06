@@ -18,12 +18,16 @@ env/
 # Kaggle run artifacts & raw logs
 kaggle_*_output/
 kaggle_output/
+kaggle_phase_e2/
 *.log
 .system_generated/
 scratch/
 
 # Swarm & Agent scratch logs
 .agents/
+.gemini/
+.trae/
+.workbuddy/
 .lake/
 formal_verification/.lake/
 
@@ -49,3 +53,5 @@ Thumbs.db
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.hypothesis/

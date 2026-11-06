@@ -83,21 +83,27 @@ The second uses a randomly initialized tiny Qwen2—no weight download—to veri
 
 ## Kaggle model experiment
 
-The first pretrained-model run uses Qwen2.5-0.5B-Instruct on one GPU. It compares standard, Query global, QK segment, and matched additive control using Oracle revision boundaries.
+The first pretrained-model run uses Qwen2.5-0.5B-Instruct. It compares standard, Query global, QK segment, and matched additive control using Oracle revision boundaries.
 
 ```bash
 python -m experiments.kaggle_reversal_eval \
   --model Qwen/Qwen2.5-0.5B-Instruct \
   --lengths 512 2048 8192 \
-  --cases 32 \
+  --cases 8 \
   --output experiments/qwen25_reversal_results.json
 ```
+
+Each case is a **distinct prompt** (entity, filler phase, and wording all vary), and the runner asserts that no two prompts are identical — repeating identical prompts would just be duplicated compute. Only the final token's logits are computed.
+
+On Kaggle, `scripts/build_kaggle_kernel.py` bundles the two modules into one script kernel (Kaggle uploads only `code_file`). A smoke stage validates the Transformers forward contract and measures per-length forward cost; the driver then packs whole `(length, scenario, case)` groups onto both T4s by measured cost. The four modes of one group are never split across GPUs, so paired mode comparisons stay on a single device. `scripts/monitor_kaggle_e2.py` fetches the outputs and `scripts/summarize_kaggle_e2.py` checks the preregistered criteria.
 
 Each case is scored with **one prompt forward**: the correct and stale candidates are read from the same next-token softmax, so the reported margin is a paired log-probability difference rather than two separately normalized scores.
 
 Primary metrics are correct-versus-stale answer log-probability, answer NLL, and accuracy. The suite includes double reversal, no reversal, and an unrelated-entity reversal to measure collateral damage. It does not use attention contrast as a proxy for task success.
 
-The experiment currently has **no recorded 0.5B result in this worktree**. Run the command before drawing model-level conclusions.
+The first 0.5B run is recorded in [`experiments/qwen25_reversal_results.json`](experiments/qwen25_reversal_results.json) (384 paired forwards, 2× T4, Oracle boundaries), with the preregistered criteria checked in [`experiments/qwen25_reversal_report.md`](experiments/qwen25_reversal_report.md).
+
+**Result: the main hypothesis is not supported.** QK segment phase did not improve answer-level accuracy over standard RoPE (−8.3 pp on reversal scenarios, where standard is already at ceiling). The matched additive control collapsed (0% on single-reversal), so the apparent "+41.7 pp rotation necessity" is an artefact of an uncalibrated `penalty=2.0`, not evidence that rotation is needed. Collateral damage on unrelated-entity reversals also exceeds the 1 pp budget. Per the [stop criteria](RESEARCH_PLAN.md), this run does not justify moving to learned gating (E3); recalibrate the additive control or increase task difficulty first.
 
 ## Repository map
 

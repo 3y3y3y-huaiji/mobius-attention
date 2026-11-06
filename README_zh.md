@@ -83,21 +83,27 @@ python -m pytest tests/test_qwen_phase_eval.py -q
 
 ## Kaggle 模型实验
 
-第一轮使用 Qwen2.5-0.5B-Instruct，单张 GPU 即可。四种方案共用相同的 Oracle 反转边界：标准、Query 全局、QK 分段、同门控加法对照。
+第一轮使用 Qwen2.5-0.5B-Instruct。四种方案共用相同的 Oracle 反转边界：标准、Query 全局、QK 分段、同门控加法对照。
 
 ```bash
 python -m experiments.kaggle_reversal_eval \
   --model Qwen/Qwen2.5-0.5B-Instruct \
   --lengths 512 2048 8192 \
-  --cases 32 \
+  --cases 8 \
   --output experiments/qwen25_reversal_results.json
 ```
+
+每个 case 都是**不同的 Prompt**（实体名、填充文本相位、措辞都会变化），运行器会断言不存在重复 Prompt；重复样本只会带来空转计算。前向过程只计算最后一个位置的 logits。
+
+在 Kaggle 上，`scripts/build_kaggle_kernel.py` 把两个模块打包成单文件 kernel（Kaggle 只上传 `code_file`）。smoke 阶段先验证 Transformers 前向契约并实测各长度的单次前向耗时，再按成本把完整的 `(长度, 场景, 样本)` 组贪心装箱到两张 T4；同一组的四种模式绝不拆卡，因此模式间配对比较始终在同一张卡上完成。`scripts/monitor_kaggle_e2.py` 负责取回输出，`scripts/summarize_kaggle_e2.py` 负责核对预注册判据。
 
 每个样本只做**一次前向**：正确与过期两个候选答案取自同一个 next-token Softmax，因此报告的 margin 是成对对数概率差，而不是两次独立归一化后再相减。
 
 主指标是正确答案相对过期答案的对数概率差、答案 NLL 和准确率。数据包含双重反转、无反转和无关实体反转，用来测量误伤。注意力对比度不再充当任务成功的替代指标。
 
-当前工作树里**没有这次 0.5B 实验的结果**。必须先运行命令，才能做模型层面的结论。
+首轮 0.5B 实验已记录在 [`experiments/qwen25_reversal_results.json`](experiments/qwen25_reversal_results.json)（384 次成对前向、双 T4、Oracle 边界），预注册判据核对见 [`experiments/qwen25_reversal_report.md`](experiments/qwen25_reversal_report.md)。
+
+**结论：主假设未获支持。** QK 分段相位没有带来答案级收益（撤销场景相对标准 RoPE 为 −8.3 pp，且标准基线已接近满分，存在天花板效应）。同门控加法对照在单次撤销场景崩塌（0%），所以表面上的「旋转必要性 +41.7 pp」只是 `penalty=2.0` 未标定造成的假象，不能证明旋转是必要的；无关实体反转场景的误伤也超过 1 pp 预算。按 [停止条件](RESEARCH_PLAN.md)，本轮结果不支持进入 E3 门控训练，应先重标定加法对照或提高任务难度。
 
 ## 仓库结构
 
