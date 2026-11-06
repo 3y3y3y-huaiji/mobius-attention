@@ -210,6 +210,17 @@ def test_harmonic_entity_phase_eliminates_2pi_resurrection():
     assert harm_scores[2].item() > 0
 
 
+def test_learned_poc_converges_without_weight_copy():
+    from experiments.run_learned_poc import run
+
+    res = run(seeds=(0,), steps=200)["summary"]
+    assert res["key_harmonic"]["mean_overall"] > 0.98
+    assert res["key_harmonic"]["mean_x_2updates_no_2pi"] > 0.98
+    assert res["key_harmonic"]["mean_y_with_distractor"] > 0.98
+    assert res["key_harmonic"]["mean_overall"] > res["standard"]["mean_overall"] + 0.35
+    assert res["key_harmonic"]["mean_overall"] > res["scalar_global"]["mean_overall"] + 0.30
+
+
 def test_causal_attention_masks_future_keys():
     scores = torch.zeros(1, 1, 3, 3)
     positions = torch.arange(3)

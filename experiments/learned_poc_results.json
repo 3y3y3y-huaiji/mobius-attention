@@ -1,0 +1,98 @@
+{
+  "experiment": "learned_gate_poc_no_weight_copy",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "steps": 250,
+  "summary": {
+    "standard": {
+      "seeds": [
+        {
+          "seed": 0,
+          "overall": 0.4611,
+          "x_1update": 0.5167,
+          "x_2updates_no_2pi": 0.3333,
+          "y_with_distractor": 0.5333
+        },
+        {
+          "seed": 1,
+          "overall": 0.4467,
+          "x_1update": 0.4767,
+          "x_2updates_no_2pi": 0.3467,
+          "y_with_distractor": 0.5167
+        },
+        {
+          "seed": 2,
+          "overall": 0.4467,
+          "x_1update": 0.45,
+          "x_2updates_no_2pi": 0.3733,
+          "y_with_distractor": 0.5167
+        }
+      ],
+      "mean_overall": 0.4515,
+      "mean_x_1update": 0.4811,
+      "mean_x_2updates_no_2pi": 0.3511,
+      "mean_y_with_distractor": 0.5222
+    },
+    "scalar_global": {
+      "seeds": [
+        {
+          "seed": 0,
+          "overall": 0.4689,
+          "x_1update": 0.5167,
+          "x_2updates_no_2pi": 0.3567,
+          "y_with_distractor": 0.5333
+        },
+        {
+          "seed": 1,
+          "overall": 0.4533,
+          "x_1update": 0.4833,
+          "x_2updates_no_2pi": 0.3433,
+          "y_with_distractor": 0.5333
+        },
+        {
+          "seed": 2,
+          "overall": 0.6922,
+          "x_1update": 1.0,
+          "x_2updates_no_2pi": 0.5633,
+          "y_with_distractor": 0.5133
+        }
+      ],
+      "mean_overall": 0.5381,
+      "mean_x_1update": 0.6667,
+      "mean_x_2updates_no_2pi": 0.4211,
+      "mean_y_with_distractor": 0.5266
+    },
+    "key_harmonic": {
+      "seeds": [
+        {
+          "seed": 0,
+          "overall": 1.0,
+          "x_1update": 1.0,
+          "x_2updates_no_2pi": 1.0,
+          "y_with_distractor": 1.0
+        },
+        {
+          "seed": 1,
+          "overall": 1.0,
+          "x_1update": 1.0,
+          "x_2updates_no_2pi": 1.0,
+          "y_with_distractor": 1.0
+        },
+        {
+          "seed": 2,
+          "overall": 1.0,
+          "x_1update": 1.0,
+          "x_2updates_no_2pi": 1.0,
+          "y_with_distractor": 1.0
+        }
+      ],
+      "mean_overall": 1.0,
+      "mean_x_1update": 1.0,
+      "mean_x_2updates_no_2pi": 1.0,
+      "mean_y_with_distractor": 1.0
+    }
+  }
+}
