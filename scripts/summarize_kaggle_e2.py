@@ -19,6 +19,16 @@ DEFAULT_RESULT = ROOT / "kaggle_phase_e2_output" / "qwen25_reversal_results.json
 TRACKED_RESULT = ROOT / "experiments" / "qwen25_reversal_results.json"
 DEFAULT_PROGRESS = ROOT / "kaggle_phase_e2_output" / "qwen25_reversal_results_progress.jsonl"
 REPORT = ROOT / "experiments" / "qwen25_reversal_report.md"
+ALL_MODES = (
+    "standard",
+    "query",
+    "segment",
+    "lowfreq_segment",
+    "entity_segment",
+    "entity_lowfreq",
+    "additive",
+    "entity_additive",
+)
 MODES = ("standard", "query", "segment", "additive")
 SCENARIOS = ("single", "double", "unrelated", "none")
 REVERSAL_SCENARIOS = ("single", "double")
@@ -112,17 +122,18 @@ def build_report(records, payload, rows) -> str:
     if payload.get("incomplete_run"):
         lines += ["> 注意：本次运行被中断，以下统计来自增量进度文件，不是完整结果。", ""]
 
+    present_modes = [m for m in ALL_MODES if any(k[0] == m for k in rows)] or list(MODES)
     lines += ["## 主结果", "", "每个单元格为 `准确率 / 平均 margin（正确 − 过期 logprob）`。", ""]
     for length in lengths:
         lines += [
             f"### 目标长度 {length}",
             "",
-            "| 场景 | " + " | ".join(MODES) + " |",
-            "| --- | " + " | ".join(["---"] * len(MODES)) + " |",
+            "| 场景 | " + " | ".join(present_modes) + " |",
+            "| --- | " + " | ".join(["---"] * len(present_modes)) + " |",
         ]
         for scenario in SCENARIOS:
             cells = []
-            for mode in MODES:
+            for mode in present_modes:
                 row = rows.get((mode, scenario, length))
                 cells.append(f"{row['accuracy']:.3f} / {row['margin']:+.4f}" if row else "—")
             lines.append(f"| {scenario} | " + " | ".join(cells) + " |")
@@ -161,6 +172,24 @@ def build_report(records, payload, rows) -> str:
                 overheads.append(seg["forward_ms"] / base["forward_ms"] - 1)
     overhead = sum(overheads) / len(overheads) * 100 if overheads else float("nan")
     lines.append(f"| 工程价值：segment 相对 standard 额外延迟 | < 10% | {overhead:+.2f}% | {verdict(overhead < 10)} |")
+
+    if "entity_segment" in present_modes:
+        ent_rev = mean_metric(rows, "entity_segment", REVERSAL_SCENARIOS, lengths, "accuracy")
+        ent_safe = mean_metric(rows, "entity_segment", SAFETY_SCENARIOS, lengths, "accuracy")
+        ent_all = mean_metric(rows, "entity_segment", SCENARIOS, lengths, "accuracy")
+        eadd_all = mean_metric(rows, "entity_additive", SCENARIOS, lengths, "accuracy")
+        ent_delta = (ent_rev - std_rev) * 100
+        ent_rot_all = (ent_all - eadd_all) * 100
+        ent_collateral = (std_safe - ent_safe) * 100
+        lines.append(
+            f"| 实体绑定有效性：entity_segment − standard（撤销场景） | ≥ +5 pp | {ent_delta:+.2f} pp | {verdict(ent_delta >= 5)} |"
+        )
+        lines.append(
+            f"| 实体绑定旋转必要性：entity_segment − entity_additive（全场景） | ≥ +2 pp | {ent_rot_all:+.2f} pp | {verdict(ent_rot_all >= 2)} |"
+        )
+        lines.append(
+            f"| 实体绑定低误伤：standard − entity_segment（安全场景） | ≤ 1 pp | {ent_collateral:+.2f} pp | {verdict(ent_collateral <= 1)} |"
+        )
     standard_ceiling = std_rev >= 0.999
     if delta >= 5:
         item1 = (

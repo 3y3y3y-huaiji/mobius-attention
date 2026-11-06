@@ -326,8 +326,8 @@ def run_worker(argv):
 
 
 def _evaluate_model_target(model_id, output_name, work_dir, n_gpus):
-    prefix = Path(output_name).stem.replace("_reversal_results", "")
-    modes = ["standard", "query", "segment", "additive"]
+    prefix = Path(output_name).stem.replace("_reversal_results", "").replace("_results", "")
+    modes = TARGET_MODES
     scenarios = ["single", "double", "unrelated", "none"]
     lengths = [512, 2048, 8192]
     cases = 8
@@ -418,21 +418,40 @@ def _replace_once(text: str, old: str, new: str, label: str) -> str:
 
 
 DEFAULT_TARGETS = [
-    ("Qwen/Qwen3-0.6B", "qwen3_06b_reversal_results.json"),
-    ("Qwen/Qwen3.5-0.8B", "qwen35_08b_reversal_results.json"),
+    ("Qwen/Qwen3.5-0.8B", "qwen35_08b_entity_results.json"),
+    ("Qwen/Qwen3-0.6B", "qwen3_06b_entity_results.json"),
+]
+DEFAULT_MODES = [
+    "standard",
+    "segment",
+    "entity_segment",
+    "lowfreq_segment",
+    "entity_lowfreq",
+    "additive",
+    "entity_additive",
 ]
 
 
-def build(targets: list[tuple[str, str]] | None = None) -> Path:
+def build(
+    targets: list[tuple[str, str]] | None = None,
+    modes: list[str] | None = None,
+) -> Path:
     if targets is None:
         targets = DEFAULT_TARGETS
+    if modes is None:
+        modes = DEFAULT_MODES
     source_commit = _current_commit()
     core = (ROOT / "src" / "phase_attention.py").read_text(encoding="utf-8")
     evaluator = (ROOT / "experiments" / "kaggle_reversal_eval.py").read_text(encoding="utf-8")
 
     evaluator = _replace_once(
         evaluator,
-        "from src.phase_attention import apply_phase, reversal_phase\n",
+        "from src.phase_attention import (\n"
+        "    apply_phase,\n"
+        "    entity_reversal_phase,\n"
+        "    low_frequency_channel_mask,\n"
+        "    reversal_phase,\n"
+        ")\n",
         "",
         "intra-repo import",
     )
@@ -467,6 +486,7 @@ def build(targets: list[tuple[str, str]] | None = None) -> Path:
         "from datetime import datetime, timezone\n\n"
         f'KERNEL_ID = "{KERNEL_ID}"\n'
         f"MODEL_TARGETS = {targets!r}\n"
+        f"TARGET_MODES = {modes!r}\n"
         f'SOURCE_COMMIT = "{source_commit}"\n'
         "SEED = 0\n"
         "ENV_INFO = {}\n\n",
@@ -480,7 +500,7 @@ def build(targets: list[tuple[str, str]] | None = None) -> Path:
     )
     entry = OUT_DIR / "run_kaggle_phase_eval.py"
     entry.write_text(script, encoding="utf-8")
-    print(f"Built {entry} ({len(script.splitlines())} lines) for targets={targets}")
+    print(f"Built {entry} ({len(script.splitlines())} lines) for targets={targets} modes={modes}")
     print(f"Built {OUT_DIR / 'kernel-metadata.json'}")
     return entry
 
@@ -489,11 +509,12 @@ def main_cli() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=None)
     parser.add_argument("--output-name", default=None)
+    parser.add_argument("--modes", nargs="+", default=None)
     args = parser.parse_args()
     if args.model and args.output_name:
-        build(targets=[(args.model, args.output_name)])
+        build(targets=[(args.model, args.output_name)], modes=args.modes)
     else:
-        build()
+        build(modes=args.modes)
 
 
 if __name__ == "__main__":

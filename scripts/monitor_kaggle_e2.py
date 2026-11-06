@@ -19,9 +19,10 @@ MAX_SECONDS = float(sys.argv[3]) * 60 if len(sys.argv) > 3 else 240 * 60
 POLL_SECONDS = 30
 
 
-def _log(message: str) -> None:
+def _log(message: str, *, quiet: bool = False) -> None:
     line = f"[{datetime.now().isoformat(timespec='seconds')}] {message}"
-    print(line, flush=True)
+    if not quiet:
+        print(line, flush=True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with (OUT_DIR / "monitor.log").open("a", encoding="utf-8") as handle:
         handle.write(line + "\n")
@@ -35,16 +36,18 @@ def main() -> int:
 
     started = time.monotonic()
     terminal = None
+    last_state = None
     while time.monotonic() - started < MAX_SECONDS:
         try:
             status = api.kernels_status(KERNEL)
         except Exception as exc:  # noqa: BLE001 - transient API errors must not abort polling
-            _log(f"status query failed: {exc}")
+            _log(f"status query failed: {exc}", quiet=True)
             time.sleep(POLL_SECONDS)
             continue
         state = str(getattr(status, "status", ""))
         failure = getattr(status, "failureMessage", "") or getattr(status, "failure_message", "") or ""
-        _log(f"status={state} failure={failure}")
+        _log(f"status={state} failure={failure}", quiet=(state == last_state))
+        last_state = state
         if "COMPLETE" in state:
             terminal = "COMPLETE"
             break

@@ -12,7 +12,12 @@ from pathlib import Path
 
 import torch
 
-from src.phase_attention import attention_scores, causal_attention_weights
+from src.phase_attention import (
+    attention_scores,
+    causal_attention_weights,
+    entity_reversal_phase,
+    reversal_phase,
+)
 
 
 def run() -> dict:
@@ -46,11 +51,39 @@ def run() -> dict:
         + torch.tensor([-2.0, -2.0, 0.0]).view(1, 1, 1, 3),
     }
 
+    # Unrelated-entity falsification: token 0 = ALPHA premise, token 1 = BETA revision, token 2 = ALPHA query
+    k_unrel = torch.cat((q, q), dim=-2)
+    global_unrel = reversal_phase(3, [1])
+    entity_unrel = entity_reversal_phase([1, 2, 1], [(1, 2)])
+    global_unrel_scores = attention_scores(
+        q,
+        k_unrel,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0]),
+        q_phase=global_unrel[-1:],
+        k_phase=global_unrel[:2],
+        mode="segment",
+    )
+    entity_unrel_scores = attention_scores(
+        q,
+        k_unrel,
+        q_positions=torch.tensor([0]),
+        k_positions=torch.tensor([0, 0]),
+        q_phase=entity_unrel[-1:],
+        k_phase=entity_unrel[:2],
+        mode="segment",
+    )
+
     result = {
         "experiment_type": "controlled_tensor_math_not_an_llm_benchmark",
         "key_roles": ["old_positive", "old_negative", "new_positive"],
         "score_formula": "q dot k / sqrt(4)",
         "variants": {},
+        "unrelated_entity_check": {
+            "key_roles": ["alpha_premise", "beta_revision_distractor"],
+            "global_segment_scores": [round(v, 6) for v in global_unrel_scores.flatten().tolist()],
+            "entity_segment_scores": [round(v, 6) for v in entity_unrel_scores.flatten().tolist()],
+        },
     }
     for name, variant_scores in variants.items():
         weights = causal_attention_weights(variant_scores, q_positions, k_positions)
@@ -63,6 +96,8 @@ def run() -> dict:
         "phase_flip_suppresses_every_old_token": False,
         "partial_phase_flip_guarantees_negative_logits": False,
         "additive_control_can_suppress_both_old_tokens": True,
+        "global_segment_phase_protects_unrelated_entity": bool(global_unrel_scores[0, 0, 0, 0].item() > 0),
+        "entity_bound_phase_protects_unrelated_entity": bool(entity_unrel_scores[0, 0, 0, 0].item() > 0),
     }
     return result
 
@@ -81,6 +116,9 @@ def main() -> None:
     for name, values in result["variants"].items():
         row = values["scores"]
         print(f"{name:30s} {row[0]:8.4f}  {row[1]:8.4f}  {row[2]:8.4f}")
+    unrel = result["unrelated_entity_check"]
+    print(f"unrelated (global_segment)     alpha={unrel['global_segment_scores'][0]:+8.4f}  beta_rev={unrel['global_segment_scores'][1]:+8.4f}")
+    print(f"unrelated (entity_segment)     alpha={unrel['entity_segment_scores'][0]:+8.4f}  beta_rev={unrel['entity_segment_scores'][1]:+8.4f}")
     print(f"Saved: {output}")
 
 

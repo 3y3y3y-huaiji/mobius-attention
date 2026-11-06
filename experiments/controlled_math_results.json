@@ -68,10 +68,26 @@
       ]
     }
   },
+  "unrelated_entity_check": {
+    "key_roles": [
+      "alpha_premise",
+      "beta_revision_distractor"
+    ],
+    "global_segment_scores": [
+      -1.40625,
+      1.40625
+    ],
+    "entity_segment_scores": [
+      1.40625,
+      -1.40625
+    ]
+  },
   "falsification_checks": {
     "query_global_preserves_new_positive": false,
     "phase_flip_suppresses_every_old_token": false,
     "partial_phase_flip_guarantees_negative_logits": false,
-    "additive_control_can_suppress_both_old_tokens": true
+    "additive_control_can_suppress_both_old_tokens": true,
+    "global_segment_phase_protects_unrelated_entity": false,
+    "entity_bound_phase_protects_unrelated_entity": true
   }
 }
