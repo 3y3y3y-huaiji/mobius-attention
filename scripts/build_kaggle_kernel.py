@@ -13,14 +13,27 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "kaggle_phase_e2"
 KERNEL_ID = "tinacherry/phase-reversal-e2"
-MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"
-SOURCE_COMMIT = "c96191a"
+DEFAULT_MODEL_ID = "Qwen/Qwen3-0.6B"
+DEFAULT_OUTPUT_NAME = "qwen3_06b_reversal_results.json"
+
+
+def _current_commit() -> str:
+    try:
+        return (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT)
+            .decode("utf-8")
+            .strip()
+        )
+    except Exception:  # noqa: BLE001
+        return "unknown"
 
 METADATA = {
     "id": KERNEL_ID,
@@ -97,22 +110,22 @@ def _environment():
     return info
 
 
-def _model_revision():
+def _model_revision(model_id):
     try:
         from huggingface_hub import model_info
 
-        return model_info(MODEL_ID).sha
+        return model_info(model_id).sha
     except Exception as exc:  # noqa: BLE001 - metadata is best-effort only
-        print(f"[env] could not resolve model revision: {exc}", flush=True)
+        print(f"[env] could not resolve model revision for {model_id}: {exc}", flush=True)
         return None
 
 
-def _run_stage(name, lengths, cases, modes, filename, work_dir):
+def _run_stage(name, model_id, lengths, cases, modes, filename, work_dir):
     global _PROGRESS_PATH
     argv = [
         "kaggle_reversal_eval",
         "--model",
-        MODEL_ID,
+        model_id,
         "--lengths",
         *(str(value) for value in lengths),
         "--cases",
@@ -146,7 +159,7 @@ def _run_stage(name, lengths, cases, modes, filename, work_dir):
         "equivalent_local_command": "python -m " + " ".join(argv[1:]),
         "kaggle_entry": "run_kaggle_phase_eval.py (single-file bundle of the two source modules)",
         "seed": SEED,
-        "model_revision": _model_revision(),
+        "model_revision": _model_revision(model_id),
         "environment": ENV_INFO,
         "started_utc": started.isoformat(),
         "finished_utc": datetime.now(timezone.utc).isoformat(),
@@ -197,15 +210,15 @@ def _plan_shards(lengths, scenarios, cases, costs, modes, n_gpus):
     return shards, loads
 
 
-def _run_workers(shards, lengths, cases, modes, work_dir):
+def _run_workers(model_id, prefix, shards, lengths, cases, modes, work_dir):
     processes = []
     for index, shard in enumerate(shards):
-        shard_path = work_dir / f"shard_{index}.json"
+        shard_path = work_dir / f"{prefix}_shard_{index}.json"
         shard_path.write_text(json.dumps(shard, indent=2), encoding="utf-8")
-        out_path = work_dir / f"shard_{index}_results.json"
-        log_path = work_dir / f"worker_{index}.log"
+        out_path = work_dir / f"{prefix}_shard_{index}_results.json"
+        log_path = work_dir / f"{prefix}_worker_{index}.log"
         args = [
-            "--model", MODEL_ID,
+            "--model", model_id,
             "--lengths", *(str(value) for value in lengths),
             "--cases", str(cases),
             "--modes", *modes,
@@ -218,7 +231,7 @@ def _run_workers(shards, lengths, cases, modes, work_dir):
         env["HF_HUB_OFFLINE"] = "1"
         env["TRANSFORMERS_OFFLINE"] = "1"
         log_handle = log_path.open("w", encoding="utf-8")
-        print(f"[driver] GPU {index}: {len(shard)} groups, log={log_path.name}", flush=True)
+        print(f"[driver:{prefix}] GPU {index}: {len(shard)} groups, log={log_path.name}", flush=True)
         process = subprocess.Popen(command, env=env, stdout=log_handle, stderr=subprocess.STDOUT)
         processes.append((index, process, log_handle, log_path, out_path))
 
@@ -226,25 +239,25 @@ def _run_workers(shards, lengths, cases, modes, work_dir):
     for index, process, log_handle, log_path, out_path in processes:
         code = process.wait()
         log_handle.close()
-        print(f"[driver] worker {index} exit={code} log={log_path.name}", flush=True)
+        print(f"[driver:{prefix}] worker {index} exit={code} log={log_path.name}", flush=True)
         if code != 0 or not out_path.is_file():
             failures.append(index)
     if failures:
         for index in failures:
-            path = work_dir / f"worker_{index}.log"
+            path = work_dir / f"{prefix}_worker_{index}.log"
             lines = path.read_text(encoding="utf-8").splitlines()[-40:]
-            print(f"[driver] ---- worker {index} log tail ----", flush=True)
+            print(f"[driver:{prefix}] ---- worker {index} log tail ----", flush=True)
             print("\\n".join(lines), flush=True)
-        raise RuntimeError(f"Workers failed: {failures}")
-    return [work_dir / f"shard_{index}_results.json" for index in range(len(shards))]
+        raise RuntimeError(f"Workers failed for {prefix}: {failures}")
+    return [work_dir / f"{prefix}_shard_{index}_results.json" for index in range(len(shards))]
 
 
-def _merge_results(paths, shards, costs, loads, modes, lengths, cases, work_dir, started):
+def _merge_results(model_id, output_name, paths, shards, costs, loads, modes, lengths, cases, work_dir, started):
     records = []
     for path in paths:
         records.extend(json.loads(path.read_text(encoding="utf-8"))["records"])
     payload = {
-        "model": MODEL_ID,
+        "model": model_id,
         "transformers_version": ENV_INFO["transformers_version"],
         "device": "cuda (cost-balanced shards)",
         "dtype": "torch.float16",
@@ -254,10 +267,10 @@ def _merge_results(paths, shards, costs, loads, modes, lengths, cases, work_dir,
         "oracle_boundaries": True,
         "uses_kv_cache": False,
         "command": (
-            "python -m experiments.kaggle_reversal_eval --model " + MODEL_ID
+            "python -m experiments.kaggle_reversal_eval --model " + model_id
             + " --lengths " + " ".join(str(value) for value in lengths)
             + " --cases " + str(cases) + " --modes " + " ".join(modes)
-            + " --output experiments/qwen25_reversal_results.json (executed as GPU shards)"
+            + " --output experiments/" + output_name + " (executed as GPU shards)"
         ),
         "summary": summarize(records),
         "records": records,
@@ -270,7 +283,7 @@ def _merge_results(paths, shards, costs, loads, modes, lengths, cases, work_dir,
         "kaggle_kernel": KERNEL_ID,
         "kaggle_entry": "run_kaggle_phase_eval.py (single-file bundle of the two source modules)",
         "seed": SEED,
-        "model_revision": _model_revision(),
+        "model_revision": _model_revision(model_id),
         "environment": ENV_INFO,
         "started_utc": started.isoformat(),
         "finished_utc": datetime.now(timezone.utc).isoformat(),
@@ -286,7 +299,7 @@ def _merge_results(paths, shards, costs, loads, modes, lengths, cases, work_dir,
         ),
         "note": "Every case is a distinct prompt; no repeated forwards.",
     }
-    destination = work_dir / "qwen25_reversal_results.json"
+    destination = work_dir / output_name
     destination.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"[driver] merged {len(records)} records -> {destination}", flush=True)
     for row in payload["summary"]:
@@ -312,6 +325,57 @@ def run_worker(argv):
         sys.argv = saved
 
 
+def _evaluate_model_target(model_id, output_name, work_dir, n_gpus):
+    prefix = Path(output_name).stem.replace("_reversal_results", "")
+    modes = ["standard", "query", "segment", "additive"]
+    scenarios = ["single", "double", "unrelated", "none"]
+    lengths = [512, 2048, 8192]
+    cases = 8
+
+    print(f"\\n[driver] ==== Starting evaluation for {model_id} -> {output_name} ====", flush=True)
+    smoke = _run_stage(
+        f"smoke:{prefix}",
+        model_id,
+        lengths,
+        1,
+        modes,
+        f"{prefix}_smoke_results.json",
+        work_dir,
+    )
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    costs = _smoke_costs(smoke, lengths)
+    shards, loads = _plan_shards(lengths, scenarios, cases, costs, modes, n_gpus)
+    print(f"[driver:{prefix}] measured forward ms by length: " + json.dumps(costs), flush=True)
+    for index, (shard, load) in enumerate(zip(shards, loads)):
+        by_length = defaultdict(int)
+        for group in shard:
+            by_length[group["length"]] += 1
+        print(
+            f"[driver:{prefix}] GPU {index}: groups={len(shard)} estimated_ms={load:.0f} "
+            f"by_length={dict(sorted(by_length.items()))}",
+            flush=True,
+        )
+    (work_dir / f"{prefix}_shard_plan.json").write_text(
+        json.dumps(
+            {"model": model_id, "costs": costs, "groups": shards, "estimated_ms": loads, "gpus": n_gpus},
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    started = datetime.now(timezone.utc)
+    paths = _run_workers(model_id, prefix, shards, lengths, cases, modes, work_dir)
+    _merge_results(
+        model_id, output_name, paths, shards, costs, loads, modes, lengths, cases, work_dir, started
+    )
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
 def main_driver():
     work_dir = Path("/kaggle/working")
     if not work_dir.is_dir() or not os.access(work_dir, os.W_OK):
@@ -327,44 +391,14 @@ def main_driver():
     )
 
     n_gpus = min(2, info["gpu_count"]) if info["cuda_available"] else 1
-    modes = ["standard", "query", "segment", "additive"]
-    scenarios = ["single", "double", "unrelated", "none"]
-    lengths = [512, 2048, 8192]
-    cases = 8
-
-    try:
-        smoke = _run_stage("smoke", lengths, 1, modes, "smoke_results.json", work_dir)
-    except Exception:
-        print("[driver] SMOKE STAGE FAILED - aborting the full run.", flush=True)
-        traceback.print_exc()
-        raise
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-
-    costs = _smoke_costs(smoke, lengths)
-    shards, loads = _plan_shards(lengths, scenarios, cases, costs, modes, n_gpus)
-    print("[driver] measured forward ms by length: " + json.dumps(costs), flush=True)
-    for index, (shard, load) in enumerate(zip(shards, loads)):
-        by_length = defaultdict(int)
-        for group in shard:
-            by_length[group["length"]] += 1
-        print(
-            f"[driver] GPU {index}: groups={len(shard)} estimated_ms={load:.0f} "
-            f"by_length={dict(sorted(by_length.items()))}",
-            flush=True,
-        )
-    (work_dir / "shard_plan.json").write_text(
-        json.dumps(
-            {"costs": costs, "groups": shards, "estimated_ms": loads, "gpus": n_gpus},
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    started = datetime.now(timezone.utc)
-    paths = _run_workers(shards, lengths, cases, modes, work_dir)
-    _merge_results(paths, shards, costs, loads, modes, lengths, cases, work_dir, started)
+    for idx, (model_id, output_name) in enumerate(MODEL_TARGETS):
+        try:
+            _evaluate_model_target(model_id, output_name, work_dir, n_gpus)
+        except Exception:
+            print(f"[driver] TARGET FAILED: {model_id} -> {output_name}", flush=True)
+            traceback.print_exc()
+            if idx == 0:
+                raise
     print("[driver] ALL STAGES COMPLETE", flush=True)
 
 
@@ -383,7 +417,16 @@ def _replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
-def build() -> Path:
+DEFAULT_TARGETS = [
+    ("Qwen/Qwen3-0.6B", "qwen3_06b_reversal_results.json"),
+    ("Qwen/Qwen3.5-0.8B", "qwen35_08b_reversal_results.json"),
+]
+
+
+def build(targets: list[tuple[str, str]] | None = None) -> Path:
+    if targets is None:
+        targets = DEFAULT_TARGETS
+    source_commit = _current_commit()
     core = (ROOT / "src" / "phase_attention.py").read_text(encoding="utf-8")
     evaluator = (ROOT / "experiments" / "kaggle_reversal_eval.py").read_text(encoding="utf-8")
 
@@ -410,7 +453,7 @@ def build() -> Path:
     )
 
     parts = [
-        HEADER.replace("{commit}", SOURCE_COMMIT),
+        HEADER.replace("{commit}", source_commit),
         core,
         MIDDLE,
         evaluator,
@@ -423,8 +466,8 @@ def build() -> Path:
         "import traceback\n"
         "from datetime import datetime, timezone\n\n"
         f'KERNEL_ID = "{KERNEL_ID}"\n'
-        f'MODEL_ID = "{MODEL_ID}"\n'
-        f'SOURCE_COMMIT = "{SOURCE_COMMIT}"\n'
+        f"MODEL_TARGETS = {targets!r}\n"
+        f'SOURCE_COMMIT = "{source_commit}"\n'
         "SEED = 0\n"
         "ENV_INFO = {}\n\n",
         DRIVER,
@@ -437,10 +480,21 @@ def build() -> Path:
     )
     entry = OUT_DIR / "run_kaggle_phase_eval.py"
     entry.write_text(script, encoding="utf-8")
-    print(f"Built {entry} ({len(script.splitlines())} lines)")
+    print(f"Built {entry} ({len(script.splitlines())} lines) for targets={targets}")
     print(f"Built {OUT_DIR / 'kernel-metadata.json'}")
     return entry
 
 
+def main_cli() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default=None)
+    parser.add_argument("--output-name", default=None)
+    args = parser.parse_args()
+    if args.model and args.output_name:
+        build(targets=[(args.model, args.output_name)])
+    else:
+        build()
+
+
 if __name__ == "__main__":
-    build()
+    main_cli()

@@ -4,6 +4,8 @@ import types
 import pytest
 import torch
 from transformers.models.qwen2.modeling_qwen2 import Qwen2Config, Qwen2ForCausalLM
+from transformers.models.qwen3.modeling_qwen3 import Qwen3Config, Qwen3ForCausalLM
+from transformers.models.qwen3_5.modeling_qwen3_5 import Qwen3_5ForCausalLM, Qwen3_5TextConfig
 
 from experiments.kaggle_reversal_eval import PhaseAttentionController, paired_answer_logprobs
 from src.phase_attention import reversal_phase
@@ -133,3 +135,54 @@ def test_paired_answer_scoring_stays_finite_under_segment_phase():
     assert math.exp(phased[0]) + math.exp(phased[1]) <= 1.0 + 1e-6
     # The non-zero reversal phase must reach the answer logits instead of being a no-op.
     assert phased[:2] != baseline[:2]
+
+
+def _tiny_qwen3_model():
+    config = Qwen3Config(
+        vocab_size=64,
+        hidden_size=32,
+        intermediate_size=64,
+        num_hidden_layers=2,
+        num_attention_heads=4,
+        num_key_value_heads=2,
+        head_dim=8,
+        max_position_embeddings=128,
+        use_sliding_window=False,
+    )
+    config._attn_implementation = "eager"
+    model = Qwen3ForCausalLM(config).eval()
+    model.config.use_cache = False
+    return model
+
+
+def _tiny_qwen35_model():
+    config = Qwen3_5TextConfig(
+        vocab_size=64,
+        hidden_size=32,
+        intermediate_size=64,
+        num_hidden_layers=4,
+        num_attention_heads=4,
+        num_key_value_heads=2,
+        head_dim=16,
+        layer_types=["linear_attention", "full_attention", "linear_attention", "full_attention"],
+        rope_parameters={"rope_type": "default", "rope_theta": 10000.0, "partial_rotary_factor": 0.25},
+        max_position_embeddings=128,
+    )
+    config._attn_implementation = "eager"
+    model = Qwen3_5ForCausalLM(config).eval()
+    model.config.use_cache = False
+    return model
+
+
+@pytest.mark.parametrize("builder", [_tiny_qwen3_model, _tiny_qwen35_model])
+def test_qwen3_and_qwen35_patch_matches_original_for_zero_phase(builder):
+    torch.manual_seed(7)
+    model = builder()
+    input_ids = torch.tensor([[1, 2, 3, 4, 5, 6]])
+    with torch.no_grad():
+        expected = model(input_ids, use_cache=False).logits
+        for mode in ("standard", "query", "segment", "additive"):
+            phase = torch.zeros(input_ids.shape[1])
+            with PhaseAttentionController(model, mode, phase):
+                actual = model(input_ids, use_cache=False).logits
+            torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)

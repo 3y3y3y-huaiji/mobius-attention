@@ -49,7 +49,12 @@ class PhaseAttentionController:
         self.originals = []
 
     def install(self) -> None:
-        for layer in self.model.model.layers:
+        layers = getattr(self.model.model, "layers", None)
+        if layers is None and hasattr(self.model.model, "language_model"):
+            layers = self.model.model.language_model.layers
+        for layer in layers:
+            if not hasattr(layer, "self_attn"):
+                continue
             attention = layer.self_attn
             self.originals.append((attention, attention.forward))
             attention.forward = types.MethodType(self._forward, attention)
@@ -84,8 +89,25 @@ class PhaseAttentionController:
 
         input_shape = hidden_states.shape[:-1]
         hidden_shape = (*input_shape, -1, attention.head_dim)
-        q = attention.q_proj(hidden_states).view(hidden_shape).transpose(1, 2)
-        k = attention.k_proj(hidden_states).view(hidden_shape).transpose(1, 2)
+        q_raw = attention.q_proj(hidden_states)
+        num_heads = attention.config.num_attention_heads
+        if q_raw.shape[-1] == num_heads * attention.head_dim * 2:
+            q_raw, gate = torch.chunk(
+                q_raw.view(*input_shape, -1, attention.head_dim * 2), 2, dim=-1
+            )
+            gate = gate.reshape(*input_shape, -1)
+        else:
+            q_raw = q_raw.view(hidden_shape)
+            gate = None
+
+        k_raw = attention.k_proj(hidden_states).view(hidden_shape)
+        if hasattr(attention, "q_norm") and attention.q_norm is not None:
+            q_raw = attention.q_norm(q_raw)
+        if hasattr(attention, "k_norm") and attention.k_norm is not None:
+            k_raw = attention.k_norm(k_raw)
+
+        q = q_raw.transpose(1, 2)
+        k = k_raw.transpose(1, 2)
         v = attention.v_proj(hidden_states).view(hidden_shape).transpose(1, 2)
 
         if position_embeddings is None:
@@ -93,17 +115,22 @@ class PhaseAttentionController:
                 raise ValueError("position_ids is required when position_embeddings is not supplied.")
             position_embeddings = attention.rotary_emb(hidden_states, position_ids)
         cos, sin = position_embeddings
-        q, k = apply_rotary_pos_emb(q, k, cos, sin)
+        rotary_dim = cos.shape[-1]
+        q_rot, q_pass = q[..., :rotary_dim], q[..., rotary_dim:]
+        k_rot, k_pass = k[..., :rotary_dim], k[..., rotary_dim:]
+        q_rot, k_rot = apply_rotary_pos_emb(q_rot, k_rot, cos, sin)
 
         seq_len = q.shape[-2]
         if self.phase.numel() < seq_len:
             raise ValueError("The phase tensor is shorter than the input sequence.")
         phase = self.phase[:seq_len].to(device=q.device, dtype=q.dtype)
         if self.mode == "query":
-            q = apply_phase(q, phase)
+            q_rot = apply_phase(q_rot, phase)
         elif self.mode == "segment":
-            q = apply_phase(q, phase)
-            k = apply_phase(k, phase)
+            q_rot = apply_phase(q_rot, phase)
+            k_rot = apply_phase(k_rot, phase)
+        q = torch.cat((q_rot, q_pass), dim=-1)
+        k = torch.cat((k_rot, k_pass), dim=-1)
 
         k = repeat_kv(k, attention.num_key_value_groups)
         v = repeat_kv(v, attention.num_key_value_groups)
@@ -126,6 +153,8 @@ class PhaseAttentionController:
         weights = F.dropout(weights, p=dropout, training=attention.training)
         output = torch.matmul(weights, v)
         output = output.transpose(1, 2).reshape(*input_shape, -1).contiguous()
+        if gate is not None:
+            output = output * torch.sigmoid(gate)
         output = attention.o_proj(output)
 
         # Transformers 4.x Qwen2 returned a third cache element; 5.x returns two.
